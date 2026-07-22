@@ -1,0 +1,14 @@
+# 환경변수 / API 키
+.env
+.env.*
+!.env.example
+
+# 의존성 / 빌드 산출물
+node_modules/
+dist/
+build/
+.next/
+
+# OS / 에디터
+.DS_Store
+*.log
