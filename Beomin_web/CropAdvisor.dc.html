@@ -191,7 +191,7 @@
     .farm-scene img { display: block; width: auto; height: auto; max-width: 100%; max-height: calc(100vh - 205px); }
     .crop-hotspot {
       position: absolute; border: 2px solid transparent; border-radius: 14px;
-      background: transparent; cursor: zoom-in; transition: all .15s ease;
+      background: transparent; cursor: pointer; transition: all .15s ease;
       display: flex; align-items: flex-start; justify-content: center; padding-top: 6px;
     }
     .crop-hotspot:hover { background: rgba(47,93,66,.22); border-color: #fff; box-shadow: 0 0 0 2px rgba(47,93,66,.5) inset; }
@@ -325,11 +325,11 @@
 
   <!-- RECOMMEND -->
   <sc-if value="{{ isRecommend }}">
-  <main style="max-width:1600px;margin:0 auto;padding:32px 24px 80px;">
+  <main style="max-width:1180px;margin:0 auto;padding:48px 24px 80px;">
     <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">지역별 작물 추천</h1>
-    <p style="font-size:15px;color:#6B6250;margin:0 0 20px;">지도의 점을 클릭하고 '이 지역 선택하기'를 눌러 시·군을 선택하세요.</p>
+    <p style="font-size:15px;color:#6B6250;margin:0 0 28px;">지도의 점을 클릭하고 '이 지역 선택하기'를 눌러 시·군을 선택하세요.</p>
 
-    <div style="border-radius:16px;overflow:hidden;border:1px solid #E4DCC8;height:calc(100vh - 210px);min-height:600px;">
+    <div style="border-radius:16px;overflow:hidden;border:1px solid #E4DCC8;height:520px;">
       <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
@@ -365,41 +365,18 @@
     <sc-if value="{{ showResults }}">
       <div style="margin-top:48px;">
         <h2 style="font-size:22px;font-weight:700;margin:0 0 6px;">{{ selectedRegion.name }} {{ selectedDong }}에 추천하는 작물</h2>
-        <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">실측 기상·토양 데이터로 계산한 적합도 순이에요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
-        <sc-if value="{{ scoresLoading }}">
-          <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:22px;text-align:center;color:#8A7F65;font-size:14px;margin-bottom:16px;">
-            지역 데이터로 적합도를 계산하고 있어요… ⏳ <span style="color:#B3A98F;">(기상·토양 API 조회로 수 초 걸릴 수 있어요)</span>
-          </div>
-        </sc-if>
+        <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">적합도가 높은 순으로 정렬했어요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
           <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
             <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <h3 style="font-size:19px;font-weight:700;margin:0;">{{ r.name }}</h3>
                 <div style="display:flex;align-items:center;gap:10px;">
-                  <sc-if value="{{ r.isLive }}"><span style="font-size:13px;font-weight:700;color:#2F5D42;">{{ r.scoreText }}</span></sc-if>
                   <span style="{{ r.badgeStyle }}">{{ r.levelLabel }}</span>
                   <button type="button" title="즐겨찾기" style="{{ r.favStyle }}" onClick="{{ r.toggleFav }}">{{ r.favIcon }}</button>
                 </div>
               </div>
-              <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">{{ r.reason }}</p>
-              <sc-if value="{{ r.hasReliability }}">
-                <p style="font-size:12px;color:#9A8A63;background:#FBF4E3;border-radius:8px;padding:6px 10px;margin:0 0 12px;">ℹ️ {{ r.reliabilityText }}</p>
-              </sc-if>
-              <sc-if value="{{ r.hasBreakdown }}">
-                <div style="display:grid;gap:6px;margin:0 0 14px;">
-                  <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (작물별 가중치 반영)</p>
-                  <sc-for list="{{ r.breakdownItems }}" as="b" hint-placeholder-count="5">
-                    <div style="display:flex;align-items:center;gap:8px;">
-                      <span style="width:52px;flex:0 0 auto;font-size:12px;color:#6B6250;">{{ b.label }}</span>
-                      <div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;">
-                        <div style="{{ b.barStyle }}"></div>
-                      </div>
-                      <span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">{{ b.scoreLabel }}</span>
-                    </div>
-                  </sc-for>
-                </div>
-              </sc-if>
+              <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 14px;">{{ r.reason }}</p>
               <div style="display:grid;gap:8px;font-size:13px;color:#6B6250;">
                 <div><strong style="color:#2B2620;">파종·수확</strong> — {{ r.season }}</div>
                 <div><strong style="color:#2B2620;">예상 소득</strong> — {{ r.income }}</div>
@@ -473,231 +450,26 @@
   <!-- POLICY -->
   <sc-if value="{{ isPolicy }}">
   <main style="max-width:1180px;margin:0 auto;padding:48px 24px 80px;">
-    <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">정책·지원금</h1>
-    <p style="font-size:15px;color:#6B6250;margin:0 0 28px;">인적사항을 입력하고 <b>정책 자격 진단하기</b>를 누르면, 조건에 맞는 지원 제도를 추천해 드려요. 금액·조건은 신청 전 소관기관에서 확인하세요.</p>
-
-    <!-- 인적사항 입력 폼 -->
-    <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:28px;margin-bottom:28px;">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:6px;">
-        <h2 style="font-size:20px;font-weight:700;margin:0;">📝 인적사항</h2>
-        <span style="font-size:12px;color:#9A9080;">입력하면 이 기기에 자동 저장돼요 (서버 전송 없음)</span>
+    <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">정책·지원금 정보</h1>
+    <p style="font-size:15px;color:#6B6250;margin:0 0 8px;">대표적인 귀농 지원 제도예요. 금액과 조건은 지자체·연도별로 달라질 수 있으니 신청 전 꼭 확인하세요.</p>
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-top:20px;">
+      <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:26px;">
+        <h3 style="font-size:17px;font-weight:700;margin:0 0 10px;">청년농업인 영농정착지원금</h3>
+        <p style="font-size:14px;line-height:1.7;color:#5A5245;margin:0;">만 40세 미만 신규 창업농에게 최대 3년간 매월 정착지원금을 지급하는 제도예요. 영농경력, 연령 등 요건이 있으니 시·군 농업정책과에 자격을 확인해보세요.</p>
       </div>
-
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px 18px;margin-top:16px;">
-        <!-- 기본 정보 -->
-        <h3 style="grid-column:1/-1;font-size:13px;font-weight:700;color:#2F5D42;border-bottom:1px solid #EFE7D5;padding-bottom:6px;margin:6px 0 0;">기본 정보</h3>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">이름</label>
-          <input type="text" value="{{ pi.name }}" onChange="{{ piOn.name }}" placeholder="예: 홍길동" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">생년월일 <span style="color:#2F7A44;font-weight:700;">{{ piAgeText }}</span></label>
-          <input type="date" value="{{ pi.birth }}" onChange="{{ piOn.birth }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">성별</label>
-          <select value="{{ pi.gender }}" onChange="{{ piOn.gender }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택 안 함</option>
-            <option value="남성">남성</option>
-            <option value="여성">여성</option>
-          </select>
-        </div>
-
-        <!-- 귀농 요건 -->
-        <h3 style="grid-column:1/-1;font-size:13px;font-weight:700;color:#2F5D42;border-bottom:1px solid #EFE7D5;padding-bottom:6px;margin:12px 0 0;">귀농 요건</h3>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">현재 거주지</label>
-          <input type="text" value="{{ pi.curResidence }}" onChange="{{ piOn.curResidence }}" placeholder="예: 서울특별시 강남구" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">귀농 예정·정착 지역</label>
-          <input type="text" value="{{ pi.targetRegion }}" onChange="{{ piOn.targetRegion }}" placeholder="예: 충청북도 충주시" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">이전/현재 직업</label>
-          <input type="text" value="{{ pi.job }}" onChange="{{ piOn.job }}" placeholder="예: 회사원" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">도시 거주 기간</label>
-          <select value="{{ pi.cityYears }}" onChange="{{ piOn.cityYears }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="1년 미만">1년 미만</option>
-            <option value="1~5년">1~5년</option>
-            <option value="5~10년">5~10년</option>
-            <option value="10년 이상">10년 이상</option>
-          </select>
-        </div>
-
-        <!-- 영농 현황 -->
-        <h3 style="grid-column:1/-1;font-size:13px;font-weight:700;color:#2F5D42;border-bottom:1px solid #EFE7D5;padding-bottom:6px;margin:12px 0 0;">영농 현황</h3>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">영농 경력</label>
-          <select value="{{ pi.farmCareer }}" onChange="{{ piOn.farmCareer }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="없음(신규)">없음(신규)</option>
-            <option value="1년 미만">1년 미만</option>
-            <option value="1~3년">1~3년</option>
-            <option value="3~5년">3~5년</option>
-            <option value="5년 이상">5년 이상</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">농지 소유 여부</label>
-          <select value="{{ pi.landOwn }}" onChange="{{ piOn.landOwn }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="없음">없음</option>
-            <option value="임차 예정">임차 예정</option>
-            <option value="소유">소유</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">농지 면적 (평)</label>
-          <input type="number" value="{{ pi.landArea }}" onChange="{{ piOn.landArea }}" placeholder="예: 300" min="0" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">재배 예정 작물</label>
-          <select value="{{ pi.crop }}" onChange="{{ piOn.crop }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="오이">🥒 오이</option>
-            <option value="배">🍐 배</option>
-            <option value="사과">🍎 사과</option>
-            <option value="감자">🥔 감자</option>
-            <option value="상추">🥬 상추</option>
-            <option value="기타">기타</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">귀농교육 이수 여부</label>
-          <select value="{{ pi.eduDone }}" onChange="{{ piOn.eduDone }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="미이수">미이수</option>
-            <option value="예정">이수 예정</option>
-            <option value="이수">이수 완료</option>
-          </select>
-        </div>
-
-        <!-- 세대·자격 -->
-        <h3 style="grid-column:1/-1;font-size:13px;font-weight:700;color:#2F5D42;border-bottom:1px solid #EFE7D5;padding-bottom:6px;margin:12px 0 0;">세대·자격</h3>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">대상 유형</label>
-          <select value="{{ pi.targetType }}" onChange="{{ piOn.targetType }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="청년">청년 (만 40세 미만)</option>
-            <option value="일반">일반</option>
-            <option value="은퇴">은퇴·귀촌</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">세대주 여부</label>
-          <select value="{{ pi.householder }}" onChange="{{ piOn.householder }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="예">예</option>
-            <option value="아니오">아니오</option>
-          </select>
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">가구원 수</label>
-          <input type="number" value="{{ pi.householdSize }}" onChange="{{ piOn.householdSize }}" placeholder="예: 3" min="1" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-        </div>
-        <div>
-          <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">가구 연소득</label>
-          <select value="{{ pi.income }}" onChange="{{ piOn.income }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
-            <option value="">선택</option>
-            <option value="2천만원 미만">2천만원 미만</option>
-            <option value="2~4천만원">2~4천만원</option>
-            <option value="4~6천만원">4~6천만원</option>
-            <option value="6천만원 이상">6천만원 이상</option>
-          </select>
-        </div>
+      <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:26px;">
+        <h3 style="font-size:17px;font-weight:700;margin:0 0 10px;">귀농 창업 및 주택 구입 지원 융자</h3>
+        <p style="font-size:14px;line-height:1.7;color:#5A5245;margin:0;">농지·시설 마련이나 주택 구입·신축에 필요한 자금을 저금리로 융자해주는 제도예요. 귀농귀촌종합센터를 통해 사전 교육 이수 후 신청할 수 있어요.</p>
       </div>
-
-      <div style="display:flex;gap:12px;margin-top:22px;flex-wrap:wrap;">
-        <button type="button" onClick="{{ diagnosePI }}" style="background:#2F5D42;color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer;">정책 자격 진단하기</button>
-        <button type="button" onClick="{{ resetPI }}" style="background:transparent;border:1px solid #E4DCC8;border-radius:10px;padding:12px 20px;font-size:14px;color:#8A7F65;cursor:pointer;">초기화</button>
+      <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:26px;">
+        <h3 style="font-size:17px;font-weight:700;margin:0 0 10px;">농지연금</h3>
+        <p style="font-size:14px;line-height:1.7;color:#5A5245;margin:0;">보유한 농지를 담보로 매월 생활비를 연금처럼 받을 수 있는 제도로, 은퇴 후 귀농을 준비하는 분들이 활용해요. 농지연금과 영농정착지원금은 함께 신청할 수 있는 경우도 있으니 문의해보세요.</p>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:26px;">
+        <h3 style="font-size:17px;font-weight:700;margin:0 0 10px;">지자체별 귀농인 특화 지원</h3>
+        <p style="font-size:14px;line-height:1.7;color:#5A5245;margin:0;">빈집 수리비, 이사비, 농기자재 구입비 등을 지원하는 시·군이 많아요. 이주를 고려하는 지역의 홈페이지나 농업기술센터에서 '귀농인 지원 조례'를 검색해보세요.</p>
       </div>
     </div>
-
-    <!-- 진단 중 / 오류 -->
-    <sc-if value="{{ piDiagnosing }}">
-      <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:24px;text-align:center;color:#8A7F65;font-size:14px;margin-bottom:28px;">
-        정책 데이터를 분석하고 있어요… ⏳
-      </div>
-    </sc-if>
-    <sc-if value="{{ piPoliciesError }}">
-      <div style="background:#FBEDE6;border:1px solid #E7C3B0;border-radius:16px;padding:20px;color:#9A5A3A;font-size:14px;margin-bottom:28px;">
-        정책 데이터(policies.json)를 불러오지 못했어요. 웹 서버가 실행 중인지 확인해 주세요.
-      </div>
-    </sc-if>
-
-    <!-- 정책 자격 진단 결과 -->
-    <sc-if value="{{ piResultReady }}">
-      <div style="margin-bottom:10px;">
-        <h2 style="font-size:20px;font-weight:700;margin:0 0 4px;">📋 예상 정책 자격</h2>
-        <p style="font-size:13px;color:#6B6250;margin:0;">입력 정보 기준 <b style="color:#2F7A44;">해당 가능 {{ eligibleCount }}건</b> · <b style="color:#B98A3A;">요건 확인 {{ checkCount }}건</b>. 실제 지원 여부·금액은 소관기관에 최종 확인하세요.</p>
-      </div>
-
-      <sc-if value="{{ noMatchAtAll }}">
-        <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:32px;text-align:center;color:#8A7F65;font-size:14px;margin:16px 0 28px;">
-          조건에 맞는 정책을 찾지 못했어요. <b>귀농 예정·정착 지역</b>과 <b>생년월일</b>을 입력하면 더 정확하게 추천해 드려요.
-        </div>
-      </sc-if>
-
-      <!-- 해당 가능 -->
-      <sc-if value="{{ hasEligible }}">
-        <h3 style="font-size:16px;font-weight:700;color:#2F7A44;margin:22px 0 12px;">✅ 해당 가능 ({{ eligibleCount }}건)</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
-          <sc-for list="{{ eligibleCards }}" as="p" hint-placeholder-count="6">
-            <div style="background:#FFFFFF;border:1px solid #BFE0C6;border-radius:14px;padding:18px 20px;">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                <p style="font-size:15px;font-weight:700;margin:0;color:#2B2620;line-height:1.4;">{{ p.name }}</p>
-                <span style="flex:0 0 auto;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#E4F1E6;color:#2F7A44;white-space:nowrap;">해당 가능</span>
-              </div>
-              <p style="font-size:12px;color:#8A7F65;margin:6px 0 10px;">🏛️ {{ p.org }} · {{ p.field }}</p>
-              <p style="font-size:13px;line-height:1.6;color:#5A5245;margin:0 0 10px;">{{ p.support }}</p>
-              <div style="font-size:12px;color:#6B6250;border-top:1px solid #EFE7D5;padding-top:10px;display:grid;gap:4px;">
-                <div><b style="color:#2B2620;">신청기한</b> {{ p.deadline }}</div>
-                <div><b style="color:#2B2620;">선정기준</b> {{ p.criteria }}</div>
-                <sc-if value="{{ p.hasUrl }}"><a href="{{ p.url }}" target="_blank" rel="noopener" style="color:#2F7A44;font-weight:600;text-decoration:none;">상세정보 보기 →</a></sc-if>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-        <sc-if value="{{ eligibleMore }}">
-          <p style="font-size:12px;color:#9A9080;margin:12px 0 0;">관련성 높은 순으로 표시했어요. 이 외 {{ eligibleMore }}건 더 있어요.</p>
-        </sc-if>
-      </sc-if>
-
-      <!-- 요건 확인 필요 -->
-      <sc-if value="{{ hasCheck }}">
-        <h3 style="font-size:16px;font-weight:700;color:#B98A3A;margin:28px 0 12px;">⚠️ 요건 확인 필요 ({{ checkCount }}건)</h3>
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
-          <sc-for list="{{ checkCards }}" as="p" hint-placeholder-count="6">
-            <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:14px;padding:18px 20px;">
-              <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
-                <p style="font-size:15px;font-weight:700;margin:0;color:#2B2620;line-height:1.4;">{{ p.name }}</p>
-                <span style="flex:0 0 auto;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;background:#F5EAD3;color:#B98A3A;white-space:nowrap;">요건 확인</span>
-              </div>
-              <p style="font-size:12px;color:#8A7F65;margin:6px 0 10px;">🏛️ {{ p.org }} · {{ p.field }}</p>
-              <sc-if value="{{ p.hasMissing }}">
-                <div style="background:#FBF4E3;border-radius:8px;padding:8px 10px;font-size:12px;color:#8A6D2F;margin:0 0 10px;">📌 확인 필요: {{ p.missingText }}</div>
-              </sc-if>
-              <p style="font-size:13px;line-height:1.6;color:#5A5245;margin:0 0 10px;">{{ p.support }}</p>
-              <div style="font-size:12px;color:#6B6250;border-top:1px solid #EFE7D5;padding-top:10px;display:grid;gap:4px;">
-                <div><b style="color:#2B2620;">신청기한</b> {{ p.deadline }}</div>
-                <div><b style="color:#2B2620;">선정기준</b> {{ p.criteria }}</div>
-                <sc-if value="{{ p.hasUrl }}"><a href="{{ p.url }}" target="_blank" rel="noopener" style="color:#2F7A44;font-weight:600;text-decoration:none;">상세정보 보기 →</a></sc-if>
-              </div>
-            </div>
-          </sc-for>
-        </div>
-        <sc-if value="{{ checkMore }}">
-          <p style="font-size:12px;color:#9A9080;margin:12px 0 24px;">관련성 높은 순으로 표시했어요. 이 외 {{ checkMore }}건 더 있어요.</p>
-        </sc-if>
-      </sc-if>
-
-      <div style="height:20px;"></div>
-    </sc-if>
-
   </main>
   </sc-if>
 
@@ -733,6 +505,10 @@
         <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:12px;padding:16px;text-align:center;color:#8A7F65;font-size:13px;">관련 뉴스를 찾지 못했어요. (뉴스 서버 8001 실행 확인)</div>
       </sc-if>
     </div>
+
+    <sc-if value="{{ detail.ready }}">
+      <button type="button" onClick="{{ detail.makePlan }}" style="margin-top:16px;background:#2F5D42;color:#fff;border:none;border-radius:10px;padding:12px 18px;font-size:14px;font-weight:700;cursor:pointer;">{{ detail.planButtonLabel }}</button>
+    </sc-if>
 
     <sc-if value="{{ detail.notReady }}">
       <div style="margin-top:28px;background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:56px 24px;text-align:center;color:#8A7F65;">
@@ -792,6 +568,45 @@
         </sc-for>
       </div>
 
+      <sc-if value="{{ detail.cultivationGuide }}">
+        <h2 style="font-size:20px;font-weight:700;color:#2B2620;margin:34px 0 14px;">🌱 재배 관리 상세</h2>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px;">
+          <sc-for list="{{ detail.guideBlocks }}" as="g" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #E4DCC8;border-radius:14px;padding:18px;">
+              <div style="font-size:14px;font-weight:700;color:#2F5D42;margin-bottom:10px;">{{ g.title }}</div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <sc-for list="{{ g.items }}" as="line" hint-placeholder-count="3">
+                  <div style="font-size:13px;color:#5A5245;line-height:1.55;">• {{ line }}</div>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="margin-top:14px;background:#fff;border:1px solid #E4DCC8;border-radius:14px;padding:18px;overflow-x:auto;">
+          <div style="font-size:14px;font-weight:700;color:#2F5D42;margin-bottom:10px;">{{ detail.cultivationGuide.fertilizer.title }}</div>
+          <table style="border-collapse:collapse;width:100%;font-size:13px;">
+            <thead>
+              <tr style="text-align:left;color:#8A7F65;">
+                <th style="padding:6px 10px;">작형</th><th style="padding:6px 10px;">N</th><th style="padding:6px 10px;">P</th><th style="padding:6px 10px;">K</th>
+                <th style="padding:6px 10px;">요소</th><th style="padding:6px 10px;">용과린</th><th style="padding:6px 10px;">염화가리</th><th style="padding:6px 10px;">퇴비</th>
+              </tr>
+            </thead>
+            <tbody>
+              <sc-for list="{{ detail.cultivationGuide.fertilizer.rows }}" as="row" hint-placeholder-count="4">
+                <tr style="border-top:1px solid #EFE9D9;">
+                  <td style="padding:6px 10px;font-weight:600;">{{ row.season }}</td>
+                  <td style="padding:6px 10px;">{{ row.n }}</td><td style="padding:6px 10px;">{{ row.p }}</td><td style="padding:6px 10px;">{{ row.k }}</td>
+                  <td style="padding:6px 10px;">{{ row.urea }}</td><td style="padding:6px 10px;">{{ row.fusedSuper }}</td><td style="padding:6px 10px;">{{ row.kcl }}</td>
+                  <td style="padding:6px 10px;">{{ row.compost }}</td>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+          <div style="font-size:11.5px;color:#9A9080;margin-top:10px;">{{ detail.cultivationGuide.fertilizer.note }}</div>
+        </div>
+      </sc-if>
+
       <div style="margin-top:22px;font-size:11px;color:#B3A98F;">출처: 농사로(nongsaro.go.kr) 감자 재배 월력 · 초보자용으로 가공</div>
     </sc-if>
   </main>
@@ -833,11 +648,9 @@
 
   <!-- PROFILE (내 귀농 지역 / 즐겨찾기 대체) -->
   <sc-if value="{{ isFavorites }}">
-  <main style="max-width:1180px;margin:0 auto;padding:48px 24px 80px;">
-    <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">🧑‍🌾 내 프로필</h1>
-    <p style="font-size:15px;color:#6B6250;margin:0 0 28px;">지도에서 저장한 귀농 예정 지역을 모아둔 곳이에요. 인적사항 입력과 정책 자격 진단은 상단 <b>정책·지원금</b> 메뉴로 옮겼어요.</p>
-
-    <h2 style="font-size:20px;font-weight:700;margin:0 0 14px;">📍 내 귀농 지역</h2>
+  <main style="max-width:1400px;margin:0 auto;padding:48px 24px 80px;">
+    <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">🧑‍🌾 내 프로필 · 귀농 지역</h1>
+    <p style="font-size:15px;color:#6B6250;margin:0 0 28px;">지도에서 <b>확인</b>한 귀농 예정 지역을 즐겨찾기처럼 모아둔 곳이에요.</p>
 
     <sc-if value="{{ hasProfile }}">
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
@@ -858,6 +671,141 @@
       <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:40px;text-align:center;color:#8A7F65;font-size:14px;">
         아직 저장한 귀농 지역이 없어요. '지역별 추천'의 지도에서 지역을 선택하고 <b>확인</b>을 누르면 여기에 모여요.
       </div>
+    </sc-if>
+
+    <h2 style="font-size:22px;font-weight:700;margin:44px 0 16px;">🗓 내 농사 계획</h2>
+
+    <sc-if value="{{ noFarmPlan }}">
+      <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:40px;text-align:center;color:#8A7F65;font-size:14px;">
+        아직 만든 농사 계획이 없어요. '작물 정보'에서 감자를 선택하고 상세페이지의 버튼을 눌러 만들어보세요.
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ hasFarmPlan }}">
+      <sc-for list="{{ farmPlanCards }}" as="plan" hint-placeholder-count="1">
+        <div style="width:1106px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;margin-bottom:24px;">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:nowrap;margin-bottom:16px;height:40px;">
+            <div style="display:flex;align-items:center;gap:14px;flex-wrap:nowrap;flex:1;min-width:0;">
+              <button type="button" onClick="{{ plan.goToday }}" style="flex:0 0 auto;background:#fff;border:1px solid #DADCE0;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:600;color:#3C4043;cursor:pointer;">오늘</button>
+              <div style="flex:0 0 auto;display:flex;align-items:center;gap:2px;">
+                <button type="button" onClick="{{ plan.prevMonth }}" style="{{ plan.prevArrowStyle }}">◀</button>
+                <button type="button" onClick="{{ plan.nextMonth }}" style="{{ plan.nextArrowStyle }}">▶</button>
+              </div>
+              <span style="flex:0 0 auto;font-size:25px;font-weight:700;color:#2B2620;white-space:nowrap;">{{ plan.monthLabel }}</span>
+            </div>
+            <div style="flex:0 0 auto;display:flex;align-items:center;gap:10px;white-space:nowrap;">
+              <span style="font-size:15px;font-weight:700;color:#2B2620;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:280px;display:inline-block;vertical-align:middle;">{{ plan.emoji }} {{ plan.crop }} · {{ plan.seasonName }}</span>
+              <button type="button" onClick="{{ plan.remove }}" style="background:transparent;border:1px solid #E4DCC8;border-radius:8px;padding:8px 14px;font-size:13px;color:#8A7F65;cursor:pointer;">삭제</button>
+            </div>
+          </div>
+
+          <p style="font-size:12px;color:#8A7F65;margin:0 0 14px;height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 {{ plan.regionLine }}</p>
+
+          <div style="width:1058px;box-sizing:border-box;border:1px solid #DADCE0;border-radius:10px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:repeat(7,150px);background:#DADCE0;gap:1px;">
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">일</div>
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">월</div>
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">화</div>
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">수</div>
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">목</div>
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">금</div>
+              <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">토</div>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(7,150px);background:#DADCE0;gap:1px;">
+              <sc-for list="{{ plan.cells }}" as="cell" hint-placeholder-count="42">
+                <div style="{{ cell.wrapStyle }}" onClick="{{ cell.onSelect }}">
+                  <sc-if value="{{ cell.day }}">
+                    <div style="{{ cell.dayNumStyle }}">{{ cell.day }}</div>
+                    <sc-if value="{{ cell.bar }}">
+                      <div style="{{ cell.bar.barStyle }}">{{ cell.bar.label }}</div>
+                      <sc-if value="{{ cell.hasDots }}">
+                        <div style="display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 0 4px;">
+                          <sc-for list="{{ cell.dots }}" as="dot" hint-placeholder-count="3">
+                            <div style="{{ dot.style }}"></div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                    </sc-if>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-if value="{{ plan.hasSelectedDetail }}">
+            <div style="margin-top:16px;background:#F8F6EF;border:1px solid #E4DCC8;border-radius:12px;padding:18px 20px;">
+              <p style="font-size:13px;font-weight:700;color:#8A7F65;margin:0 0 8px;">📌 {{ plan.selectedDetail.dateLabel }} 추천 작업</p>
+              <sc-if value="{{ plan.selectedDetail.hasTask }}">
+                <p style="font-size:17px;font-weight:700;color:#2B2620;margin:0 0 6px;">{{ plan.selectedDetail.task }}</p>
+                <sc-if value="{{ plan.selectedDetail.period }}">
+                  <p style="font-size:13px;color:#9A9080;margin:0 0 8px;">권장 시기: {{ plan.selectedDetail.period }}</p>
+                </sc-if>
+                <sc-if value="{{ plan.selectedDetail.note }}">
+                  <p style="font-size:14px;color:#5A5245;margin:0;line-height:1.6;">{{ plan.selectedDetail.note }}</p>
+                </sc-if>
+              </sc-if>
+              <sc-if value="{{ plan.selectedDetail.noTask }}">
+                <p style="font-size:14px;color:#8A7F65;margin:0 0 8px;">이 날은 예정된 추천 작업이 없어요.</p>
+              </sc-if>
+
+              <sc-if value="{{ plan.selectedDetail.hasChecklist }}">
+                <div style="margin-top:12px;background:#EFF6EF;border:1px solid #CFE3D2;border-radius:12px;padding:16px 18px;">
+                  <p style="font-size:13px;font-weight:700;color:#2F5D42;margin:0 0 4px;">✅ 지금 해야 할 일 체크리스트</p>
+                  <p style="font-size:11px;color:#7A9782;margin:0 0 10px;">눌러서 시작 전 → 하는 중 → 완료 순으로 상태를 바꿀 수 있어요. 실시간 날씨·뉴스를 반영해 만들었어요.</p>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <sc-for list="{{ plan.selectedDetail.checklist }}" as="item" hint-placeholder-count="3">
+                      <div style="{{ item.rowStyle }}" onClick="{{ item.toggle }}">
+                        <sc-if value="{{ item.notStarted }}">
+                          <span style="font-size:16px;line-height:1.4;">🔴</span>
+                        </sc-if>
+                        <sc-if value="{{ item.isDoing }}">
+                          <span style="font-size:16px;line-height:1.4;">🟡</span>
+                        </sc-if>
+                        <sc-if value="{{ item.isDone }}">
+                          <span style="font-size:16px;line-height:1.4;">🟢</span>
+                        </sc-if>
+                        <div>
+                          <p style="{{ item.textStyle }}">{{ item.text }}</p>
+                          <p style="font-size:10px;color:#9A9080;margin:2px 0 0;">{{ item.statusLabel }}</p>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
+              <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #E4DCC8;">
+                <p style="font-size:12px;font-weight:700;color:#8A7F65;margin:0 0 6px;">🔴 실시간 반영 정보</p>
+                <p style="font-size:12px;color:#9A9080;margin:0 0 10px;line-height:1.6;">{{ plan.selectedDetail.weatherLine }}</p>
+                <sc-if value="{{ plan.selectedDetail.hasLiveInsights }}">
+                  <p style="font-size:11px;color:#B3A98F;margin:0 0 8px;">{{ plan.selectedDetail.newsFocusLabel }}</p>
+                  <div style="display:flex;flex-direction:column;gap:8px;">
+                    <sc-for list="{{ plan.selectedDetail.liveInsights }}" as="tip" hint-placeholder-count="2">
+                      <div style="background:#fff;border:1px solid #E4DCC8;border-radius:10px;padding:10px 12px;">
+                        <sc-if value="{{ tip.noLink }}">
+                          <p style="font-size:13px;color:#2B2620;margin:0 0 4px;">{{ tip.icon }} {{ tip.text }}</p>
+                          <p style="font-size:11px;color:#9A9080;margin:0;">{{ tip.reason }}</p>
+                        </sc-if>
+                        <sc-if value="{{ tip.hasLink }}">
+                          <a href="{{ tip.link }}" target="_blank" rel="noopener" style="font-size:13px;color:#2B2620;text-decoration:underline;">{{ tip.icon }} {{ tip.text }}</a>
+                          <p style="font-size:11px;color:#9A9080;margin:4px 0 0;">{{ tip.date }}</p>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{ plan.noSelectedDetail }}">
+            <div style="margin-top:16px;background:#F8F6EF;border:1px dashed #D8CDB0;border-radius:12px;padding:16px 20px;text-align:center;font-size:13px;color:#9A9080;">
+              캘린더에서 날짜를 클릭하면 추천 작업의 상세 정보를 볼 수 있어요.
+            </div>
+          </sc-if>
+
+          <div style="margin-top:14px;font-size:11px;color:#B3A98F;height:14px;">재배 정보 출처: 농사로(nongsaro.go.kr)</div>
+        </div>
+      </sc-for>
     </sc-if>
   </main>
   </sc-if>
@@ -952,14 +900,6 @@ const LEVEL_META = {
   caution: { label: '주의 필요', bg: '#F3E2DC', color: '#B5482F' }
 };
 const RANK = { good: 0, ok: 1, caution: 2 };
-// 백엔드 라이브 점수 등급(good/normal/caution/bad) → 표시 메타
-const GRADE_META = {
-  good:    { label: '우수', bg: '#E7F0E4', color: '#2F5D42' },
-  normal:  { label: '양호', bg: '#E4F1E6', color: '#2F7A44' },
-  caution: { label: '주의', bg: '#FBE8D6', color: '#8A5A22' },
-  bad:     { label: '위험', bg: '#F3E2DC', color: '#B5482F' }
-};
-const CROP_SCORE_API = 'http://localhost:8002';
 const CROPS = ['오이', '배', '사과', '감자', '상추'];
 const CROP_IMG = { '상추': 'uploads/lettuce.png', '사과': 'uploads/apple.png' };   // 실제 이미지가 있는 작물
 
@@ -973,61 +913,444 @@ const CROP_SCHEDULE = {
     subtitle: '재배 시기별 작업 · 기상재해 · 병해충 방제 (출처: 농사로)',
     seasonsData: [
       { name: '🌸 봄재배', period: '2~3월 파종 · 5~6월 수확', region: '전국 평지', stages: [
-        { period: '1월 말~2월 초', task: '씨감자 싹 틔우기', note: '자른 씨감자를 15~20℃·습도 80~90%에서 25~35일간 싹 틔워요.' },
-        { period: '2월 중~3월 말', task: '밭 준비 & 파종', note: '이랑을 만들고 깊이 5~10cm로 심어요.' },
-        { period: '4월~5월 초', task: '제초 & 북주기(배토)', note: '잡초 제거, 흙을 북돋아 덩이줄기 덮기(초록색 방지).' },
-        { period: '5월~6월 초', task: '물 관리 & 병해충 방제', note: '덩이줄기 비대기에 물이 가장 많이 필요. 물빠짐도 관리.' },
-        { period: '5월 말~6월 말', task: '수확', note: '잎·줄기가 노랗게 변하면 수확 적기.' }
+        { period: '파종 20~35일 전 (1월 초~2월 초)', task: '씨감자 선별 & 절단 & 싹틔우기', note: '씨감자를 30~50g 크기로 골라 자르고, 15~20℃·습도 80~90% 환경에서 25~35일간 햇빛을 살짝 쬐어가며 싹을 틔워주세요.', range: { sm: 1, sd: 1, em: 2, ed: 10 } },
+        { period: '파종 시 (2월 중순~3월 하순)', task: '밭 준비 & 멀칭 & 파종 & 밑거름 시비', note: '이랑을 만들고 투명 비닐로 멀칭한 뒤, 5~10cm 깊이로 심고 밑거름을 함께 넣어주세요.', range: { sm: 2, sd: 11, em: 3, ed: 31 } },
+        { period: '생육 초중반~전반', task: '제초 & 배토(북주기) & 병해충 방제 & 배수 관리', note: '제초는 7~10일 간격, 병해충 방제는 예방 위주 7~10일 간격, 배수 관리는 3~5일 간격(비 온 직후엔 즉시)으로 점검하고, 배토(북주기)는 생육기간 중 2~3회 15~20일 간격으로 흙을 북돋아 덩이줄기가 햇빛에 드러나지 않게 해주세요.', range: { sm: 4, sd: 1, em: 5, ed: 20 } },
+        { period: '수확기 (5월 하순~6월 하순)', task: '수확', note: '잎과 줄기가 노랗게 변하면(황엽기~고엽기) 수확해주세요.', range: { sm: 5, sd: 21, em: 6, ed: 30 } },
+        { period: '수확 후 10~14일', task: '예비저장', note: '12~18℃·습도 80~85%를 유지하면서, 빛이 들지 않고 통풍이 잘되는 서늘한 곳에 얇게 펴서 10~14일간 말려주세요.', range: { sm: 7, sd: 1, em: 7, ed: 14 } },
+        { period: '저장 중', task: '본저장', note: '3~4℃·습도 80~85%(가공용은 8~10℃)를 유지하고, 3~4일 간격으로 환기하며 상태를 점검해주세요.', range: { sm: 7, sd: 15, em: 8, ed: 13 } }
       ]},
       { name: '☀️ 여름재배', period: '4~5월 파종 · 8~9월 수확', region: '고랭지대', stages: [
-        { period: '3월~4월 중', task: '싹 틔우기 & 절단', note: '씨감자를 준비해 싹을 틔워요.' },
-        { period: '4월 중~5월 중', task: '밭 준비 & 파종', note: '' },
-        { period: '5월 중~6월', task: '제초 & 북주기', note: '' },
-        { period: '6월~7월', task: '배수·병해충 방제 & 건조제 살포', note: '장마철 습해·역병 주의.' },
-        { period: '8월 중~9월 하', task: '수확', note: '' }
+        { period: '파종 전 (3월~4월 초)', task: '씨감자 절단 & 싹틔우기', note: '씨감자를 잘라 준비하고 싹을 틔워주세요.', range: { sm: 3, sd: 1, em: 4, ed: 10 } },
+        { period: '파종 시 (4월 중순~5월 중순)', task: '밭 준비 & 멀칭 & 파종', note: '이랑을 준비하고 검은색 비닐로 멀칭한 뒤 파종해주세요.', range: { sm: 4, sd: 11, em: 5, ed: 20 } },
+        { period: '생육기 (6~7월 장마 포함)', task: '제초 & 배토(북주기) & 배수 관리 & 병해충 방제 & 건조제 살포', note: '장마철(6~7월)에는 습해·역병이 빨리 퍼지니 배수 점검과 병해충 방제 간격을 평소(7일)보다 짧게 잡고, 습해 우려 시 7~10일 간격으로 건조제를 뿌려주세요. 제초·배토(북주기)는 평소대로 진행하면 돼요.', range: { sm: 5, sd: 21, em: 8, ed: 10 } },
+        { period: '수확기 (8월 중순~9월 하순)', task: '수확', note: '잎과 줄기 상태를 확인하고 수확해주세요.', range: { sm: 8, sd: 11, em: 9, ed: 30 } },
+        { period: '수확 후 10~14일', task: '예비저장', note: '12~18℃·습도 80~85%를 유지하면서, 빛이 들지 않고 통풍이 잘되는 서늘한 곳에 얇게 펴서 10~14일간 말려주세요.', range: { sm: 10, sd: 1, em: 10, ed: 14 } },
+        { period: '저장 중', task: '본저장', note: '3~4℃·습도 80~85%(가공용은 8~10℃)를 유지하고, 3~4일 간격으로 환기하며 상태를 점검해주세요.', range: { sm: 10, sd: 15, em: 11, ed: 13 } }
       ]},
       { name: '🍂 가을재배', period: '8월 파종 · 11월 수확', region: '제주·남부 해안', stages: [
-        { period: '7월 중~8월 초', task: '싹 틔우기', note: '10~15일간 싹을 틔워요.' },
-        { period: '8월 중~하순', task: '밭 준비 & 파종', note: '' },
-        { period: '9월~10월 초', task: '제초·북주기·배수', note: '' },
-        { period: '10월', task: '병해충 방제', note: '' },
-        { period: '11월 상~하순', task: '수확', note: '' }
+        { period: '파종 전 (7월 중~8월 초)', task: '싹틔우기', note: '10~15일간 싹을 틔워주세요(봄재배보다 짧게).', range: { sm: 7, sd: 11, em: 8, ed: 10 } },
+        { period: '파종 시 (8월 중순~하순)', task: '밭 준비 & 멀칭 & 파종 & 밑거름 시비', note: '검은색 비닐로 멀칭한 뒤 파종하고, 봄재배보다 질소 거름을 늘려 밑거름으로 넣어주세요.', range: { sm: 8, sd: 11, em: 8, ed: 31 } },
+        { period: '생육기', task: '제초 & 배토(북주기) & 배수 관리 & 병해충 방제', note: '제초·배수 관리는 7~10일 간격(배수는 3~5일)으로 자주 점검하고, 배토(북주기)는 생육기간 중 2~3회 15~20일 간격으로, 병해충 방제는 7~10일 간격으로 해주세요.', range: { sm: 9, sd: 1, em: 10, ed: 31 } },
+        { period: '수확기 (11월 상순~하순)', task: '수확', note: '잎과 줄기 상태를 확인하고 수확해주세요.', range: { sm: 11, sd: 1, em: 11, ed: 30 } },
+        { period: '수확 후 10~14일', task: '예비저장', note: '12~18℃·습도 80~85%를 유지하면서, 빛이 들지 않고 통풍이 잘되는 서늘한 곳에 얇게 펴서 10~14일간 말려주세요.', range: { sm: 12, sd: 1, em: 12, ed: 14 } },
+        { period: '저장 중', task: '본저장', note: '3~4℃·습도 80~85%(가공용은 8~10℃)를 유지하고, 3~4일 간격으로 환기하며 상태를 점검해주세요.', range: { sm: 12, sd: 15, em: 1, ed: 13, yOffE: 1 } }
       ]},
       { name: '❄️ 겨울(시설)재배', period: '11~1월 파종 · 4~5월 수확', region: '제주·남부 시설', stages: [
-        { period: '11월 하~1월 중', task: '파종', note: '시설 안에서 심어요.' },
-        { period: '12월~1월', task: '시설 보온 & 관수', note: '보온·물 관리가 핵심.' },
-        { period: '2월', task: '시설 환기 & 병해충 방제', note: '' },
-        { period: '4월 중~5월 중', task: '수확', note: '' }
+        { period: '파종 시 (11월 하순~12월 중순)', task: '파종 & 멀칭', note: '시설(하우스) 안에 투명 비닐로 멀칭하고 심어주세요.', range: { sm: 11, sd: 21, em: 12, ed: 15 } },
+        { period: '생육 초반', task: '시설보온 & 관수', note: '시설보온은 매일 점검해주세요(특히 밤에 기온이 많이 떨어질 때). 관수는 5~7일 간격으로 흙 속 수분 상태를 보고 조절해주세요.', range: { sm: 12, sd: 16, em: 1, ed: 31, yOffE: 1 } },
+        { period: '생육 중후반', task: '시설환기 & 병해충 방제', note: '시설환기는 매일(기온에 따라 하루 1~2회) 해주시고, 병해충 방제는 7~10일 간격으로 해주세요.', range: { sm: 2, sd: 1, em: 2, ed: 28, yOffS: 1, yOffE: 1 } },
+        { period: '수확기 (4월 중순~5월 중순)', task: '수확', note: '잎과 줄기 상태를 확인하고 수확해주세요.', range: { sm: 4, sd: 11, em: 5, ed: 20, yOffS: 1, yOffE: 1 } },
+        { period: '수확 후 10~14일', task: '예비저장', note: '12~18℃·습도 80~85%를 유지하면서, 빛이 들지 않고 통풍이 잘되는 서늘한 곳에 얇게 펴서 10~14일간 말려주세요.', range: { sm: 5, sd: 21, em: 6, ed: 3, yOffS: 1, yOffE: 1 } },
+        { period: '저장 중', task: '본저장', note: '3~4℃·습도 80~85%(가공용은 8~10℃)를 유지하고, 3~4일 간격으로 환기하며 상태를 점검해주세요.', range: { sm: 6, sd: 4, em: 7, ed: 3, yOffS: 1, yOffE: 1 } }
       ]}
     ],
     disasters: [
-      { tag: '저온·서리', when: '봄·가을', symptom: '출현·생육 지연, 새싹 갈변·고사' },
-      { tag: '가뭄', when: '봄·여름·가을', symptom: '덩이줄기 비대 불량, 수량 감소' },
-      { tag: '장마·습해', when: '5~6월·7월', symptom: '역병·습해로 부패 발생' },
-      { tag: '고온·태풍', when: '여름·가을', symptom: '출현율 저하, 수량 감소' }
+      { tag: '저온·서리', when: '봄·가을', symptom: '출현·생육 지연, 새싹 갈변·고사. 늦서리 시 1~2주 생육 지연·수량 감소' },
+      { tag: '가뭄', when: '봄·여름·가을', symptom: '덩이줄기 비대 불량, 수량 감소. 출현기~괴경비대 초기 물 부족에 특히 취약' },
+      { tag: '장마·습해', when: '5~6월·7월', symptom: '역병·습해로 부패 발생. 침수 24시간=부패 시작·36시간=41% 부패·48시간=100% 부패' },
+      { tag: '고온·태풍', when: '여름·가을', symptom: '출현율 저하, 수량 감소' },
+      { tag: '중심공동', when: '덩이줄기 비대기', symptom: '칼슘 부족 상태에서 급성장 시 덩이줄기 중심에 빈 속이 생기고 변색' },
+      { tag: '열개', when: '비대기~수확기', symptom: '내부압력·바이러스·수확 시 마찰로 덩이줄기 표면이 갈라짐' },
+      { tag: '흑색심부', when: '저장기', symptom: '고온 밀폐 저장고의 산소결핍, 저온→고온 급변 시 덩이줄기 일부가 흑변' }
     ],
     pests: [
-      { type: '병해', name: '바이러스병(모자이크·잎말림)', control: '진딧물 방제, 건전 씨감자 사용, 감염주 제거' },
-      { type: '병해', name: '역병', control: '저항성 품종 선택, 약제 살포, 돌려짓기' },
-      { type: '병해', name: '무름병·검은무늬썩음병', control: '무병 씨감자 사용, 배수 관리 철저' },
-      { type: '병해', name: '더뎅이병', control: '저항성 품종, 적절한 토양수분 유지' },
-      { type: '충해', name: '진딧물', control: '주변 키 큰 작물 식재, 기주식물 제거, 약제 살포' },
-      { type: '충해', name: '파밤나방', control: '잎·엽맥 피해 발생 시 전용 약제 살포' }
-    ]
+      { type: '병해', name: '모자이크바이러스', control: '진딧물 방제, 병 없는 씨감자 이용, 감염주 제거' },
+      { type: '병해', name: '잎말림바이러스', control: '진딧물 방제, 병 없는 씨감자 이용, 감염주 제거' },
+      { type: '병해', name: '역병', control: '저항성 품종 선택, 병 없는 씨감자 이용, 돌려짓기, 적용약제 살포' },
+      { type: '병해', name: '검은무늬썩음병', control: '병 없는 씨감자 이용, 씨감자 소독, 산광싹틔우기, 배수관리 철저' },
+      { type: '병해', name: '겹둥근무늬병', control: '적용약제 살포, 적정 시비 및 배수관리' },
+      { type: '병해', name: '반쪽시들음병', control: '저항성 품종 선택, 감염주 제거, 적정 시비 및 배수관리, 돌려짓기' },
+      { type: '병해', name: '더뎅이병', control: '저항성 품종 선택, 병 없는 씨감자 이용, 돌려짓기, 적절한 토양수분 유지, 완숙퇴비 이용' },
+      { type: '병해', name: '풋마름병', control: '병 없는 씨감자 이용, 배수관리 철저, 돌려짓기' },
+      { type: '병해', name: '무름병', control: '병 없는 씨감자 이용, 배수관리 철저, 돌려짓기, 감염주 제거, 상처 치료 후 저장' },
+      { type: '충해', name: '진딧물', control: '밭 주위에 키 큰 작물 심기, 기주식물 제거, 전용약제 살포' },
+      { type: '충해', name: '파밤나방', control: '전용약제 살포' }
+    ],
+    cultivationGuide: {
+      seedPrep: {
+        title: '씨감자 준비 (파종 20~35일 전)',
+        items: [
+          '필요량: 160kg/10a. 30g 이하·250g 이상은 제거하고 30~50g 크기를 씁니다.',
+          '절단: 위에서 아래로 자르되 아래쪽 1/5은 남깁니다.',
+          '싹틔우기: 온도 15~20℃·습도 80~90%에서 25~35일간 산광처리 (가을재배는 10~15일간).',
+          '싹틔운 씨감자를 심으면 20~30일경 지상부로 싹이 나옵니다.',
+          '휴면기간은 품종별 차이가 커서 2개월 미만~5개월까지 다양합니다.'
+        ],
+        directives: [
+          '씨감자는 10a(약 300평)당 160kg을 준비하고, 30g보다 작거나 250g보다 큰 것은 골라내고 30~50g 크기만 써주세요.',
+          '씨감자를 자를 땐 위에서 아래 방향으로 자르되, 아래쪽 1/5 정도는 자르지 말고 남겨주세요.',
+          '자른 씨감자는 15~20℃·습도 80~90% 환경에서 25~35일간(가을재배는 10~15일간) 햇빛을 살짝 쬐어가며 싹을 틔워주세요.',
+          '싹 틔운 씨감자를 심으면 20~30일쯤 뒤에 땅 위로 싹이 올라오니 그때까지 기다려주세요.',
+          '품종에 따라 휴면기간이 2개월~5개월로 다르니, 심기 전에 그 품종의 휴면기간을 확인해주세요.'
+        ]
+      },
+      spacing: {
+        title: '심는거리 · 파종깊이',
+        items: [
+          '1열 파종: 70~80cm(휴간) × 20~25cm(주간)',
+          '2열 파종: 90~140cm(휴간) × 30~40cm(열간) × 20~25cm(주간)',
+          '파종깊이: 5~10cm'
+        ],
+        directives: [
+          '한 줄로 심을 때는 70~80cm 간격(이랑 사이)에 20~25cm 간격(포기 사이)으로 심어주세요.',
+          '두 줄로 심을 때는 90~140cm(이랑 사이) × 30~40cm(줄 사이) × 20~25cm(포기 사이) 간격으로 심어주세요.',
+          '씨감자는 5~10cm 깊이로 심어주세요.'
+        ]
+      },
+      mulching: {
+        title: '멀칭',
+        items: [
+          '봄·겨울재배: 투명 PE 필름',
+          '여름·가을재배: 검은색 PE 필름'
+        ],
+        directives: [
+          '봄재배·겨울재배라면 투명 비닐(PE 필름)로 멀칭해주세요.',
+          '여름재배·가을재배라면 검은색 비닐(PE 필름)로 멀칭해주세요.'
+        ]
+      },
+      fertilizer: {
+        title: '시비량 (kg/10a)',
+        unit: 'kg/10a',
+        rows: [
+          { season: '봄재배', n: 10, p: 8.8, k: 13, urea: 22, fusedSuper: 44, kcl: 22, compost: '1,500~2,000' },
+          { season: '여름재배', n: 13.7, p: 3.3, k: 11.4, urea: 30, fusedSuper: 16.5, kcl: 19, compost: '1,500~2,000' },
+          { season: '가을재배', n: 12, p: 8.8, k: 13, urea: 26, fusedSuper: 44, kcl: 22, compost: '1,500~2,000' },
+          { season: '겨울재배', n: 10, p: 8.8, k: 13, urea: 22, fusedSuper: 44, kcl: 22, compost: '1,500~2,000' }
+        ],
+        note: '가을재배는 봄재배보다 질소거름 50% 증시. 감자복비(11-8-9+2+0.2) 시용 시 봄재배 5포·가을재배 7.5포. 지역·필지별 비옥도에 따라 조정.'
+      },
+      harvestStorage: {
+        title: '수확과 저장',
+        items: [
+          '수확적기: 잎·줄기가 노랗게 변할 때 (황엽기~고엽기)',
+          '예비저장: 12~18℃·습도 80~85%에서 빛 안 들고 통풍 잘되는 서늘한 곳에 얇게 펴 10~14일간 말림',
+          '본저장: 3~4℃·습도 80~85% (가공용은 8~10℃)',
+          '장기 저장 시 4℃ 유지 + 주기적 환기 필요'
+        ],
+        directives: [
+          '잎과 줄기가 노랗게 변하면(황엽기~고엽기) 수확해주세요.',
+          '수확 후에는 12~18℃·습도 80~85% 환경에서, 빛이 들지 않고 통풍이 잘되는 서늘한 곳에 얇게 펴서 10~14일간 예비저장해주세요.',
+          '본 저장 시 3~4℃·습도 80~85%(가공용은 8~10℃)를 유지해주세요.',
+          '장기간 저장할 때는 4℃를 유지하면서 주기적으로 환기해주세요.'
+        ]
+      }
+    }
   }
 };
 const FAV_KEY = 'gwinong_favorites';
 const PROFILE_KEY = 'beomin_saved_regions';   // 지도에서 저장한 귀농 지역
-const PI_KEY = 'beomin_personal_info';        // 정책 수혜용 인적사항
-const PI_DEFAULTS = {
-  name: '', birth: '', gender: '',
-  curResidence: '', targetRegion: '', job: '', cityYears: '',
-  farmCareer: '', landOwn: '', landArea: '', crop: '', eduDone: '',
-  targetType: '', householder: '', householdSize: '', income: ''
+const FARM_PLAN_KEY = 'beomin_farm_plans';    // 작물별 농사 계획 캘린더
+
+// 농사 계획의 기준 '오늘'은 실제 기기 날짜와 무관하게 2026년 7월 24일로 고정한다(고정 스펙).
+const PLAN_ANCHOR_YEAR = 2026, PLAN_ANCHOR_MONTH = 7;
+function getPlanToday() { return new Date(2026, 6, 24); }
+
+// 법정동 코드 트리의 9개 도(道) -> 기후대 매핑 (ZONE_LABEL/ZONE_EXAMPLE과 동일 기준)
+const PROVINCE_ZONE = {
+  '강원도': 'coolHighland',
+  '경기도': 'temperateInland', '충청북도': 'temperateInland', '충청남도': 'temperateInland',
+  '전라북도': 'centralPlain', '전라남도': 'centralPlain',
+  '경상북도': 'warmSouthern', '경상남도': 'warmSouthern',
+  '제주도': 'islandSubtropical'
 };
+// 기후대별로 가장 적합한 감자 재배 시기(작물명 부분 일치)
+const ZONE_SEASON_PREF = {
+  coolHighland: '여름재배', temperateInland: '봄재배', centralPlain: '봄재배',
+  warmSouthern: '가을재배', islandSubtropical: '겨울'
+};
+function findSeasonByKeyword(seasonsData, kw) {
+  return seasonsData.find(s => s.name.indexOf(kw) >= 0) || null;
+}
+function fmtDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function addDays(d, n) { const r = new Date(d); r.setDate(r.getDate() + n); return r; }
+
+// ---- 실시간 날씨(기상청 ASOS)·실시간 뉴스 기반 재배 인사이트 ----
+function monthToSeasonWord(mm) {
+  if (mm >= 3 && mm <= 5) return '봄';
+  if (mm >= 6 && mm <= 8) return '여름';
+  if (mm >= 9 && mm <= 11) return '가을';
+  return '겨울';
+}
+function summarizeWeather(days) {
+  const valid = (days || []).filter(d => d.avgTa != null);
+  if (!valid.length) return null;
+  const avgTaMean = valid.reduce((s, d) => s + d.avgTa, 0) / valid.length;
+  const maxTa = Math.max(...valid.map(d => (d.maxTa != null ? d.maxTa : -999)));
+  const minTa = Math.min(...valid.map(d => (d.minTa != null ? d.minTa : 999)));
+  const totalRn = valid.reduce((s, d) => s + (d.sumRn || 0), 0);
+  return { avgTaMean, maxTa, minTa, totalRn, stnName: valid[0].stnName, from: valid[0].date, to: valid[valid.length - 1].date };
+}
+// 최근 14일 실측 기상이 계절상 발생 가능한 기상재해 기준을 넘는지 확인 (초보자가 바로 알아볼 수 있도록 경고로 변환)
+function weatherWarnings(summary, seasonWord, disasters) {
+  if (!summary || !disasters) return [];
+  const warns = [];
+  const find = (kw) => disasters.find(x => x.tag.indexOf(kw) >= 0);
+  if ((seasonWord === '봄' || seasonWord === '가을') && summary.minTa <= 3) {
+    const d = find('저온') || find('서리');
+    if (d) warns.push({ tag: d.tag, text: d.symptom, reason: '최근 최저기온 ' + summary.minTa.toFixed(1) + '℃ 기록' });
+  }
+  if (summary.totalRn <= 5) {
+    const d = find('가뭄');
+    if (d) warns.push({ tag: d.tag, text: d.symptom, reason: '최근 14일 누적 강수량 ' + summary.totalRn.toFixed(1) + 'mm로 매우 적음' });
+  } else if (summary.totalRn >= 150) {
+    const d = find('장마') || find('습해');
+    if (d) warns.push({ tag: d.tag, text: d.symptom, reason: '최근 14일 누적 강수량 ' + summary.totalRn.toFixed(1) + 'mm로 많음' });
+  }
+  if (summary.maxTa >= 33) {
+    const d = find('고온');
+    if (d) warns.push({ tag: d.tag, text: d.symptom, reason: '최근 최고기온 ' + summary.maxTa.toFixed(1) + '℃ 기록' });
+  }
+  return warns;
+}
+// 선택한 날짜의 추천 작업이 어떤 성격인지 분류 — 이 분류에 맞는 뉴스만 우선적으로 골라 보여주기 위함
+const TASK_CATEGORY_LABEL = { pest: '병해충 방제', harvest: '수확·출하', storage: '저장 관리', planting: '파종·씨감자 준비', general: '병해충·기상재해 전반' };
+function taskCategory(task) {
+  if (!task) return 'general';
+  if (task.indexOf('병해충') >= 0 || task.indexOf('방제') >= 0) return 'pest';
+  if (task.indexOf('수확') >= 0) return 'harvest';
+  if (task.indexOf('저장') >= 0) return 'storage';
+  if (task.indexOf('파종') >= 0 || task.indexOf('싹') >= 0 || task.indexOf('씨감자') >= 0) return 'planting';
+  return 'general';
+}
+const MARKET_WORDS = ['시세', '가격', '출하', '수매', '도매', '작황'];
+const STORAGE_WORDS = ['저장', '저장고', '한파'];
+const PLANTING_WORDS = ['파종', '씨감자', '모종'];
+const NEWS_RECENCY_DAYS = 7; // 기사 발행일 기준 며칠까지 사이트에 노출할지 — 예: 23일 발행 기사는 30일까지만 노출
+function daysBetween(fromStr, toStr) {
+  const a = new Date(fromStr + 'T00:00:00'), b = new Date(toStr + 'T00:00:00');
+  if (isNaN(a.getTime()) || isNaN(b.getTime())) return Infinity;
+  return Math.round((b - a) / 86400000);
+}
+// 발행일로부터 NEWS_RECENCY_DAYS(7일)가 지난 기사는 사이트 어디에도 노출하지 않도록, 뉴스를 받아오는 시점에 걸러낸다.
+function filterRecentNews(items, todayStr) {
+  return (Array.isArray(items) ? items : []).filter(n => {
+    const diff = daysBetween(n.date, todayStr);
+    return diff >= 0 && diff <= NEWS_RECENCY_DAYS;
+  });
+}
+// 병해충 대응법(콤마로 나열된 항목)을 지시문 한 문장으로 바꾼다.
+function asDirective(actionList) {
+  return (actionList || '').trim() + ' 등의 방법으로 대응해주세요.';
+}
+// 실시간 뉴스 제목/본문에서, 선택한 작업의 성격(category)에 맞는 키워드만 골라 관련 기사를 연결 (해당 작물 상세페이지의 '실시간 소식'과 같은 소스)
+// newsItems는 미리 '최근 1주일 이내' 기사로 필터링된 목록이어야 한다.
+function newsInsights(newsItems, pests, disasters, category) {
+  if (!newsItems || !newsItems.length) return [];
+  const bank = [];
+  if (category === 'pest' || category === 'general') {
+    (pests || []).forEach(p => bank.push({ key: p.name, tip: asDirective(p.control) }));
+    (disasters || []).forEach(d => bank.push({ key: d.tag.replace(/·/g, ''), tip: DISASTER_CHECKLIST[d.tag] || (d.symptom + ' 상태인지 확인하고 필요한 조치를 해주세요.') }));
+  }
+  if (category === 'harvest') {
+    MARKET_WORDS.forEach(w => bank.push({ key: w, tip: '근처 농협·도매시장의 시세와 출하 동향을 확인해보세요.' }));
+  }
+  if (category === 'storage') {
+    STORAGE_WORDS.forEach(w => bank.push({ key: w, tip: '저장고 온도·습도가 적정 범위인지 점검해주세요.' }));
+  }
+  if (category === 'planting') {
+    PLANTING_WORDS.forEach(w => bank.push({ key: w, tip: '파종 시기와 씨감자 수급 상황을 다시 한번 확인해주세요.' }));
+    (pests || []).forEach(p => bank.push({ key: p.name, tip: asDirective(p.control) }));
+  }
+  const hits = [];
+  newsItems.forEach(n => {
+    const text = (n.title || '') + ' ' + (n.desc || '');
+    for (const b of bank) {
+      if (b.key && text.indexOf(b.key) >= 0) { hits.push({ keyword: b.key, tip: b.tip, title: n.title, link: n.link, date: n.date }); break; }
+    }
+  });
+  // 같은 기사가 여러 언론사에 동일하게 실려 링크만 다른 경우가 있어, 링크가 아니라 제목(공백 제거) 기준으로 중복을 제거한다.
+  const seen = new Set();
+  return hits.filter(h => {
+    const dupKey = (h.title || h.link || '').replace(/\s+/g, '').toLowerCase();
+    if (seen.has(dupKey)) return false;
+    seen.add(dupKey);
+    return true;
+  }).slice(0, 3);
+}
+
+// 체크리스트 항목 상태: 시작 전(미기록) → 하는 중 → 완료, 클릭할 때마다 다음 상태로 순환한다.
+const CHECKLIST_STATUS_ORDER = ['doing', 'done'];
+function nextChecklistStatus(status) {
+  const idx = CHECKLIST_STATUS_ORDER.indexOf(status);
+  if (idx === -1) return CHECKLIST_STATUS_ORDER[0];      // 시작 전 -> 하는 중
+  if (idx === CHECKLIST_STATUS_ORDER.length - 1) return null; // 완료 -> 시작 전(기록 삭제)
+  return CHECKLIST_STATUS_ORDER[idx + 1];                 // 하는 중 -> 완료
+}
+
+// 이벤트 막대 색(hex)을 흰색과 섞어 옅게 만든다 — 체크리스트 진행도 점(dot)을 막대와 같은 계열의 연한 색으로 표시하기 위함
+function lightenColor(hex, amt) {
+  const h = (hex || '#999999').replace('#', '');
+  const r = parseInt(h.substring(0, 2), 16), g = parseInt(h.substring(2, 4), 16), b = parseInt(h.substring(4, 6), 16);
+  const mix = (c) => Math.round(c + (255 - c) * amt);
+  return 'rgb(' + mix(r) + ',' + mix(g) + ',' + mix(b) + ')';
+}
+const CHECKLIST_DOT_DONE_COLOR = '#C9BFA8';
+
+// 기상재해 태그별로, 초보자가 바로 따라할 수 있는 쉬운 행동 요령(전문용어 최소화)
+const DISASTER_CHECKLIST = {
+  '저온·서리': '아침 기온이 3℃ 이하로 떨어지는 날엔 밭에 부직포나 비닐을 덮어 서리를 막아주세요.',
+  '가뭄': '흙을 손가락 한 마디(3~5cm) 정도 파서 만져보고 말라 있으면, 이랑 전체가 촉촉해질 만큼 물을 충분히 주세요.',
+  '장마·습해': '밭 가장자리와 고랑(이랑 사이 골)의 물 빠지는 길이 막히지 않았는지 살펴보고, 물이 고여 있으면 삽으로 물길을 터서 바로 빼주세요.',
+  '고온·태풍': '한낮(오전 11시~오후 3시)에는 되도록 밭 작업을 피하고 이른 아침이나 해 질 무렵에 작업하세요. 태풍이 예보되면 지지대·비닐하우스를 미리 점검하세요.',
+  '중심공동': '비료(특히 칼슘 성분)가 부족하지 않은지 확인하고, 물을 한 번에 몰아주지 말고 조금씩 자주 나눠 주세요.',
+  '열개': '갑자기 많은 비나 물을 주지 말고, 평소보다 적은 양을 여러 번 나눠서 꾸준히 주세요.',
+  '흑색심부': '저장 창고를 꽉 닫아두지 말고 주기적으로 문을 열어 환기해 창고 안 공기가 탁해지지 않게 해주세요.'
+};
+// '배수·병해충 방제 & 건조제 살포'처럼 '&'·'·'로 여러 작업이 한 줄에 묶인 작업명을, 개별 항목으로 쪼갠다.
+function splitTasks(taskLabel) {
+  return (taskLabel || '').split(/[&·]/).map(s => s.trim()).filter(Boolean);
+}
+// 감자_농작업_시기별_체크리스트.md(농사로 기반 자료)의 '구분/주기' 열을 그대로 반영한 분류표.
+// 일회성: 재배 사이클당 1번만 하면 되는 작업 — 완료하면 다시 뜨지 않는다.
+const RECUR_ONCE = ['씨감자 선별', '절단', '싹틔우기', '밭 준비', '멀칭', '파종', '밑거름 시비', '수확', '예비저장'];
+// 주기성: 생육·저장기간 내내 반복해야 하는 작업 — 완료 후 지정한 일수가 지나야 다시 뜬다(문서의 권장 간격 범위 중간값).
+const RECUR_INTERVAL = [
+  { days: 7, keywords: ['제초'] },
+  { days: 17, keywords: ['배토'] },              // 15~20일 간격, 2~3회
+  { days: 8, keywords: ['병해충 방제'] },        // 7~10일
+  { days: 4, keywords: ['배수 관리'] },          // 3~5일
+  { days: 8, keywords: ['건조제 살포'] },        // 7~10일
+  { days: 6, keywords: ['관수'] },               // 5~7일
+  { days: 1, keywords: ['시설보온'] },           // 매일
+  { days: 1, keywords: ['시설환기'] },           // 매일
+  { days: 3, keywords: ['본저장'] }              // 3~4일
+];
+function classifyTaskPart(part) {
+  if (RECUR_ONCE.some(k => part.indexOf(k) >= 0)) return { type: 'once' };
+  const rule = RECUR_INTERVAL.find(r => r.keywords.some(k => part.indexOf(k) >= 0));
+  if (rule) return { type: 'interval', days: rule.days };
+  return { type: 'daily' };
+}
+// 지난 7일 중, 같은 작업 단계가 진행 중이었던 날짜만 인정해서 이 항목(고유 key 기준)이 마지막으로 '완료' 체크된 날짜를 찾는다.
+// key는 '오늘 할 일:'/'이어서 할 일:' 같은 표시용 접두사가 바뀌어도 항목을 계속 같은 것으로 알아볼 수 있는 고정 식별자다.
+function lastDoneWithinWeek(occCtx, taskLabel, itemKey) {
+  if (!occCtx) return null;
+  for (let back = 1; back <= 7; back++) {
+    const d = addDays(new Date(occCtx.dateStr + 'T00:00:00'), -back);
+    const dStr = fmtDate(d);
+    const evOnDay = occCtx.dayEventMap[dStr];
+    if (!evOnDay || evOnDay.task !== taskLabel) continue; // 그날은 다른 작업 단계였음 — 이력으로 인정하지 않는다.
+    if ((occCtx.statusMap || {})[occCtx.key + '|' + dStr + '|' + itemKey] === 'done') return dStr; // '하는 중'은 아직 미완료로 취급
+  }
+  return null;
+}
+// 선택한 날짜의 추천 작업 + 최근 실측 날씨 경고 + 실시간 뉴스를 한데 모아, 초보 귀농인이 바로 따라할 수 있는 체크리스트로 정리한다.
+// occCtx({ key, dateStr, dayEventMap, statusMap })가 있으면, 전날·최근 1주일간의 완료 여부를 참고해 오늘의 작업 항목을 새로 구성한다:
+// 완료한 1회성 작업은 다시 띄우지 않고, 완료한 주기성 작업은 주기가 돌아올 때까지 건너뛰며, 미완료 작업은 다음날로 이월된다.
+// 반환되는 각 항목은 { text(화면 표시용), key(완료 상태 저장용 고정 식별자) } 형태다.
+function buildChecklist(sel, category, wWarns, nHits, planSched, occCtx) {
+  const items = [];
+  if (sel) {
+    const yesterdayStr = occCtx ? fmtDate(addDays(new Date(occCtx.dateStr + 'T00:00:00'), -1)) : null;
+    const evYesterday = occCtx ? occCtx.dayEventMap[yesterdayStr] : null;
+    splitTasks(sel.task).forEach(part => {
+      const itemKey = 'task:' + part;
+      const rule = classifyTaskPart(part);
+      const lastDone = lastDoneWithinWeek(occCtx, sel.task, itemKey);
+      if (lastDone) {
+        if (rule.type === 'once') return; // 완료했으면 다시 보여주지 않는다.
+        if (rule.type === 'interval' && daysBetween(lastDone, occCtx.dateStr) < rule.days) return; // 아직 다음 주기가 아니다.
+      }
+      const carried = !lastDone && evYesterday && evYesterday.task === sel.task; // 어제도 있었는데 아직 완료 기록이 없다 = 이월
+      const periodicMark = rule.type === 'interval' ? '🔄️ ' : ''; // 주기성 작업 표시
+      items.push({ text: periodicMark + part, key: itemKey });
+    });
+    if (sel.note) items.push({ text: sel.note, key: 'note:' + sel.note });
+  }
+  // '🔴 실시간 반영 정보'(날씨 경고·뉴스)로 만들어진 할 일은, 생성 기준일(오늘)로부터 3일간만 노출한다.
+  const withinLiveWindow = !occCtx || !occCtx.todayStr || (daysBetween(occCtx.todayStr, occCtx.dateStr) >= 0 && daysBetween(occCtx.todayStr, occCtx.dateStr) < 3);
+  if (withinLiveWindow) {
+    (wWarns || []).forEach(w => {
+      const action = DISASTER_CHECKLIST[w.tag];
+      if (action) items.push({ text: action + ' (' + w.reason + ')', key: 'weather:' + w.tag });
+    });
+    // 서로 다른 키워드·기사에서 나왔더라도 안내 문구(tip) 자체가 같으면 하나만 남긴다.
+    const seenTip = new Set();
+    (nHits || []).forEach(h => {
+      if (seenTip.has(h.tip)) return;
+      seenTip.add(h.tip);
+      items.push({ text: h.tip + ' (최근 \'' + h.keyword + '\' 관련 뉴스가 있어요)', key: 'news:' + h.tip });
+    });
+  }
+  if (planSched && planSched.cultivationGuide) {
+    const g = planSched.cultivationGuide;
+    let blocks = [];
+    if (category === 'planting') blocks = [g.seedPrep, g.spacing, g.mulching].filter(Boolean);
+    if (category === 'harvest' || category === 'storage') blocks = [g.harvestStorage].filter(Boolean);
+    blocks.forEach(b => (b.directives || b.items || []).forEach(it => items.push({ text: it, key: 'guide:' + it })));
+  }
+  // 최종 안전장치: 문구가 완전히 똑같은 항목은 한 번만 보여준다.
+  const seenText = new Set();
+  return items.filter(it => {
+    if (seenText.has(it.text)) return false;
+    seenText.add(it.text);
+    return true;
+  });
+}
+
+// 재배 시기(season)의 stages(range: 월/일)를 실제 달력 날짜로 변환한다.
+// 겨울재배처럼 해를 넘기는 경우 yOffS/yOffE(연도 보정)를 함께 반영하고,
+// 오늘 기준으로 '진행 중이거나 가장 가까운 미래'의 한 사이클을 고른다.
+function computeSeasonInstance(season, today) {
+  let best = null;
+  [today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1].forEach(Y => {
+    const stages = season.stages.map(s => {
+      const r = s.range;
+      return {
+        task: s.task,
+        start: new Date(Y + (r.yOffS || 0), r.sm - 1, r.sd),
+        end: new Date(Y + (r.yOffE || 0), r.em - 1, r.ed)
+      };
+    });
+    const overallStart = stages[0].start, overallEnd = stages[stages.length - 1].end;
+    if (overallEnd >= today && (!best || overallStart < best.overallStart)) {
+      best = { stages, overallStart, overallEnd };
+    }
+  });
+  return best;
+}
+// season 템플릿을 [rangeStart, rangeEnd] 구간에 걸치는 모든 사이클(해마다 반복)로 펼친다.
+// 캘린더를 오늘부터 먼 미래까지 넘겨봐도 다음 재배 사이클이 이어서 채워지도록 함.
+function computeSeasonInstancesInRange(season, rangeStart, rangeEnd) {
+  const instances = [];
+  for (let Y = rangeStart.getFullYear() - 1; Y <= rangeEnd.getFullYear() + 1; Y++) {
+    const stages = season.stages.map(s => {
+      const r = s.range;
+      return {
+        task: s.task,
+        start: new Date(Y + (r.yOffS || 0), r.sm - 1, r.sd),
+        end: new Date(Y + (r.yOffE || 0), r.em - 1, r.ed)
+      };
+    });
+    const overallStart = stages[0].start, overallEnd = stages[stages.length - 1].end;
+    if (overallEnd >= rangeStart && overallStart <= rangeEnd) {
+      instances.push({ stages, overallStart, overallEnd });
+    }
+  }
+  instances.sort((a, b) => a.overallStart - b.overallStart);
+  return instances;
+}
+// 저장된 귀농 지역의 기후대에 맞는 재배 시기를 고르고, 없으면 오늘과 가장 가까운 시기를 자동 선택
+function pickSeasonInstance(seasonsData, zone, today) {
+  const zoneSeason = zone && ZONE_SEASON_PREF[zone] ? findSeasonByKeyword(seasonsData, ZONE_SEASON_PREF[zone]) : null;
+  if (zoneSeason) {
+    return { season: zoneSeason, instance: computeSeasonInstance(zoneSeason, today), matchedByZone: true };
+  }
+  let bestSeason = null, bestInstance = null;
+  seasonsData.forEach(s => {
+    const inst = computeSeasonInstance(s, today);
+    if (inst && (!bestInstance || inst.overallStart < bestInstance.overallStart)) { bestInstance = inst; bestSeason = s; }
+  });
+  return { season: bestSeason, instance: bestInstance, matchedByZone: false };
+}
+// 구글 캘린더 느낌의 이벤트 막대 색상 팔레트(재배 단계 순서대로 순환)
+const EVENT_COLORS = ['#4285F4', '#33B679', '#F4511E', '#8E24AA', '#F6BF26'];
 
 class Component extends DCLogic {
-  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, favorites: [], profile: [], personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, newsByCrop: {}, newsLoaded: false, newsLoading: false, detailNews: [], detailNewsLoading: false };
+  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, favorites: [], profile: [], detailCrop: null, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {} };
 
   componentDidMount() {
     try {
@@ -1035,7 +1358,7 @@ class Component extends DCLogic {
       if (raw) this.setState({ favorites: JSON.parse(raw) });
     } catch (e) {}
     this.loadProfile();
-    this.loadPersonalInfo();
+    this.loadFarmPlans();
     this._onMsg = (e) => {
       const d = e.data;
       if (!d || d.type !== 'selectRegion') return;
@@ -1062,179 +1385,117 @@ class Component extends DCLogic {
     this.setState({ profile: list });
   }
 
-  // ── 인적사항(정책 수혜용) ──
-  loadPersonalInfo() {
+  loadFarmPlans() {
     try {
-      const raw = window.localStorage.getItem(PI_KEY);
-      this.setState({ personalInfo: raw ? JSON.parse(raw) : {} });
-    } catch (e) { this.setState({ personalInfo: {} }); }
-  }
-  updatePI(field, value) {
-    const pi = Object.assign({}, this.state.personalInfo || {});
-    pi[field] = value;
-    try { window.localStorage.setItem(PI_KEY, JSON.stringify(pi)); } catch (e) {}
-    this.setState({ personalInfo: pi });
-  }
-  resetPersonalInfo() {
-    try { window.localStorage.removeItem(PI_KEY); } catch (e) {}
-    this.setState({ personalInfo: {}, piResult: null });
-  }
-  ageFrom(birth) {
-    if (!birth) return null;
-    const b = new Date(birth);
-    if (isNaN(b.getTime())) return null;
-    const n = new Date();
-    let a = n.getFullYear() - b.getFullYear();
-    const m = n.getMonth() - b.getMonth();
-    if (m < 0 || (m === 0 && n.getDate() < b.getDate())) a--;
-    return a;
-  }
-  // policies.json 지연 로드 (개인정보는 서버로 보내지 않고 브라우저에서 매칭)
-  loadPolicies() {
-    if (this._policiesPromise) return this._policiesPromise;
-    this._policiesPromise = fetch('policies.json')
-      .then((r) => r.ok ? r.json() : Promise.reject())
-      .then((d) => { const list = (d && d.policies) || []; this.setState({ policies: list, policiesError: false }); return list; })
-      .catch(() => { this._policiesPromise = null; this.setState({ policiesError: true }); return []; });
-    return this._policiesPromise;
+      const raw = window.localStorage.getItem(FARM_PLAN_KEY);
+      const plans = raw ? JSON.parse(raw) : {};
+      this.setState({ farmPlans: plans });
+      this.refreshLiveDataForPlans(plans);
+    } catch (e) { this.setState({ farmPlans: {} }); }
   }
 
-  diagnosePolicies() {
-    this.setState({ piDiagnosing: true, policiesError: false });
-    this.loadPolicies().then((list) => {
-      const pi = Object.assign({}, PI_DEFAULTS, this.state.personalInfo || {});
-      const result = this.matchPolicies(list || [], pi);
-      this.setState({ piResult: result, piDiagnosing: false });
+  // 저장된 계획들의 작물 뉴스 + 지역 기상청 실측 날씨를 최신 상태로 받아온다(서버 캐시 주기에 맞춰 중복 호출은 자동 생략).
+  refreshLiveDataForPlans(plans) {
+    this.loadNews();
+    const list = plans || this.state.farmPlans || {};
+    Object.keys(list).forEach(k => { if (list[k].province) this.loadWeather(list[k].province); });
+  }
+
+  loadWeather(province) {
+    if (!province) return;
+    const now = Date.now();
+    const cached = (this.state.weatherByProvince || {})[province];
+    if (cached && (now - cached.loadedAt) < 3 * 60 * 60 * 1000) return;
+    if ((this.state.weatherLoadingSet || {})[province]) return;
+    this.setState({ weatherLoadingSet: { ...(this.state.weatherLoadingSet || {}), [province]: true } });
+    fetch('http://localhost:8001/api/weather/' + encodeURIComponent(province))
+      .then(r => r.ok ? r.json() : [])
+      .then(days => {
+        const all = { ...(this.state.weatherByProvince || {}) };
+        all[province] = { days: Array.isArray(days) ? days : [], loadedAt: Date.now() };
+        const ls = { ...(this.state.weatherLoadingSet || {}) }; delete ls[province];
+        this.setState({ weatherByProvince: all, weatherLoadingSet: ls });
+      })
+      .catch(() => {
+        const ls = { ...(this.state.weatherLoadingSet || {}) }; delete ls[province];
+        this.setState({ weatherLoadingSet: ls });
+      });
+  }
+
+  // 저장된 귀농 지역의 기후대에 맞는 재배 시기를 골라, 구글 캘린더 스타일의 월별 이벤트 막대 캘린더를 만든다.
+  buildFarmPlan(cropName) {
+    const sched = CROP_SCHEDULE[cropName];
+    if (!sched) return;
+    const today = getPlanToday();
+
+    const profileList = this.state.profile || [];
+    const regionEntry = profileList.length ? profileList[profileList.length - 1] : null;
+    const zone = regionEntry ? PROVINCE_ZONE[regionEntry.province] : null;
+
+    const picked = pickSeasonInstance(sched.seasonsData, zone, today);
+    const season = picked.season;
+    if (!season) return;
+
+    // 오늘부터 내년 12월 말까지, 반복되는 재배 사이클을 모두 이어붙여 캘린더에 채운다.
+    const rangeEnd = new Date(PLAN_ANCHOR_YEAR + 1, 11, 31);
+    const instances = computeSeasonInstancesInRange(season, today, rangeEnd);
+    if (!instances.length) return;
+
+    const events = [];
+    instances.forEach(inst => {
+      inst.stages.forEach((st, i) => {
+        events.push({ task: st.task, note: st.note || '', period: st.period || '', start: fmtDate(st.start), end: fmtDate(st.end), color: EVENT_COLORS[i % EVENT_COLORS.length] });
+      });
     });
-  }
 
-  // 시·도명 정규화(약칭↔정식)
-  canonProv(s) {
-    s = (s || '').trim();
-    if (!s) return '';
-    const A = { '서울': '서울특별시', '부산': '부산광역시', '대구': '대구광역시', '인천': '인천광역시',
-      '광주': '광주광역시', '대전': '대전광역시', '울산': '울산광역시', '세종': '세종특별자치시',
-      '경기': '경기도', '강원': '강원특별자치도', '충북': '충청북도', '충남': '충청남도',
-      '전북': '전북특별자치도', '전남': '전라남도', '경북': '경상북도', '경남': '경상남도', '제주': '제주특별자치도' };
-    for (const k in A) { if (s === k || s === A[k] || s.indexOf(A[k]) === 0 || s.indexOf(k) === 0) return A[k]; }
-    return s;
-  }
-
-  // 프로필에서 사용자 지역 목록 수집 {province, city}
-  userRegions(pi) {
-    const regs = [];
-    (this.state.profile || []).forEach((r) => {
-      if (r && (r.province || r.sigungu)) regs.push({ province: r.province || '', city: r.sigungu || '' });
-    });
-    [pi.targetRegion, pi.curResidence].forEach((t) => {
-      const toks = (t || '').trim().split(/\s+/).filter(Boolean);
-      if (toks.length) regs.push({ province: toks[0], city: toks[1] || '' });
-    });
-    return regs.filter((r) => r.province);
-  }
-
-  // 정책 지역 vs 사용자 지역 → 'national' | 'match' | 'unknown' | 'mismatch'
-  regionMatch(pr, regs) {
-    if (!pr || pr.scope === 'national') return 'national';
-    if (!regs.length) return 'unknown';
-    let provOnly = false;
-    for (const u of regs) {
-      const provOk = this.canonProv(pr.province) === this.canonProv(u.province);
-      if (pr.scope === 'metro') { if (provOk) return 'match'; continue; }
-      // local (시군구)
-      if (provOk) {
-        if (u.city && pr.city && (u.city.indexOf(pr.city) >= 0 || pr.city.indexOf(u.city) >= 0)) return 'match';
-        if (!u.city) provOnly = true;
-      }
-    }
-    return provOnly ? 'unknown' : 'mismatch';
-  }
-
-  matchPolicies(list, pi) {
-    const age = this.ageFrom(pi.birth);
-    const regs = this.userRegions(pi);
-    const isGwinong = !!(pi.targetRegion && pi.targetRegion.trim());
-    const isYouthProfile = (pi.targetType === '청년') || (age !== null && age < 40);
-    const isSeniorProfile = (pi.targetType === '은퇴') || (age !== null && age >= 60);
-    const crop = (pi.crop || '').trim();
-    const eligible = [], check = [];
-
-    for (const p of list) {
-      const reg = this.regionMatch(p.region, regs);
-      if (reg === 'mismatch') continue;            // 타 지역 전용 → 제외
-      const tags = p.tags || [];
-      let conflict = false;
-      const missing = [];
-
-      if (p.ageMax != null && age != null && age > p.ageMax) conflict = true;
-      if (p.ageMin != null && age != null && age < p.ageMin) conflict = true;
-      if ((p.ageMax != null || p.ageMin != null) && age == null) {
-        missing.push('나이 요건(' + (p.ageMin != null ? '만 ' + p.ageMin + '세 이상' : '') + (p.ageMax != null ? ' 만 ' + p.ageMax + '세 미만' : '').trim() + ')');
-      }
-      if (tags.indexOf('youth') >= 0) {
-        if (age != null && age >= 40 && pi.targetType !== '청년') conflict = true;
-        else if (!isYouthProfile) missing.push('청년(만 40세 미만) 여부');
-      }
-      if (tags.indexOf('senior') >= 0 && !isSeniorProfile) {
-        if (age != null && age < 50) conflict = true;
-        else missing.push('고령·은퇴(귀촌) 요건');
-      }
-      if (conflict) continue;
-
-      if (reg === 'unknown') missing.push('해당 지역 거주·이주 여부');
-      if (tags.indexOf('edu') >= 0 && ['이수', '예정'].indexOf(pi.eduDone) < 0) missing.push('귀농·영농 교육 이수');
-      if (tags.indexOf('land') >= 0 && !(pi.landOwn === '소유' || pi.landOwn === '임차 예정')) missing.push('농지 확보(소유·임차)');
-      if (tags.indexOf('income') >= 0) missing.push('소득 기준 충족 여부');
-      if (tags.indexOf('gwinong') >= 0 && !isGwinong) missing.push('귀농·귀촌(이주) 요건');
-
-      let score = 0;
-      if (reg === 'match') score += (p.region.scope === 'local' ? 5 : 3);
-      else if (reg === 'national') score += 1;
-      if (tags.indexOf('gwinong') >= 0 && isGwinong) score += 3;
-      if (tags.indexOf('youth') >= 0 && isYouthProfile) score += 3;
-      if (tags.indexOf('senior') >= 0 && isSeniorProfile) score += 3;
-      if (crop && (p.name.indexOf(crop) >= 0 || (p.summary || '').indexOf(crop) >= 0)) score += 3;
-      if (pi.gender === '여성' && tags.indexOf('woman') >= 0) score += 1;
-
-      const uniqMissing = missing.filter((m, i) => missing.indexOf(m) === i);
-      const item = { p: p, score: score, missing: uniqMissing };
-      if (uniqMissing.length === 0 && reg !== 'unknown') eligible.push(item);
-      else check.push(item);
-    }
-
-    eligible.sort((a, b) => b.score - a.score);
-    check.sort((a, b) => b.score - a.score);
-    const CAP_E = 80, CAP_C = 40;
-    return {
-      eligibleCount: eligible.length, checkCount: check.length,
-      eligible: eligible.slice(0, CAP_E), check: check.slice(0, CAP_C),
-      hasRegion: regs.length > 0
+    const plan = {
+      crop: cropName, emoji: CROP_EMOJI[cropName] || '🌱',
+      seasonName: season.name, seasonPeriod: season.period, seasonRegion: season.region,
+      regionLabel: regionEntry ? (regionEntry.province + ' ' + regionEntry.sigungu) : '',
+      province: regionEntry ? regionEntry.province : '',
+      zoneLabel: zone ? ZONE_LABEL[zone] : '',
+      matchedByZone: picked.matchedByZone,
+      events, createdAt: today.toISOString()
     };
+    const all = { ...(this.state.farmPlans || {}), [cropName]: plan };
+    try { window.localStorage.setItem(FARM_PLAN_KEY, JSON.stringify(all)); } catch (e) {}
+    this.setState({ farmPlans: all, activeTab: 'favorites' });
+    this.refreshLiveDataForPlans(all);
+  }
+
+  removeFarmPlan(cropName) {
+    const all = { ...(this.state.farmPlans || {}) };
+    delete all[cropName];
+    try { window.localStorage.setItem(FARM_PLAN_KEY, JSON.stringify(all)); } catch (e) {}
+    this.setState({ farmPlans: all });
   }
 
   openDetail(name) {
     this.setState({ detailCrop: name, activeTab: 'detail', detailNews: [], detailNewsLoading: true });
     window.scrollTo(0, 0);
+    const todayStr = fmtDate(getPlanToday());
     fetch('http://localhost:8001/api/news/' + encodeURIComponent(name))
       .then(function (r) { return r.ok ? r.json() : []; })
-      .then((items) => this.setState({ detailNews: Array.isArray(items) ? items : [], detailNewsLoading: false }))
+      .then((items) => this.setState({ detailNews: filterRecentNews(items, todayStr), detailNewsLoading: false }))
       .catch(() => this.setState({ detailNews: [], detailNewsLoading: false }));
   }
   closeDetail() { this.setState({ detailCrop: null, activeTab: 'crops' }); }
 
   loadNews() {
-    if (this.state.newsLoaded || this.state.newsLoading) return;
+    if (this.state.newsLoading) return;
+    if (this.state.newsLoaded && this.state.newsLoadedAt && (Date.now() - this.state.newsLoadedAt) < 20 * 60 * 1000) return;
     this.setState({ newsLoading: true });
     var api = 'http://localhost:8001';
+    var todayStr = fmtDate(getPlanToday());
     Promise.all(CROPS.map(function (name) {
       return fetch(api + '/api/news/' + encodeURIComponent(name))
         .then(function (r) { return r.ok ? r.json() : []; })
-        .then(function (items) { return [name, Array.isArray(items) ? items : []]; })
+        .then(function (items) { return [name, filterRecentNews(items, todayStr)]; })
         .catch(function () { return [name, []]; });
     })).then((pairs) => {
       var map = {};
       pairs.forEach(function (p) { map[p[0]] = p[1]; });
-      this.setState({ newsByCrop: map, newsLoaded: true, newsLoading: false });
+      this.setState({ newsByCrop: map, newsLoaded: true, newsLoading: false, newsLoadedAt: Date.now() });
     });
   }
   componentWillUnmount() {
@@ -1251,45 +1512,6 @@ class Component extends DCLogic {
     this.setState({ favorites: list });
   }
 
-  // 지역별 라이브 작물 적합도 점수 (backend /api/crop-score) — 5작물 병렬 호출
-  fetchScores(region) {
-    if (!region || !region.name) return;
-    const regionName = region.name;
-    this.setState({ scoresLoading: true, liveScores: {} });
-    Promise.all(CROPS.map(function (name) {
-      return fetch(CROP_SCORE_API + '/api/crop-score/' + encodeURIComponent(name) + '?region=' + encodeURIComponent(regionName))
-        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
-        .then(function (d) { return [name, d]; })
-        .catch(function () { return [name, null]; });   // 실패 → null(정적 등급 폴백)
-    })).then((pairs) => {
-      const map = {};
-      pairs.forEach(function (p) { map[p[0]] = p[1]; });
-      this.setState({ liveScores: map, scoresLoading: false });
-    });
-  }
-
-  liveReason(ls) {
-    const station = ls.matched_station ? ('최근접 관측소 ' + ls.matched_station + (typeof ls.distance_km === 'number' ? ' (' + Math.round(ls.distance_km) + 'km)' : '')) : '';
-    return station ? ('실측 기상·토양 데이터 기반 · ' + station) : '실측 기상·토양 데이터 기반 적합도예요.';
-  }
-
-  // 백엔드 breakdown → 항목별 점수 막대 데이터 (작물별 가중치 반영)
-  breakdownOf(ls) {
-    const b = ls.breakdown || {};
-    const color = (s) => s >= 80 ? '#2F7A44' : (s >= 60 ? '#6FA361' : (s >= 40 ? '#C98A3A' : '#C15B3A'));
-    return Object.keys(b).map(function (k) {
-      const v = b[k] || {};
-      const sc = (typeof v.score === 'number') ? Math.round(v.score) : null;
-      const w = (typeof v.weight === 'number') ? Math.round(v.weight) : null;
-      return {
-        label: k,
-        scoreLabel: (sc === null ? '결측' : sc + '점') + (w !== null ? ' · ' + w + '%' : ''),
-        barStyle: { height: '100%', width: (sc === null ? 0 : sc) + '%',
-          background: sc === null ? '#D8CDB0' : color(sc), borderRadius: '999px' }
-      };
-    });
-  }
-
   toggleFavorite(cropName) {
     const region = this.state.selectedRegion;
     if (!region) return;
@@ -1298,16 +1520,7 @@ class Component extends DCLogic {
     if (exists) {
       this.persistFavorites(this.state.favorites.filter(f => f.key !== key));
     } else {
-      // 라이브 점수 등급 → 즐겨찾기 표시용 정적 레벨(good/ok/caution)로 환산, 없으면 zone 기반 폴백
-      const ls = (this.state.liveScores || {})[cropName];
-      let level;
-      if (ls && typeof ls.score === 'number') {
-        level = ls.score >= 80 ? 'good' : (ls.score >= 55 ? 'ok' : 'caution');
-      } else if (region.zone && CROP_ZONE[cropName]) {
-        level = CROP_ZONE[cropName][region.zone].level;
-      } else {
-        level = 'ok';
-      }
+      const level = CROP_ZONE[cropName][region.zone].level;
       const entry = { key, cropName, level, location: region.province + ' ' + region.name + ' ' + this.state.selectedDong };
       this.persistFavorites([...this.state.favorites, entry]);
     }
@@ -1323,48 +1536,17 @@ class Component extends DCLogic {
     const favKeys = new Set(this.state.favorites.map(f => f.key));
 
     let results = [];
-    if (region) {
-      const live = this.state.liveScores || {};
-      const badge = (m) => ({ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: m.bg, color: m.color });
+    if (region && region.zone) {
       results = CROPS.map(name => {
+        const z = CROP_ZONE[name][region.zone];
         const base = CROP_BASE[name];
+        const meta = LEVEL_META[z.level];
         const key = region.id + '|' + this.state.selectedDong + '|' + name;
         const isFav = favKeys.has(key);
-        const ls = live[name];
-        const hasLive = ls && typeof ls.score === 'number';
-        let levelLabel, badgeStyle, reason, sortScore, isLive = false, scoreText = '', reliabilityText = '', hasReliability = false, breakdownItems = [], hasBreakdown = false;
-
-        if (hasLive) {
-          isLive = true;
-          const gm = GRADE_META[ls.grade] || GRADE_META.caution;
-          levelLabel = gm.label; badgeStyle = badge(gm);
-          scoreText = '적합도 ' + Math.round(ls.score) + '점';
-          reason = this.liveReason(ls);
-          breakdownItems = this.breakdownOf(ls);
-          hasBreakdown = breakdownItems.length > 0;
-          sortScore = ls.score;
-          const rel = ls.reliability || '';
-          if (rel && rel !== '정상') {
-            reliabilityText = '데이터 신뢰도: ' + rel + (ls.reliability_reason ? ' · ' + ls.reliability_reason : '');
-            hasReliability = true;
-          }
-        } else if (region.zone && CROP_ZONE[name]) {
-          const z = CROP_ZONE[name][region.zone];
-          const meta = LEVEL_META[z.level];
-          levelLabel = meta.label; badgeStyle = badge(meta);
-          reason = z.reason;
-          sortScore = z.level === 'good' ? 85 : (z.level === 'ok' ? 65 : 45);
-          if (ls === null) { reliabilityText = '실시간 점수를 불러오지 못해 참고 등급을 표시했어요.'; hasReliability = true; }
-        } else {
-          levelLabel = '정보 없음'; badgeStyle = badge({ bg: '#EFE7D5', color: '#8A7F65' });
-          reason = '이 지역의 적합도 정보를 찾지 못했어요.'; sortScore = 0;
-        }
-
         return {
-          name, reason, season: base.season, income: base.income, caution: base.caution,
-          levelLabel, badgeStyle, isLive, scoreText, reliabilityText, hasReliability,
-          breakdownItems, hasBreakdown,
-          rank: -sortScore,
+          name, reason: z.reason, season: base.season, income: base.income, caution: base.caution,
+          levelLabel: meta.label, rank: RANK[z.level],
+          badgeStyle: { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: meta.bg, color: meta.color },
           favIcon: isFav ? '★' : '☆',
           favStyle: { background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer', color: isFav ? '#D97B3A' : '#C9BFA8', lineHeight: 1 },
           toggleFav: () => this.toggleFavorite(name)
@@ -1401,6 +1583,7 @@ class Component extends DCLogic {
     let detail = null;
     if (dc) {
       const dsched = CROP_SCHEDULE[dc];
+      const planExists = !!(this.state.farmPlans || {})[dc];
       detail = {
         name: dc, emoji: CROP_EMOJI[dc] || '🌱',
         ready: !!dsched, notReady: !dsched,
@@ -1408,10 +1591,16 @@ class Component extends DCLogic {
         seasonsData: dsched ? dsched.seasonsData : [],
         disasters: dsched ? dsched.disasters : [],
         pests: dsched ? dsched.pests : [],
+        cultivationGuide: dsched ? dsched.cultivationGuide : null,
+        guideBlocks: dsched && dsched.cultivationGuide
+          ? [dsched.cultivationGuide.seedPrep, dsched.cultivationGuide.spacing, dsched.cultivationGuide.mulching, dsched.cultivationGuide.harvestStorage]
+          : [],
         news: this.state.detailNews || [],
         newsLoading: this.state.detailNewsLoading,
         hasNews: (this.state.detailNews || []).length > 0,
-        noNews: !this.state.detailNewsLoading && (this.state.detailNews || []).length === 0
+        noNews: !this.state.detailNewsLoading && (this.state.detailNews || []).length === 0,
+        planButtonLabel: planExists ? '🔄 농사 계획 다시 만들기' : '🗓 이 정보로 농사 계획 만들기',
+        makePlan: () => this.buildFarmPlan(dc)
       };
     }
 
@@ -1430,44 +1619,179 @@ class Component extends DCLogic {
       remove: () => this.removeProfileRegion(r.code)
     }));
 
-    // ── 인적사항 폼 바인딩 ──
-    const pi = Object.assign({}, PI_DEFAULTS, this.state.personalInfo || {});
-    const piOn = {};
-    Object.keys(PI_DEFAULTS).forEach(f => { piOn[f] = (e) => this.updatePI(f, e.target.value); });
-    const piAge = this.ageFrom(pi.birth);
-    const piAgeText = piAge === null ? '' : ('만 ' + piAge + '세');
-    const R = this.state.piResult;
-    const piResultReady = !!R;
-    const piDiagnosing = this.state.piDiagnosing;
-    const piPoliciesError = this.state.policiesError;
-    const scopeLabel = (p) => p.region.scope === 'national' ? '전국 (중앙부처)' : (p.org || '지자체');
-    const mkCard = (it) => {
-      const p = it.p;
+    const todayStrForPlan = fmtDate(getPlanToday());
+    const todayYmForPlan = todayStrForPlan.slice(0, 7);
+    const farmPlans = this.state.farmPlans || {};
+    const farmPlanCards = Object.keys(farmPlans).map(key => {
+      const p = farmPlans[key];
+      const events = p.events || [];
+
+      // 순차적인 재배 단계라 하루엔 이벤트가 최대 1개 — 날짜별 지도로 펼친다
+      const dayEventMap = {};
+      events.forEach(ev => {
+        const start = new Date(ev.start + 'T00:00:00'), end = new Date(ev.end + 'T00:00:00');
+        for (let d = new Date(start); d <= end; d = addDays(d, 1)) {
+          const key2 = fmtDate(d);
+          dayEventMap[key2] = { task: ev.task, note: ev.note || '', period: ev.period || '', color: ev.color, isEventStart: key2 === ev.start, isEventEnd: key2 === ev.end };
+        }
+      });
+
+      const selectedDateStr = (this.state.planSelectedDay || {})[key] || null;
+      const selectedEvent = selectedDateStr ? dayEventMap[selectedDateStr] : null;
+      const selectedCategory = taskCategory(selectedEvent ? selectedEvent.task : null);
+
+      // 실시간 데이터 소스: (1) 해당 작물의 실시간 뉴스(작물 상세페이지 '실시간 소식'과 동일 API, 선택한 날짜의 작업 성격 + 그 날짜 기준 최근 1주일로 필터링) (2) 저장된 귀농지역의 기상청 ASOS 최근 14일 실측
+      const planSched = CROP_SCHEDULE[p.crop] || {};
+      const allCropNews = (this.state.newsByCrop || {})[p.crop] || [];
+      // 뉴스는 '선택한 날짜' 기준 최근 1주일로 필터링 — 그래야 23일을 클릭했을 때와 30일을 클릭했을 때 보이는 뉴스가 서로 달라진다.
+      const newsRefDate = selectedDateStr || todayStrForPlan;
+      const cropNews = filterRecentNews(allCropNews, newsRefDate);
+      const wInfo = p.province ? (this.state.weatherByProvince || {})[p.province] : null;
+      const wSummary = wInfo ? summarizeWeather(wInfo.days) : null;
+      const seasonWordNow = monthToSeasonWord(parseInt(todayStrForPlan.slice(5, 7), 10));
+      const wWarns = weatherWarnings(wSummary, seasonWordNow, planSched.disasters || []);
+      const nHits = newsInsights(cropNews, planSched.pests || [], planSched.disasters || [], selectedCategory);
+      const liveInsights = [
+        ...wWarns.map(w => ({ icon: '⚠️', text: w.tag + ' 주의 — ' + w.text, reason: w.reason, link: '', date: '', hasLink: false, noLink: true })),
+        ...nHits.map(h => ({ icon: '📰', text: h.title, reason: '', link: h.link, date: h.date, hasLink: true, noLink: false }))
+      ];
+      const weatherLine = wSummary
+        ? (wSummary.stnName + ' 관측소 최근 실측(' + wSummary.from + '~' + wSummary.to + ') 평균기온 ' + wSummary.avgTaMean.toFixed(1) + '℃ · 최고 ' + wSummary.maxTa.toFixed(1) + '℃ · 최저 ' + wSummary.minTa.toFixed(1) + '℃ · 누적강수 ' + wSummary.totalRn.toFixed(1) + 'mm')
+        : (p.province ? '기상청 날씨를 불러오는 중이에요… (news_server 8001 실행 확인)' : '귀농 지역을 저장하면 기상청 실측 날씨를 반영할 수 있어요.');
+      const newsFocusLabel = '🔍 \'' + TASK_CATEGORY_LABEL[selectedCategory] + '\' 관련 뉴스를 우선 보여드려요.';
+
+      // 2026년 7월(고정 기준)부터 최소 내년 12월까지는 화살표로 이동 가능하도록 보장
+      // (마지막 이벤트가 그보다 더 뒤에 끝나면 그 해 12월까지 자동으로 더 늘어남)
+      const overallEndYear = Math.max(
+        events.length ? parseInt(events[events.length - 1].end.slice(0, 4), 10) : PLAN_ANCHOR_YEAR,
+        PLAN_ANCHOR_YEAR + 1
+      );
+      const monthKeys = [];
+      for (let y = PLAN_ANCHOR_YEAR; y <= overallEndYear; y++) {
+        const mFrom = (y === PLAN_ANCHOR_YEAR) ? PLAN_ANCHOR_MONTH : 1;
+        for (let m = mFrom; m <= 12; m++) monthKeys.push(y + '-' + String(m).padStart(2, '0'));
+      }
+
+      let viewKey = this.state.planViewMonth;
+      if (!viewKey || monthKeys.indexOf(viewKey) < 0) viewKey = monthKeys.indexOf(todayYmForPlan) >= 0 ? todayYmForPlan : monthKeys[0];
+      const monthIdx = monthKeys.indexOf(viewKey);
+      const yy = parseInt(viewKey.slice(0, 4), 10), mm = parseInt(viewKey.slice(5, 7), 10);
+      const daysInMonth = new Date(yy, mm, 0).getDate();
+      const leadBlanks = new Date(yy, mm - 1, 1).getDay();
+
+      const blankCellStyle = { width: 150, height: 132, boxSizing: 'border-box', background: '#fff', padding: '8px 0 0', overflow: 'hidden' };
+      const blankCell = { day: null, isToday: false, bar: null, wrapStyle: blankCellStyle, onSelect: () => {} };
+      const cells = [];
+      for (let i = 0; i < leadBlanks; i++) cells.push(blankCell);
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = viewKey + '-' + String(d).padStart(2, '0');
+        const col = (leadBlanks + d - 1) % 7;
+        const ev = dayEventMap[dateStr];
+        let bar = null;
+        let dots = [];
+        if (ev) {
+          const roundLeft = ev.isEventStart || col === 0;
+          const roundRight = ev.isEventEnd || col === 6;
+          bar = {
+            label: ev.task,
+            barStyle: {
+              background: ev.color, color: '#fff', fontSize: 13, fontWeight: 600, marginTop: 6,
+              height: 26, lineHeight: '26px', paddingLeft: roundLeft ? 8 : 3, paddingRight: roundRight ? 8 : 3,
+              marginLeft: roundLeft ? 4 : 0, marginRight: roundRight ? 4 : 0,
+              borderTopLeftRadius: roundLeft ? 6 : 0, borderBottomLeftRadius: roundLeft ? 6 : 0,
+              borderTopRightRadius: roundRight ? 6 : 0, borderBottomRightRadius: roundRight ? 6 : 0,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+            }
+          };
+          // 그날의 체크리스트 항목 수만큼 작은 동그라미를 표시 — 하기 전(막대 원래 선명한 색) → 하는 중(연한 색) → 완료(회색)
+          // (해당 날짜 작업의 성격에 맞는 뉴스를 다시 계산해, 이 날짜를 선택했을 때 나오는 체크리스트와 항상 일치하도록 한다)
+          const doingColor = lightenColor(ev.color, 0.45);
+          const dayCategory = taskCategory(ev.task);
+          const dayCropNews = filterRecentNews(allCropNews, dateStr);
+          const dayNHits = newsInsights(dayCropNews, planSched.pests || [], planSched.disasters || [], dayCategory);
+          const dayOccCtx = { key, dateStr, dayEventMap, statusMap: this.state.planChecklistStatus || {}, todayStr: todayStrForPlan };
+          const dayChecklist = buildChecklist(ev, dayCategory, wWarns, dayNHits, planSched, dayOccCtx);
+          dots = dayChecklist.map((it) => {
+            const doneKey = key + '|' + dateStr + '|' + it.key;
+            const status = (this.state.planChecklistStatus || {})[doneKey];
+            const bg = status === 'done' ? CHECKLIST_DOT_DONE_COLOR : (status === 'doing' ? doingColor : ev.color);
+            return { style: { width: 15, height: 15, borderRadius: '50%', background: bg, flex: '0 0 auto' } };
+          });
+        }
+        const isToday = dateStr === todayStrForPlan;
+        const isSelected = dateStr === selectedDateStr;
+        cells.push({
+          day: d, isToday, bar, dots, hasDots: dots.length > 0,
+          dayNumStyle: {
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center', margin: '0 0 0 8px',
+            fontSize: 15, fontWeight: 600, width: 28, height: 28, borderRadius: '50%',
+            background: isToday ? '#2F5D42' : 'transparent', color: isToday ? '#fff' : '#2B2620'
+          },
+          wrapStyle: {
+            width: 150, height: 132, boxSizing: 'border-box', padding: '8px 0 0', overflow: 'hidden',
+            cursor: 'pointer', background: isSelected ? '#FDF3D9' : '#fff',
+            boxShadow: isSelected ? 'inset 0 0 0 2px #E8B84B' : 'none'
+          },
+          onSelect: () => this.setState({ planSelectedDay: { ...(this.state.planSelectedDay || {}), [key]: dateStr } })
+        });
+      }
+      while (cells.length < 42) cells.push(blankCell);
+
+      let selectedDetail = null;
+      if (selectedDateStr) {
+        const sel = dayEventMap[selectedDateStr];
+        const sd = new Date(selectedDateStr + 'T00:00:00');
+        const selOccCtx = { key, dateStr: selectedDateStr, dayEventMap, statusMap: this.state.planChecklistStatus || {}, todayStr: todayStrForPlan };
+        const checklistItems = buildChecklist(sel, selectedCategory, wWarns, nHits, planSched, selOccCtx);
+        const checklist = checklistItems.map((it) => {
+          const doneKey = key + '|' + selectedDateStr + '|' + it.key;
+          const status = (this.state.planChecklistStatus || {})[doneKey];
+          const isDone = status === 'done', isDoing = status === 'doing', notStarted = !status;
+          const statusLabel = isDone ? '완료' : (isDoing ? '하는 중' : '시작 전');
+          return {
+            text: it.text, isDone, isDoing, notStarted, statusLabel,
+            rowStyle: {
+              display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px',
+              background: isDoing ? '#FFF8E8' : '#fff',
+              border: '1px solid ' + (isDoing ? '#E8CE8A' : '#CFE3D2'), borderRadius: 10, cursor: 'pointer',
+              opacity: isDone ? 0.55 : 1
+            },
+            textStyle: { fontSize: 13, color: '#2B2620', margin: 0, lineHeight: 1.5, textDecoration: isDone ? 'line-through' : 'none' },
+            toggle: () => {
+              const all = { ...(this.state.planChecklistStatus || {}) };
+              const next = nextChecklistStatus(status);
+              if (next) all[doneKey] = next; else delete all[doneKey];
+              this.setState({ planChecklistStatus: all });
+            }
+          };
+        });
+        selectedDetail = {
+          dateLabel: (sd.getMonth() + 1) + '월 ' + sd.getDate() + '일',
+          hasTask: !!sel, noTask: !sel,
+          task: sel ? sel.task : '', note: sel ? sel.note : '', period: sel ? sel.period : '',
+          weatherLine, hasLiveInsights: liveInsights.length > 0, liveInsights, newsFocusLabel,
+          checklist, hasChecklist: checklist.length > 0
+        };
+      }
+
+      const hasPrevMonth = monthIdx > 0, hasNextMonth = monthIdx >= 0 && monthIdx < monthKeys.length - 1;
+      const arrowStyle = (enabled) => ({
+        background: 'transparent', border: 'none', borderRadius: '50%', width: 40, height: 40, fontSize: 20,
+        color: enabled ? '#5A5245' : '#D8CDB0', cursor: enabled ? 'pointer' : 'default'
+      });
       return {
-        name: p.name,
-        org: scopeLabel(p),
-        field: p.field || '',
-        summary: p.summary || '',
-        support: p.support || '',
-        criteria: p.criteria || '선정기준 정보 없음',
-        deadline: p.deadline || '상시/문의',
-        method: p.method || '-',
-        phone: p.phone || '',
-        url: p.url || '',
-        hasUrl: !!p.url,
-        missingText: (it.missing || []).join(' · '),
-        hasMissing: (it.missing || []).length > 0
+        ...p,
+        monthLabel: yy + '년 ' + mm + '월',
+        regionLine: p.regionLabel ? (p.regionLabel + ' · ' + p.zoneLabel) : '귀농 지역 미저장 · 오늘 날짜 기준으로 계획을 짰어요',
+        cells,
+        selectedDetail, hasSelectedDetail: !!selectedDetail, noSelectedDetail: !selectedDetail,
+        prevArrowStyle: arrowStyle(hasPrevMonth), nextArrowStyle: arrowStyle(hasNextMonth),
+        prevMonth: () => { if (monthIdx > 0) this.setState({ planViewMonth: monthKeys[monthIdx - 1] }); },
+        nextMonth: () => { if (monthIdx < monthKeys.length - 1) this.setState({ planViewMonth: monthKeys[monthIdx + 1] }); },
+        goToday: () => this.setState({ planViewMonth: null }),
+        remove: () => this.removeFarmPlan(p.crop)
       };
-    };
-    const eligibleCards = R ? R.eligible.map(mkCard) : [];
-    const checkCards = R ? R.check.map(mkCard) : [];
-    const eligibleCount = R ? R.eligibleCount : 0;
-    const checkCount = R ? R.checkCount : 0;
-    const hasEligible = R && R.eligible.length > 0;
-    const hasCheck = R && R.check.length > 0;
-    const eligibleMore = R ? Math.max(0, R.eligibleCount - R.eligible.length) : 0;
-    const checkMore = R ? Math.max(0, R.checkCount - R.check.length) : 0;
-    const noMatchAtAll = R && R.eligibleCount === 0 && R.checkCount === 0;
+    });
 
     return {
       isHome: tab === 'home', isRecommend: tab === 'recommend', isCrops: tab === 'crops', isGuide: tab === 'guide', isPolicy: tab === 'policy', isFavorites: tab === 'favorites', isDetail: tab === 'detail', isNews: tab === 'news',
@@ -1483,7 +1807,7 @@ class Component extends DCLogic {
       goCrops: () => this.setState({ activeTab: 'crops' }),
       goGuide: () => this.setState({ activeTab: 'guide' }),
       goPolicy: () => this.setState({ activeTab: 'policy' }),
-      goFavorites: () => this.setState({ activeTab: 'favorites' }),
+      goFavorites: () => { this.setState({ activeTab: 'favorites' }); this.refreshLiveDataForPlans(); },
       hasFavorites: this.state.favorites.length > 0,
       noFavorites: this.state.favorites.length === 0,
       favoritesCount: this.state.favorites.length,
@@ -1491,20 +1815,16 @@ class Component extends DCLogic {
       noProfile: profileList.length === 0,
       profileCount: profileList.length,
       profileCards,
-      pi, piOn, piAgeText,
-      diagnosePI: () => this.diagnosePolicies(),
-      resetPI: () => this.resetPersonalInfo(),
-      piResultReady, piDiagnosing, piPoliciesError,
-      eligibleCards, checkCards, eligibleCount, checkCount,
-      hasEligible, hasCheck, eligibleMore, checkMore, noMatchAtAll,
+      hasFarmPlan: farmPlanCards.length > 0,
+      noFarmPlan: farmPlanCards.length === 0,
+      farmPlanCards,
       selectedRegion: region,
       noRegionYet: !region,
       zoneLabel: region ? ZONE_LABEL[region.zone] : '',
       selectedDong: this.state.selectedDong,
       onDongChange: (e) => this.setState({ selectedDong: e.target.value, showResults: false }),
-      showResultsNow: () => { this.setState({ showResults: true }); this.fetchScores(region); },
+      showResultsNow: () => this.setState({ showResults: true }),
       showResults: this.state.showResults && !!region,
-      scoresLoading: this.state.scoresLoading,
       results, cropCards, favoriteCards
     };
   }
