@@ -228,7 +228,7 @@ def _get_soil_reading(sigungu_full_name, crop):
         logger.error("[live_scoring] 흙토람 API 호출 중 예외: %s", e)
         return {"pH": None, "유기물": None, "유효인산": None, "EC": None}, f"흙토람 API 예외: {e}"
 
-    return readings, "흙토람 SoilExamStat V2 (지목별 구간분포 기반 근사평균, EC 항목 없음-결측 고정)"
+    return readings, "흙토람 SoilExamStat V2(pH·유기물·유효인산 지목별 구간분포 근사평균) + 토양검정정보 getSoilExamList(EC 읍면동 실측평균)"
 
 
 def get_live_score(region_name, crop):
