@@ -1,0 +1,11 @@
+# 비밀정보
+.env
+.env.*
+!.env.example
+
+# OS/에디터
+.DS_Store
+*.log
+
+# 백업
+*.bak.html

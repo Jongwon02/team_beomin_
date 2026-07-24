@@ -1,0 +1,198 @@
+{
+  "_meta": {
+    "title": "작물 5종 표준 생육지침 (사과, 배, 오이, 감자, 상추)",
+    "purpose": "귀농인 맞춤형 작물-환경 적합도 서비스의 스코어링 엔진 기준 데이터",
+    "sources": {
+      "사과": "농촌진흥청 농업기술길잡이 6권 「사과」",
+      "배": "농촌진흥청 농업기술길잡이 13권 「배」",
+      "오이": "농촌진흥청 농업기술길잡이 107권(개정판) 「오이」 (일부 스캔본 OCR 판독, 표 일부는 판독 정확도 낮아 서술형 문장 기준 채택)",
+      "감자": "농촌진흥청 농업기술길잡이 33권 「감자」",
+      "상추": "농촌진흥청 농업기술길잡이 23권 「상추」"
+    },
+    "notes": [
+      "temperature.flower_frost_threshold_by_stage: 사과/배는 개화 진행 단계별 냉해 한계온도가 원문에 명시되어 있어 그대로 반영. 다른 작물은 해당 데이터 없음(생육적온/한계온도로 대체).",
+      "sunshine: 대부분의 원문이 '연간 일조시간 O시간'처럼 정량화된 수치를 제공하지 않고 정성적으로만 서술함. estimated_annual_hours는 잠정치이며 검증 필요.",
+      "ec: 작물별로 측정 방식(포화점토법, 토양침출법 등)이 다를 수 있어 절대비교시 주의. 오이는 토성(모래땅/식양토)에 따라 한계EC가 달라 범위로 제시.",
+      "fertilizer_standard 단위: kg/10a, 성분량(순수 성분 기준 N-P-K), 예외적으로 명시된 곳 제외."
+    ]
+  },
+
+  "사과": {
+    "crop_codes": {"1-4년생": "09051", "5-9년생": "09052", "10-14년생": "09053", "15-19년생": "09054", "20년생 이상": "09055"},
+    "temperature": {
+      "annual_avg": {"min": 8, "max": 11, "unit": "℃"},
+      "growing_season_avg": {"min": 15, "max": 18, "unit": "℃"},
+      "maturation_optimal": {"min": 20, "max": 25, "unit": "℃", "note": "27℃ 전후 성숙 촉진, 30℃ 이상은 다시 지연"},
+      "high_temp_risk": {"threshold": 30, "unit": "℃", "note": "호흡 증가로 탄수화물 소비 커져 과실비대·꽃눈형성 불량"},
+      "chilling_requirement": {"temp_threshold": 7, "hours_min": 1200, "hours_max": 1500, "note": "7℃ 이하 누적시간, 이 이상 지속되어야 휴면타파 정상 생육"},
+      "extreme_cold_tolerance": {"value": -30, "unit": "℃", "note": "성목 기준 내한성, 단 발아기 전후 생육초기는 취약"},
+      "flower_frost_threshold_by_stage": {
+        "unit": "℃",
+        "은색선단기": -8.9,
+        "녹색선단기": -8.9,
+        "녹색기": -5.6,
+        "단단한화총기": -2.8,
+        "분홍초기": -2.8,
+        "완전분홍기": -2.2,
+        "개화초기": -2.2,
+        "만개기": -1.7,
+        "만개이후": -1.7,
+        "note": "30분간 피해 없이 견디는 온도(한계온도) 기준. 개화가 진행될수록 민감해짐"
+      }
+    },
+    "soil": {
+      "ph": {"optimal_min": 6.0, "optimal_max": 6.5, "acceptable_min": 5.5, "acceptable_max": 6.5, "note": "목표치 6.0~6.5, 서술상 적정범위는 5.5~6.5"},
+      "ec": {"caution_max": 2.0, "unit": "dS/m", "note": "2.0 dS/m 이하 유지 권장. 초과 시 뿌리 활력 저해"},
+      "available_phosphate": {"optimal_min": 200, "optimal_max": 300, "unit": "mg/kg"},
+      "organic_matter": {"optimal_min": 25, "optimal_max": 35, "unit": "g/kg"}
+    },
+    "precipitation": {"annual_min": 1000, "annual_max": 1300, "unit": "mm", "note": "충분한 양이나 장마철(6월하순~7월하순) 집중, 봄·가을엔 관수 필요"},
+    "sunshine": {
+      "estimated_annual_hours_min": 1900,
+      "confidence": "낮음(정량기준 원문 없음, 잠정치)",
+      "note": "평균광도 1만5천Lx 필요, 흐린날 지속시 꽃눈형성·착과·과실발육 불량",
+      "annual_requirement": {"annual_total": 2300, "daily_hours": null, "unit": "시간", "source": "직접 입력", "note": ""}
+    },
+    "fertilizer_standard": {
+      "unit": "kg/10a, 성분량",
+      "일반재배_수령별": {
+        "1-4년": {"N": 2.0, "P": 1.0, "K": 1.0},
+        "5-9년": {"N": [2.0, 4.0], "P": [1.0, 2.0], "K": [2.0, 3.0]},
+        "10-14년": {"N": [5.0, 8.0], "P": [2.0, 5.0], "K": [3.0, 5.0]},
+        "15-19년": {"N": [10.0, 15.0], "P": [5.0, 8.0], "K": [8.0, 12.0]},
+        "20년 이상": {"N": [15.0, 20.0], "P": [8.0, 12.0], "K": [12.0, 20.0]},
+        "note": "범위는 척박지~비옥지 기준"
+      },
+      "밀식재배_후지M9_수령별": {
+        "1년": {"N": 2.5, "P": 0.7, "K": 1.7},
+        "2년": {"N": 5.8, "P": 1.3, "K": 5.7},
+        "3년": {"N": 7.9, "P": 1.8, "K": 8.3},
+        "4년": {"N": 12.3, "P": 2.6, "K": 13.4},
+        "5년": {"N": 13.2, "P": 2.9, "K": 14.9}
+      }
+    }
+  },
+
+  "배": {
+    "crop_codes": {"1-4년생": "09042", "5-9년생": "09043", "10-14년생": "09044", "15-19년생": "09045", "20년생 이상": "09046"},
+    "temperature": {
+      "chilling_requirement": {"temp_threshold": 7.2, "unit": "℃", "note": "이하 저온 누적 필요(휴면타파), 사과보다 약간 높은 기준온도"},
+      "quality_optimal_region_avg": {"value": 11, "unit": "℃", "note": "연평균기온 11℃ 전후 지역에서 당도 양호"}
+    },
+    "soil": {
+      "ph": {"optimal_min": 6.0, "optimal_max": 6.5, "acceptable_min": 5.5, "acceptable_max": 6.5, "note": "미산성 조건 pH 6.0~6.5 적당, pH 5.0 이하는 과실비대 불량·유부과·조기낙엽·잎황화"},
+      "ec": {"caution_max": 2.0, "unit": "dS/m", "confidence": "중간(원문에 배 전용 EC 수치 명시 없어 사과 기준 준용)"},
+      "available_phosphate": {"optimal_min": 200, "optimal_max": 300, "unit": "mg/kg"},
+      "cec": {"optimal_min": 10, "optimal_max": 15, "unit": "cmol/kg"},
+      "base_saturation": {"optimal_min": 60, "optimal_max": 80, "unit": "%"}
+    },
+    "precipitation": {"annual_min": 1000, "annual_max": 1300, "unit": "mm", "note": "온대 과수재배에 충분"},
+    "sunshine": {
+      "annual_requirement": {"annual_total": [2000, 2500], "daily_hours": [6, 8], "unit": "시간", "source": "직접 입력", "note": ""}
+    },
+    "flower_frost_threshold_by_stage": {
+      "unit": "℃",
+      "cultivar_reference": "장십랑",
+      "꽃봉오리_화총내": -3.5,
+      "꽃봉오리_연분홍": -2.8,
+      "꽃봉오리_백색": -2.2,
+      "개화직전": -1.9,
+      "만개_낙화_낙화10일후유과기": -1.7,
+      "note": "30분 이상 노출 시 위험. 개화 진행될수록 민감해짐(사과와 동일 경향)"
+    },
+    "fertilizer_standard": {
+      "unit": "kg/10a, 성분량",
+      "수령별": {
+        "1-4년": {"N": 2.0, "P": 1.0, "K": 1.0, "compost": 300},
+        "5-9년": {"N": [3.0, 6.0], "P": [3.0, 4.0], "K": [3.0, 5.0], "compost": 1000},
+        "10-14년": {"N": [10.0, 15.0], "P": [5.0, 8.0], "K": [8.0, 12.0], "compost": 2000},
+        "15-19년": {"N": [17.0, 20.0], "P": [8.0, 13.0], "K": [15.0, 18.0], "compost": 2000},
+        "20년 이상": {"N": [20.0, 25.0], "P": [13.0, 18.0], "K": [18.0, 23.0], "compost": 2000}
+      }
+    }
+  },
+
+  "오이": {
+    "crop_codes": {"노지": "04012", "시설": "04013"},
+    "temperature": {
+      "growing_optimal_day": {"min": 22, "max": 28, "unit": "℃"},
+      "growing_optimal_night": {"min": 15, "max": 18, "unit": "℃"},
+      "day_night_diff_optimal": {"min": 7, "max": 10, "unit": "℃"},
+      "high_temp_risk": {"threshold": 35, "unit": "℃", "note": "이상에서 생육 중지"},
+      "low_temp_risk": {"threshold": 5, "unit": "℃", "note": "이하에서 생육 중지, 0~2℃에서 동사"},
+      "growth_suppression_threshold": {"value": 10, "unit": "℃", "note": "10~12℃ 이하에서 생육 크게 억제"},
+      "soil_temp_optimal": {"min": 20, "max": 23, "unit": "℃", "note": "지온 12℃ 이하 생육정지, 15℃ 이상 유지 필요, 25℃ 이상은 웃자람·노화촉진"}
+    },
+    "soil": {
+      "ph": {"optimal_min": 5.5, "optimal_max": 6.8},
+      "ec": {"growth_inhibition_min": 0.6, "growth_inhibition_max": 1.5, "unit": "dS/m", "note": "토성에 따라 다름: 모래땅 0.6dS/m, 식양토(질참흙) 1.5dS/m부터 생육저해. 토마토·피망보다 염류에 약함"},
+      "lime_application_limit_ph": {"value": 6.5, "note": "pH 6.5 이상 토양에서는 석회질 비료 시용하지 않음"}
+    },
+    "sunshine": {
+      "light_saturation_point": {"min": 40000, "max": 55000, "unit": "lx"},
+      "light_compensation_point": {"min": 1000, "max": 1500, "unit": "lx"},
+      "note": "약한 광에서도 생육은 가능하나 지속적 수확 위해 일조 부족시 품질·수량 저하. 일평균 동화산물의 71% 이상이 오전중 생산되어 오전 일조가 특히 중요",
+      "annual_requirement": {"annual_total": [1500, 2000], "daily_hours": [6, 8], "unit": "시간", "source": "직접 입력", "note": ""}
+    },
+    "humidity": {"day_optimal_min": 70, "day_optimal_max": 80, "night_optimal": 90, "unit": "%", "note": "타 과채류 대비 높은 습도 선호, 단 과습시 병해(노균병 등) 위험"},
+    "fertilizer_standard": {
+      "unit": "kg/10a, 성분량 (농업과학기술원, 1996 기준 추정: 표 순서상 1행=노지, 2행=시설)",
+      "노지_추정": {"N": 24.0, "N_밑거름": 11.2, "N_웃거름": 12.8, "P": 16.4, "K": 23.8, "K_밑거름": 15.9, "K_웃거름": 7.9, "compost": 2000, "lime": 200},
+      "시설_추정": {"N": 19.7, "N_밑거름": 9.2, "N_웃거름": 10.5, "P": 10.3, "K": 12.2, "K_밑거름": 8.1, "K_웃거름": 4.1, "compost": 2000, "lime": 200},
+      "confidence": "중간 - 원본 표가 스캔본 OCR이라 행별 노지/시설 라벨이 명확히 판독되지 않음. 값 자체(밑거름+웃거름=계 검산)는 정확함"
+    }
+  },
+
+  "감자": {
+    "crop_codes": {"남부_가을재배": "03001", "준고랭지_고랭지": "03002", "남부_봄재배": "03003"},
+    "temperature": {
+      "sprouting_min": {"value": 5, "unit": "℃", "note": "이 온도부터 싹이 자랄 수 있음"},
+      "growing_range": {"min": 14, "max": 23, "unit": "℃"},
+      "tuber_bulking_optimal": {"min": 15, "max": 18, "unit": "℃"},
+      "shoot_optimal": {"value": 21, "unit": "℃", "note": "지상부(잎/줄기) 발육 적온"},
+      "tuber_bulking_day_optimal": {"min": 23, "max": 24, "unit": "℃"},
+      "tuber_bulking_night_optimal": {"min": 10, "max": 14, "unit": "℃"},
+      "high_temp_risk": {"threshold": 25, "unit": "℃", "note": "이상에서 덩이줄기 비대 정지 경향 시작, 27~30℃ 이상에서 완전 정지"},
+      "note": "밤낮 온도차가 클수록 덩이줄기 비대에 유리(고랭지 조건 선호). 단일(11시간 낮 길이) 조건이 비대에 유리"
+    },
+    "soil": {
+      "ph": {"optimal_min": 5.0, "optimal_max": 6.0, "note": "알칼리성에서 더뎅이병 증가, 과산성에서 흑지병 증가"},
+      "ec": {"reference_value_min": 1.9, "reference_value_max": 2.0, "unit": "dS/m", "confidence": "낮음 - 원문 수치는 씨감자 수경재배 배양액 기준으로, 노지 토양 EC 기준과 다를 수 있어 참고치로만 사용"}
+    },
+    "sunshine": {
+      "annual_requirement": {"annual_total": [350, 500], "daily_hours": null, "unit": "시간", "source": "직접 입력", "note": ""}
+    },
+    "fertilizer_standard": {
+      "unit": "kg/10a, 성분량",
+      "봄재배": {"N": 10, "P": 8.8, "K": 13, "note": "요소 22kg, 용과린 45kg, 염화칼륨 22kg 상당, 퇴비 2톤"},
+      "가을재배": {"N": 12, "P": 8.8, "K": 13, "note": "봄재배보다 질소 약 20% 증량 (생육기간 짧아 초기 잎줄기 생장 촉진 목적), 요소 26kg·용과린 44kg 상당"}
+    }
+  },
+
+  "상추": {
+    "crop_codes": {"노지": "07008", "시설": "07009"},
+    "temperature": {
+      "germination_growth_optimal": {"min": 15, "max": 20, "unit": "℃", "note": "호냉성 작물"},
+      "bolting_risk": {"note": "25℃에서 파종 10일 만에 추대, 20℃ 20일, 15℃ 30일, 15℃ 이하에서는 추대 크게 지연(고온기 추대 및 부패병 위험 큼)"}
+    },
+    "soil": {
+      "ph": {"leaf_lettuce_optimal_min": 6.5, "leaf_lettuce_optimal_max": 7.0, "head_lettuce_optimal_min": 6.0, "head_lettuce_optimal_max": 6.5, "acceptable_min": 5.0, "acceptable_max": 8.0, "note": "pH 5 이하 또는 8 이상에서는 생육 저하. 육묘용 상토는 5.8~6.5가 적정"},
+      "ec": {"caution_max": 2.0, "unit": "dS/m", "note": "잎상추·결구상추 공히 2dS/m 이하에서 양호한 생육. 무기질비료 과다시 EC 상승+저pH로 칼슘흡수 억제"},
+      "seedling_medium_ec": {"min": 1.0, "max": 2.0, "unit": "dS/m", "note": "육묘용 상토 기준(포화점토법)"}
+    },
+    "sunshine": {
+      "annual_requirement": {"annual_total": [1100, 1500], "daily_hours": [6, 8], "unit": "시간", "source": "직접 입력", "note": ""}
+    },
+    "fertilizer_standard": {
+      "unit": "kg/10a, 성분량 (농업과학기술원, 2006)",
+      "노지재배": {"N": 20.0, "N_밑거름": 10.0, "N_웃거름": 10.0, "P": 5.9, "K": 12.8, "K_밑거름": 6.4, "K_웃거름": 6.4, "compost": 1500, "lime": 200},
+      "시설재배": {"N": 7.0, "N_밑거름": 3.5, "N_웃거름": 3.5, "P": 3.0, "K": 3.6, "K_밑거름": 1.8, "K_웃거름": 1.8, "compost": 1500, "lime": 200},
+      "검정시비량_공식": {
+        "질소_노지": "토양유기물 2.0% 이하: 24.0kg/10a, 2.1~3.0%: 20.0kg/10a, 3.1% 이상: 16.0kg/10a",
+        "질소_시설": "Y = 9.759 - 4.948×X (Y=질소시비량, X=토양EC)",
+        "인산_노지시설공통": "Y = 74.893 - 11.455×Ln(X) (Y=인산시비량, X=유효인산함량)",
+        "칼륨_노지시설공통": "Y = 27.476 - 77.646×X (Y=칼륨시비량, X=토양 치환성K)"
+      }
+    }
+  }
+}

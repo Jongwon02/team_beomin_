@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>지역 선택 지도 (네이버 지도)</title>
+<!-- 네이버 지도 JS + geocoder 서브모듈(주소→좌표). Client ID만 사용, Secret 미포함 -->
+<script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=izxxcx66y8&submodules=geocoder"></script>
+<script src="./region_tree.js"></script>
+<style>
+  html, body, #map { margin:0; padding:0; height:100%; width:100%; font-family:'Pretendard',sans-serif; }
+  #map { position:absolute; inset:0; }
+
+  /* 공통 카드 */
+  .panel {
+    position:absolute; z-index:1000; background:#FBF7EF; border:1px solid #E4DCC9;
+    border-radius:16px; box-shadow:0 8px 28px rgba(0,0,0,.18); display:flex; flex-direction:column; overflow:hidden;
+  }
+
+  /* 드릴다운 선택 패널 (좌측) */
+  #selector { top:16px; left:16px; width:340px; max-width:calc(100vw - 32px); max-height:calc(100vh - 32px); }
+  #sel-head { padding:14px 16px 10px; border-bottom:1px solid #ECE4D2; }
+  #sel-title { font-size:15px; font-weight:700; color:#2B2620; }
+  #sel-path { margin-top:6px; font-size:12px; color:#6B6250; min-height:16px; }
+  #sel-path b { color:#2F5D42; }
+  #sel-back { display:none; margin-top:10px; background:#fff; border:1px solid #D8CFB8; color:#5A5140; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:600; cursor:pointer; }
+  #sel-back:hover { background:#F1EAD8; }
+  #sel-search { display:none; margin:10px 16px 0; }
+  #sel-search input { width:100%; box-sizing:border-box; padding:7px 10px; border:1px solid #D8CFB8; border-radius:8px; font-size:13px; font-family:inherit; background:#fff; }
+  #btn-list { padding:12px 16px 16px; display:flex; flex-wrap:wrap; gap:8px; overflow-y:auto; }
+  .rgn-btn { background:#fff; border:1px solid #D8CFB8; color:#2B2620; border-radius:10px; padding:8px 12px; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .1s ease; }
+  .rgn-btn:hover { background:#2F5D42; color:#fff; border-color:#2F5D42; }
+  .rgn-btn.province { background:#2F5D42; color:#fff; border-color:#2F5D42; }
+  .rgn-btn.province:hover { background:#234934; }
+
+  /* 프로필 패널 (우측) */
+  #profile { top:16px; right:16px; width:280px; max-width:calc(100vw - 32px); max-height:calc(100vh - 32px); }
+  #prof-head { padding:14px 16px; border-bottom:1px solid #ECE4D2; display:flex; align-items:center; gap:8px; }
+  #prof-head .ic { font-size:18px; }
+  #prof-head .tt { font-size:15px; font-weight:700; color:#2B2620; }
+  #prof-head .cnt { margin-left:auto; font-size:12px; color:#fff; background:#2F5D42; border-radius:999px; padding:2px 9px; font-weight:700; }
+  #prof-list { padding:10px 12px 14px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  #prof-empty { color:#9a917d; font-size:13px; text-align:center; padding:18px 8px; line-height:1.5; }
+  .prof-item { display:flex; align-items:center; gap:8px; background:#fff; border:1px solid #EADFC8; border-radius:10px; padding:9px 10px; }
+  .prof-item .nm { flex:1; font-size:13px; font-weight:600; color:#2B2620; line-height:1.3; }
+  .prof-item .sub { font-size:11px; color:#9a917d; margin-top:2px; }
+  .prof-item button { border:none; background:transparent; cursor:pointer; font-size:14px; padding:3px 5px; border-radius:6px; }
+  .prof-item .locate { color:#2F5D42; } .prof-item .locate:hover { background:#E5F0E8; }
+  .prof-item .del { color:#b24a3a; } .prof-item .del:hover { background:#F6E3DE; }
+
+  /* 확인 모달 */
+  #confirm-back { display:none; position:absolute; inset:0; z-index:2000; background:rgba(43,38,32,.45); align-items:center; justify-content:center; }
+  #confirm-card { background:#FBF7EF; border-radius:18px; padding:28px 26px; width:320px; max-width:calc(100vw - 40px); box-shadow:0 12px 40px rgba(0,0,0,.3); text-align:center; }
+  #confirm-region { font-size:18px; font-weight:700; color:#2F5D42; margin-bottom:6px; }
+  #confirm-msg { font-size:15px; color:#2B2620; margin-bottom:8px; line-height:1.5; }
+  #confirm-code { font-size:11px; color:#9a917d; margin-bottom:14px; }
+  #cf-save-label { display:flex; align-items:center; justify-content:center; gap:6px; font-size:13px; color:#5A5140; margin-bottom:16px; cursor:pointer; user-select:none; }
+  .cf-btns { display:flex; gap:10px; }
+  .cf-btns button { flex:1; border:none; border-radius:10px; padding:11px 0; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+  #cf-ok { background:#2F5D42; color:#fff; } #cf-ok:hover { background:#234934; }
+  #cf-cancel { background:#fff; color:#5A5140; border:1px solid #D8CFB8; } #cf-cancel:hover { background:#F1EAD8; }
+
+  #toast { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); z-index:3000; background:#2B2620; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; font-weight:600; opacity:0; transition:opacity .25s; pointer-events:none; }
+  #toast.show { opacity:.95; }
+  #map-error { display:none; position:absolute; inset:0; z-index:1500; padding:24px; background:#FBF7EF; color:#7a2e2e; font-size:14px; line-height:1.6; }
+</style>
+</head>
+<body>
+<div id="map"></div>
+
+<!-- 드릴다운 선택 패널 -->
+<div id="selector" class="panel">
+  <div id="sel-head">
+    <div id="sel-title">🌾 어느 지역으로 귀농하시나요?</div>
+    <div id="sel-path">먼저 <b>도</b>를 선택하세요</div>
+    <button id="sel-back" type="button">◀ 뒤로</button>
+  </div>
+  <div id="sel-search"><input type="text" id="sel-search-input" placeholder="읍·면·동 검색..."></div>
+  <div id="btn-list"></div>
+</div>
+
+<!-- 프로필 패널 -->
+<div id="profile" class="panel">
+  <div id="prof-head"><span class="ic">🧑‍🌾</span><span class="tt">내 귀농 지역</span><span class="cnt" id="prof-count">0</span></div>
+  <div id="prof-list"></div>
+</div>
+
+<!-- 확인 모달 -->
+<div id="confirm-back">
+  <div id="confirm-card">
+    <div id="confirm-region"></div>
+    <div id="confirm-msg">이 지역의 작물 추천을 확인할까요?</div>
+    <div id="confirm-code"></div>
+    <label id="cf-save-label">
+      <input type="checkbox" id="cf-save-profile"> 🌾 내 귀농지역으로도 저장
+    </label>
+    <div class="cf-btns">
+      <button id="cf-cancel" type="button">취소</button>
+      <button id="cf-ok" type="button">확인</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+<div id="map-error">⚠️ 네이버 지도를 불러오지 못했습니다. 콘솔의 <b>Web 서비스 URL</b> 등록을 확인하세요.</div>
+
+<script>
+(function () {
+  var TREE = window.REGION_TREE || {};
+  var ORDER = window.PROVINCE_ORDER || Object.keys(TREE);
+  // 지오코딩용 정식 시도명
+  var GEO_PROV = { '강원도':'강원특별자치도', '전라북도':'전북특별자치도', '제주도':'제주특별자치도' };
+  function geoName(p) { return GEO_PROV[p] || p; }
+
+  // ---- 네이버 지도 ----
+  var map = null, focusMarker = null;
+  if (window.naver && naver.maps) {
+    map = new naver.maps.Map('map', {
+      center: new naver.maps.LatLng(36.4, 127.8), zoom: 7,
+      zoomControl: true, zoomControlOptions: { position: naver.maps.Position.TOP_RIGHT }
+    });
+  } else {
+    document.getElementById('map-error').style.display = 'block';
+  }
+
+  function placeMarker(ll) {
+    if (!map) return;
+    if (focusMarker) focusMarker.setMap(null);
+    focusMarker = new naver.maps.Marker({ position: ll, map: map });
+  }
+
+  // 주소를 좌표로 변환해 지도 확대. 실패 시 fallback(center) 사용.
+  function zoomToAddress(query, zoom, fallbackCenter) {
+    if (!map) return;
+    var hasGeo = naver.maps.Service && naver.maps.Service.geocode;
+    if (!hasGeo) {
+      if (fallbackCenter) { var c = new naver.maps.LatLng(fallbackCenter[0], fallbackCenter[1]); map.morph(c, zoom); placeMarker(c); }
+      return;
+    }
+    naver.maps.Service.geocode({ query: query }, function (status, response) {
+      if (status === naver.maps.Service.Status.OK && response.v2.addresses && response.v2.addresses.length) {
+        var a = response.v2.addresses[0];
+        var ll = new naver.maps.LatLng(parseFloat(a.y), parseFloat(a.x));
+        map.morph(ll, zoom); placeMarker(ll);
+      } else if (fallbackCenter) {
+        var c2 = new naver.maps.LatLng(fallbackCenter[0], fallbackCenter[1]); map.morph(c2, zoom); placeMarker(c2);
+      }
+    });
+  }
+
+  // ---- 상태 ----
+  var state = { level: 'province', province: null, sigungu: null };
+  var pathEl = document.getElementById('sel-path');
+  var backEl = document.getElementById('sel-back');
+  var listEl = document.getElementById('btn-list');
+  var searchWrap = document.getElementById('sel-search');
+  var searchInput = document.getElementById('sel-search-input');
+
+  function clearList() { listEl.innerHTML = ''; }
+  function addBtn(label, cls, onClick) {
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'rgn-btn' + (cls ? ' ' + cls : ''); b.textContent = label;
+    b.addEventListener('click', onClick); listEl.appendChild(b);
+  }
+
+  function renderProvince() {
+    state.level = 'province'; state.province = null; state.sigungu = null;
+    backEl.style.display = 'none'; searchWrap.style.display = 'none';
+    pathEl.innerHTML = '먼저 <b>도</b>를 선택하세요';
+    clearList();
+    ORDER.forEach(function (p) { if (TREE[p]) addBtn(p, 'province', function () { selectProvince(p); }); });
+  }
+
+  function selectProvince(p) {
+    state.level = 'sigungu'; state.province = p; state.sigungu = null;
+    zoomToAddress(geoName(p), 9, TREE[p].center);   // 도 확대
+    backEl.style.display = 'inline-block'; searchWrap.style.display = 'none';
+    pathEl.innerHTML = '<b>' + p + '</b> · 시/군/구를 선택하세요';
+    clearList();
+    Object.keys(TREE[p].sigungu).forEach(function (sg) { addBtn(sg, '', function () { selectSigungu(sg); }); });
+  }
+
+  function selectSigungu(sg) {
+    state.level = 'dong'; state.sigungu = sg;
+    zoomToAddress(geoName(state.province) + ' ' + sg, 12);   // 시군구 확대
+    backEl.style.display = 'inline-block';
+    searchWrap.style.display = 'block'; searchInput.value = '';
+    pathEl.innerHTML = '<b>' + state.province + ' ' + sg + '</b> · 읍/면/동을 선택하세요';
+    renderDongs(''); searchInput.focus();
+  }
+
+  function renderDongs(filter) {
+    clearList();
+    TREE[state.province].sigungu[state.sigungu].forEach(function (d) {  // d=[동,코드]
+      if (filter && d[0].indexOf(filter) === -1) return;
+      addBtn(d[0], '', function () { selectDong(d[0], d[1]); });
+    });
+  }
+  searchInput.addEventListener('input', function () { renderDongs(this.value.trim()); });
+
+  function selectDong(dong, code) {
+    zoomToAddress(geoName(state.province) + ' ' + state.sigungu + ' ' + dong, 14);  // 동 확대
+    openConfirm(dong, code);
+  }
+
+  backEl.addEventListener('click', function () {
+    if (state.level === 'dong') selectProvince(state.province);
+    else if (state.level === 'sigungu') renderProvince();
+  });
+
+  // ---- 확인 모달 ----
+  var cfBack = document.getElementById('confirm-back');
+  var cfRegion = document.getElementById('confirm-region');
+  var cfCode = document.getElementById('confirm-code');
+  var cfSaveProfile = document.getElementById('cf-save-profile');
+  var pending = null;
+
+  function openConfirm(dong, code) {
+    var sigunguName = state.province + ' ' + state.sigungu;
+    var fullName = sigunguName + ' ' + dong;
+    // 같은 시군구 안의 읍/면/동 전체 목록 - 카드 쪽 "읍·면·동" 드롭다운이 이 지역
+    // 하나만 뜨지 않고 전체 중에서 고를 수 있도록 같이 넘긴다.
+    var dongList = (TREE[state.province].sigungu[state.sigungu] || []).map(function (d) { return d[0]; });
+    pending = {
+      province: state.province, sigungu: state.sigungu, dong: dong, code: code,
+      name: sigunguName, fullName: fullName, dongs: dongList,
+    };
+    cfRegion.textContent = fullName;
+    cfCode.textContent = '법정동코드 ' + code;
+    cfSaveProfile.checked = false;   // 지역 선택할 때마다 매번 명시적으로 다시 체크해야 저장됨
+    cfBack.style.display = 'flex';
+  }
+  document.getElementById('cf-cancel').addEventListener('click', function () { cfBack.style.display = 'none'; pending = null; });
+  document.getElementById('cf-ok').addEventListener('click', function () {
+    if (!pending) return;
+    // "내 귀농지역으로도 저장" 체크박스를 켰을 때만 프로필에 저장한다 - 그냥 지역별
+    // 추천을 보려고 지역을 고른 것만으로는 자동 저장되지 않는다.
+    var wantsSave = cfSaveProfile.checked;
+    var added = wantsSave ? addToProfile(pending) : false;
+    window.parent.postMessage({
+      type: 'selectRegion', id: pending.code, code: pending.code, name: pending.name,
+      province: pending.province, sigungu: pending.sigungu, dong: pending.dong, dongs: pending.dongs
+    }, '*');
+    cfBack.style.display = 'none';
+    pathEl.innerHTML = '✅ 선택됨: <b>' + pending.fullName + '</b>';
+    if (wantsSave) {
+      toast(added ? '내 귀농지역으로 저장되었습니다 🌱' : '이미 저장된 지역입니다');
+    } else {
+      toast('지역이 선택되었습니다');
+    }
+    pending = null;
+  });
+  cfBack.addEventListener('click', function (e) { if (e.target === cfBack) { cfBack.style.display = 'none'; pending = null; } });
+
+  // ---- 프로필 (localStorage) ----
+  var LS_KEY = 'beomin_saved_regions';
+  var listWrap = document.getElementById('prof-list');
+  var countEl = document.getElementById('prof-count');
+
+  function loadProfile() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch (e) { return []; } }
+  function saveProfile(l) { localStorage.setItem(LS_KEY, JSON.stringify(l)); }
+  function addToProfile(r) {
+    var l = loadProfile();
+    if (l.some(function (x) { return x.code === r.code; })) { renderProfile(); return false; }
+    l.push({ name: r.name, code: r.code, province: r.province, sigungu: r.sigungu, dong: r.dong });
+    saveProfile(l); renderProfile(); return true;
+  }
+  function removeFromProfile(code) { saveProfile(loadProfile().filter(function (x) { return x.code !== code; })); renderProfile(); }
+
+  function renderProfile() {
+    var l = loadProfile(); countEl.textContent = l.length; listWrap.innerHTML = '';
+    if (!l.length) { listWrap.innerHTML = '<div id="prof-empty">아직 저장한 지역이 없어요.<br>지역을 선택하고 <b>내 귀농지역으로도 저장</b>을<br>체크한 뒤 확인을 누르면 여기에 저장됩니다.</div>'; return; }
+    l.forEach(function (r) {
+      var item = document.createElement('div'); item.className = 'prof-item';
+      var info = document.createElement('div'); info.style.flex = '1';
+      info.innerHTML = '<div class="nm">' + r.dong + '</div><div class="sub">' + r.province + ' ' + r.sigungu + '</div>';
+      var locate = document.createElement('button'); locate.className = 'locate'; locate.title = '지도에서 보기'; locate.textContent = '⌖';
+      locate.addEventListener('click', function () { zoomToAddress(geoName(r.province) + ' ' + r.sigungu + ' ' + r.dong, 14); });
+      var del = document.createElement('button'); del.className = 'del'; del.title = '삭제'; del.textContent = '×';
+      del.addEventListener('click', function () { removeFromProfile(r.code); });
+      item.appendChild(info); item.appendChild(locate); item.appendChild(del);
+      listWrap.appendChild(item);
+    });
+  }
+
+  // ---- 토스트 ----
+  var toastEl = document.getElementById('toast'), toastT = null;
+  function toast(msg) { toastEl.textContent = msg; toastEl.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(function () { toastEl.classList.remove('show'); }, 2200); }
+
+  // 시작
+  renderProvince(); renderProfile();
+})();
+</script>
+</body>
+</html>

@@ -12,5 +12,11 @@ build/
 # OS / 에디터
 .DS_Store
 *.log
+
+# python
 __pycache__/
 *.pyc
+.pytest_cache/
+
+# 백엔드 대용량 원천 데이터(선택) — 필요 시 주석 해제
+# data/raw/hourly_temp_fruit_full.csv

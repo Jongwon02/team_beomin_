@@ -19,6 +19,18 @@ SIDO_RENAME_MAP = {
     "전북특별자치도": "전라북도",
 }
 
+# 개별 시군구 단위 행정구역 개편(시 승격/광역시 편입/개칭) 대응. SIDO_RENAME_MAP과
+# 정반대 방향(구 명칭 -> 신 명칭)이다 - sigungu_coordinates.json은 이미 최신 명칭으로
+# 갱신해뒀으므로, 사용자가 예전 이름으로 입력했을 때만 신 명칭으로 올려준다.
+# 군위군처럼 시도 자체가 바뀌는 경우도 있어(경상북도->대구광역시) "시도 시군구"
+# 전체를 키로 둔다 - SIDO_RENAME_MAP처럼 시도만 따로 치환할 수 없다(경상북도의 다른
+# 시군구까지 대구광역시로 잘못 치환되면 안 되므로).
+SIGUNGU_RENAME_MAP = {
+    "경기도 여주군": "경기도 여주시",  # 2013 시 승격
+    "경상북도 군위군": "대구광역시 군위군",  # 2023 대구광역시 편입
+    "인천광역시 남구": "인천광역시 미추홀구",  # 2018 개칭
+}
+
 # 시/도명 약칭 인식용 (예: "강원 평창" -> 시도="강원"). 축약형이 원래 명칭의 접미사만 뗀 형태가
 # 아닌 경우(충청북도->충북 등)만 별도로 등록한다.
 SIDO_COMPOUND_ALIASES = {
@@ -42,6 +54,28 @@ def _canonicalize_sido_prefix(s):
         if s.startswith(new_name):
             return old_name + s[len(new_name):]
     return s
+
+
+def _canonicalize_sigungu_rename(s):
+    """SIGUNGU_RENAME_MAP 키를 시도 약칭까지 인식해서 적용한다("인천 남구"처럼
+    "인천광역시"를 "인천"으로 줄인 입력도 매칭돼야 하므로, 시도 부분은 stem
+    비교(_sido_stem)로 유연하게 처리한다)."""
+    tokens = s.split(" ")
+    if len(tokens) < 2:
+        return s
+    sido_part, rest = tokens[0], " ".join(tokens[1:])
+    for old_name, new_name in SIGUNGU_RENAME_MAP.items():
+        old_sido, old_sigungu = old_name.split(" ", 1)
+        if _sido_stem(sido_part) != _sido_stem(old_sido):
+            continue
+        if rest == old_sigungu or rest.startswith(old_sigungu + " "):
+            return new_name + rest[len(old_sigungu):]
+    return s
+
+
+def _canonicalize_region_name(s):
+    """시도명 신/구 치환 + 개별 시군구 개편(승격/편입/개칭) 치환을 순서대로 적용한다."""
+    return _canonicalize_sigungu_rename(_canonicalize_sido_prefix(s))
 
 
 def _sido_only_part(sigungu_name):
@@ -104,8 +138,8 @@ def _load_sigungu_records(path=SIGUNGU_COORDS_PATH):
         records.append(
             {
                 "emd_code": r["emd_code"],
-                "full_name": _canonicalize_sido_prefix(_normalize_whitespace(r["full_name"])),
-                "sigungu_name": _canonicalize_sido_prefix(_normalize_whitespace(r["sigungu_name"])),
+                "full_name": _canonicalize_region_name(_normalize_whitespace(r["full_name"])),
+                "sigungu_name": _canonicalize_region_name(_normalize_whitespace(r["sigungu_name"])),
                 "emd_name": _normalize_whitespace(r["emd_name"]),
                 "lat": r["lat"],
                 "lon": r["lon"],
@@ -143,7 +177,7 @@ def _match_region(raw_input, records):
            "matches": [record, ...]}
     matched일 때 matches는 길이 1, ambiguous일 때는 서로 다른 시군구를 대표하는 레코드들.
     """
-    normalized = _canonicalize_sido_prefix(_normalize_whitespace(raw_input))
+    normalized = _canonicalize_region_name(_normalize_whitespace(raw_input))
     compact = normalized.replace(" ", "")
     tokens = normalized.split(" ")
 
@@ -273,6 +307,53 @@ def _match_region(raw_input, records):
             "matches": [members[0] for members in stem_groups.values()],
         }
 
+    # 6단계 "N시 M구" 패턴 처리 - 구가 있는 시(창원시 등)를 "시+구" 형태로 입력한 경우.
+    # 토큰이 2개 이상이고 마지막 토큰이 "구"로 끝날 때만 적용되므로, "중구"처럼 시/도
+    # 정보 없이 구만 단독으로 들어온 입력(토큰 1개)은 여기 걸리지 않고 기존 4단계
+    # (동명이인 처리)로 그대로 넘어간다 - 서로 다른 입력 패턴이라 충돌하지 않는다.
+    if len(tokens) >= 2 and tokens[-1].endswith("구"):
+        city_part = " ".join(tokens[:-1])
+        district_part = " ".join(tokens[-2:])  # "창원시 진해구"
+
+        # 6-a: 구 단위 데이터가 실제로 있으면(sigungu_coordinates.json에 "시도 시군구 구"
+        # 레코드가 존재) 그걸로 정밀 확정한다 - 이게 city_part 대표좌표보다 우선이다.
+        exact_district = [
+            r for r in records
+            if " ".join(r["sigungu_name"].split(" ")[1:]) == district_part
+        ]
+        district_groups = _group_first_by_sigungu(exact_district)
+        if len(district_groups) == 1:
+            logger.info("[region_mapper] '%s' -> 6단계(시+구 정밀일치, 구 단위 데이터 사용)", raw_input)
+            rep = next(iter(district_groups.values()))[0]
+            return {
+                "stage": 6,
+                "stage_name": "city_district_exact",
+                "status": "matched",
+                "matches": [rep],
+                "precision": "sigungu",
+                "match_type": None,
+            }
+
+        # 6-b: 구 단위 데이터가 없으면(알려진 데이터 갭이 아직 남은 도시) 입력의 "시" 부분이
+        # 유일하게 존재하는 시군구일 때(=동명이인 우려 없음) 그 시의 대표좌표로 확정한다.
+        exact_city = [r for r in records if r["sigungu_name"] == city_part]
+        bare_city = [r for r in records if _sigungu_only_part(r["sigungu_name"]) == city_part]
+        city_groups = _group_first_by_sigungu(exact_city + bare_city)
+        if len(city_groups) == 1:
+            logger.info(
+                "[region_mapper] '%s' -> 6단계 fallback(시+구 패턴, '%s' 대표좌표로 확정)",
+                raw_input, city_part,
+            )
+            rep = next(iter(city_groups.values()))[0]
+            return {
+                "stage": 6,
+                "stage_name": "city_fallback",
+                "status": "matched",
+                "matches": [rep],
+                "precision": "sigungu",
+                "match_type": "city_fallback",
+            }
+
     # 6단계: 부분 문자열 포함 매칭 - 확정하지 않고 후보만 제시
     # stem이 1글자면("동구"->"동" 등) 아무 입력에나 우연히 포함되기 쉬워 신뢰할 수 없으므로
     # 양방향 포함 관계 검사 모두에서 2글자 미만 stem은 제외한다.
@@ -312,7 +393,9 @@ def _resolve_region_match(region_name, sigungu_data=None):
     반환: (error_dict, None) - 실패(빈 입력/not_found/ambiguous). error_dict는
           그대로 반환해도 되는 {"status", "input", ...} 형태.
           (None, resolved) - 성공. resolved = {"matched", "precision", "stage",
-          "stage_name"}.
+          "stage_name", "match_type"}. match_type은 보통 None이고, 6단계
+          fallback(시+구 패턴 자동확정)으로 매칭됐을 때만 "city_fallback" -
+          프론트엔드 노출용이 아니라 내부 로깅/디버깅용 표시다.
     """
     if not region_name or not region_name.strip():
         return {"status": "not_found", "input": region_name, "message": "지역명이 비어 있습니다."}, None
@@ -346,6 +429,7 @@ def _resolve_region_match(region_name, sigungu_data=None):
         "precision": result["precision"],
         "stage": result["stage"],
         "stage_name": result["stage_name"],
+        "match_type": result.get("match_type"),
     }
 
 
@@ -381,6 +465,7 @@ def find_nearest_station(region_name, sigungu_data=None, station_data=None):
         "input": region_name,
         "match_stage": resolved["stage"],
         "match_stage_name": resolved["stage_name"],
+        "match_type": resolved.get("match_type"),
         "matched_region": {
             "sigungu_name": matched["sigungu_name"],
             "emd_name": matched["emd_name"] if precision == "emd" else None,
@@ -477,4 +562,5 @@ def find_nearest_station_for_crop(region_name, crop, sigungu_data=None, station_
         **extra_fields,
         "distance_km": round(distance_km, 2),
         "warning": warning,
+        "match_type": resolved["match_type"],
     }

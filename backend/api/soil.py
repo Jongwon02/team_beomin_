@@ -30,6 +30,7 @@ import requests
 from dotenv import load_dotenv
 
 from bjd_lookup import get_stdg_candidates
+from reference_data import LAND_USE_CATEGORY
 
 load_dotenv()
 
@@ -78,15 +79,6 @@ def _get_bin_midpoints(variable, category):
     if isinstance(entry, dict):
         return entry[category]
     return entry
-
-
-# 작물별로 어느 지목(land-use) 분포를 대표값으로 쓸지. 사과·배는 과수원, 오이는
-# 대부분 시설재배, 감자·상추는 노지 밭 재배가 기본형이라는 일반 농업지식 기반 매핑.
-LAND_USE_CATEGORY = {
-    "사과": "Fruit", "배": "Fruit",
-    "오이": "Fachs",
-    "감자": "Pfld", "상추": "Pfld",
-}
 
 
 def _fetch_operation(variable, stdg_cd, service_key):

@@ -48,6 +48,9 @@ def _load_df(path=BJD_CODE_CSV_PATH):
         return _df_cache
     df = pd.read_csv(path, dtype={"법정동코드": str}, encoding="utf-8")
     df = df[df["폐지여부"] == "존재"].copy()
+    # 원본 CSV에 일부 행(예: 부천시 원미구/소사구/오정구)이 끝에 공백을 포함하고
+    # 있어(국토교통부 원본 데이터 자체의 문제) strip 안 하면 정확일치 비교가 실패한다.
+    df["법정동명"] = df["법정동명"].str.strip()
     code_int = df["법정동코드"].astype("int64")
     df["시군구_level"] = (code_int % 100000 == 0) & (code_int % 100000000 != 0)
     _df_cache = df

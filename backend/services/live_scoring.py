@@ -9,6 +9,7 @@
 """
 
 import logging
+import os
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -91,7 +92,20 @@ def _resolve_current_growth_window(periods, today):
 
 
 def _get_temperature_reading(station_lat, station_lon, crop, matched_station):
-    """온도 관련 값을 조회한다. 실패 시 (None, None, "실패 사유")."""
+    """온도 관련 값을 조회한다. 실패 시 (None, None, "실패 사유").
+
+    ⚠️ weather.get_short_term_forecast()는 실패 사유(키 없음/타임아웃/API 오류 등)를
+    구분하지 않고 전부 bare None으로 반환한다(asos.py/soil.py도 동일한 설계라 여기서
+    바꾸지 않는다). 그런데 "KMA_SERVICE_KEY가 아예 없음"은 팀원 컴퓨터마다 .env
+    설정 여부가 갈려서 실제로 반복 발생하는 원인이라(다른 두 API 키는 같은 계정이라
+    자동승인되지만 기상청 단기예보 키는 별도 심의라 팀원이 놓치기 쉬움), 이 경우만은
+    호출 전에 미리 확인해서 구체적인 사유를 남긴다.
+    """
+    if not os.environ.get("KMA_SERVICE_KEY"):
+        return None, None, (
+            "KMA_SERVICE_KEY 환경변수가 없습니다 - farm-guide/.env에 기상청 단기예보 "
+            "API 서비스키를 설정하세요 (.env.example 참고, data.go.kr에서 별도 활용신청 필요)"
+        )
     try:
         forecast = get_short_term_forecast(station_lat, station_lon)
     except Exception as e:
