@@ -18,5 +18,8 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
+# 런타임 캐시(디스크 영속 API 캐시 등) - 기기마다 다시 쌓이면 되는 데이터
+data/cache/
+
 # 백엔드 대용량 원천 데이터(선택) — 필요 시 주석 해제
 # data/raw/hourly_temp_fruit_full.csv
