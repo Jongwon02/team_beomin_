@@ -365,18 +365,27 @@
     <sc-if value="{{ showResults }}">
       <div style="margin-top:48px;">
         <h2 style="font-size:22px;font-weight:700;margin:0 0 6px;">{{ selectedRegion.name }} {{ selectedDong }}에 추천하는 작물</h2>
-        <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">적합도가 높은 순으로 정렬했어요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
+        <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">실측 기상·토양 데이터로 계산한 적합도 순이에요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
+        <sc-if value="{{ scoresLoading }}">
+          <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:22px;text-align:center;color:#8A7F65;font-size:14px;margin-bottom:16px;">
+            지역 데이터로 적합도를 계산하고 있어요… ⏳ <span style="color:#B3A98F;">(기상·토양 API 조회로 수 초 걸릴 수 있어요)</span>
+          </div>
+        </sc-if>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
           <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
             <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <h3 style="font-size:19px;font-weight:700;margin:0;">{{ r.name }}</h3>
                 <div style="display:flex;align-items:center;gap:10px;">
+                  <sc-if value="{{ r.isLive }}"><span style="font-size:13px;font-weight:700;color:#2F5D42;">{{ r.scoreText }}</span></sc-if>
                   <span style="{{ r.badgeStyle }}">{{ r.levelLabel }}</span>
                   <button type="button" title="즐겨찾기" style="{{ r.favStyle }}" onClick="{{ r.toggleFav }}">{{ r.favIcon }}</button>
                 </div>
               </div>
-              <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 14px;">{{ r.reason }}</p>
+              <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">{{ r.reason }}</p>
+              <sc-if value="{{ r.hasReliability }}">
+                <p style="font-size:12px;color:#9A8A63;background:#FBF4E3;border-radius:8px;padding:6px 10px;margin:0 0 12px;">ℹ️ {{ r.reliabilityText }}</p>
+              </sc-if>
               <div style="display:grid;gap:8px;font-size:13px;color:#6B6250;">
                 <div><strong style="color:#2B2620;">파종·수확</strong> — {{ r.season }}</div>
                 <div><strong style="color:#2B2620;">예상 소득</strong> — {{ r.income }}</div>
@@ -929,6 +938,14 @@ const LEVEL_META = {
   caution: { label: '주의 필요', bg: '#F3E2DC', color: '#B5482F' }
 };
 const RANK = { good: 0, ok: 1, caution: 2 };
+// 백엔드 라이브 점수 등급(good/normal/caution/bad) → 표시 메타
+const GRADE_META = {
+  good:    { label: '우수', bg: '#E7F0E4', color: '#2F5D42' },
+  normal:  { label: '양호', bg: '#E4F1E6', color: '#2F7A44' },
+  caution: { label: '주의', bg: '#FBE8D6', color: '#8A5A22' },
+  bad:     { label: '위험', bg: '#F3E2DC', color: '#B5482F' }
+};
+const CROP_SCORE_API = 'http://localhost:8002';
 const CROPS = ['오이', '배', '사과', '감자', '상추'];
 const CROP_IMG = { '상추': 'uploads/lettuce.png', '사과': 'uploads/apple.png' };   // 실제 이미지가 있는 작물
 
@@ -996,7 +1013,7 @@ const PI_DEFAULTS = {
 };
 
 class Component extends DCLogic {
-  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, favorites: [], profile: [], personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, detailCrop: null, newsByCrop: {}, newsLoaded: false, newsLoading: false, detailNews: [], detailNewsLoading: false };
+  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, favorites: [], profile: [], personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, newsByCrop: {}, newsLoaded: false, newsLoading: false, detailNews: [], detailNewsLoading: false };
 
   componentDidMount() {
     try {
@@ -1220,6 +1237,35 @@ class Component extends DCLogic {
     this.setState({ favorites: list });
   }
 
+  // 지역별 라이브 작물 적합도 점수 (backend /api/crop-score) — 5작물 병렬 호출
+  fetchScores(region) {
+    if (!region || !region.name) return;
+    const regionName = region.name;
+    this.setState({ scoresLoading: true, liveScores: {} });
+    Promise.all(CROPS.map(function (name) {
+      return fetch(CROP_SCORE_API + '/api/crop-score/' + encodeURIComponent(name) + '?region=' + encodeURIComponent(regionName))
+        .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
+        .then(function (d) { return [name, d]; })
+        .catch(function () { return [name, null]; });   // 실패 → null(정적 등급 폴백)
+    })).then((pairs) => {
+      const map = {};
+      pairs.forEach(function (p) { map[p[0]] = p[1]; });
+      this.setState({ liveScores: map, scoresLoading: false });
+    });
+  }
+
+  liveReason(ls) {
+    const b = ls.breakdown || {};
+    const parts = [];
+    Object.keys(b).forEach(function (k) {
+      const v = b[k];
+      if (v && typeof v.score === 'number') parts.push(k + ' ' + Math.round(v.score));
+    });
+    const factors = parts.length ? ('항목 점수 — ' + parts.join(', ')) : '';
+    const station = ls.matched_station ? ('최근접 관측소 ' + ls.matched_station + (typeof ls.distance_km === 'number' ? ' (' + Math.round(ls.distance_km) + 'km)' : '')) : '';
+    return [factors, station].filter(Boolean).join(' · ') || '실측 기상·토양 데이터 기반 적합도예요.';
+  }
+
   toggleFavorite(cropName) {
     const region = this.state.selectedRegion;
     if (!region) return;
@@ -1228,7 +1274,16 @@ class Component extends DCLogic {
     if (exists) {
       this.persistFavorites(this.state.favorites.filter(f => f.key !== key));
     } else {
-      const level = CROP_ZONE[cropName][region.zone].level;
+      // 라이브 점수 등급 → 즐겨찾기 표시용 정적 레벨(good/ok/caution)로 환산, 없으면 zone 기반 폴백
+      const ls = (this.state.liveScores || {})[cropName];
+      let level;
+      if (ls && typeof ls.score === 'number') {
+        level = ls.score >= 80 ? 'good' : (ls.score >= 55 ? 'ok' : 'caution');
+      } else if (region.zone && CROP_ZONE[cropName]) {
+        level = CROP_ZONE[cropName][region.zone].level;
+      } else {
+        level = 'ok';
+      }
       const entry = { key, cropName, level, location: region.province + ' ' + region.name + ' ' + this.state.selectedDong };
       this.persistFavorites([...this.state.favorites, entry]);
     }
@@ -1244,17 +1299,45 @@ class Component extends DCLogic {
     const favKeys = new Set(this.state.favorites.map(f => f.key));
 
     let results = [];
-    if (region && region.zone) {
+    if (region) {
+      const live = this.state.liveScores || {};
+      const badge = (m) => ({ fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: m.bg, color: m.color });
       results = CROPS.map(name => {
-        const z = CROP_ZONE[name][region.zone];
         const base = CROP_BASE[name];
-        const meta = LEVEL_META[z.level];
         const key = region.id + '|' + this.state.selectedDong + '|' + name;
         const isFav = favKeys.has(key);
+        const ls = live[name];
+        const hasLive = ls && typeof ls.score === 'number';
+        let levelLabel, badgeStyle, reason, sortScore, isLive = false, scoreText = '', reliabilityText = '', hasReliability = false;
+
+        if (hasLive) {
+          isLive = true;
+          const gm = GRADE_META[ls.grade] || GRADE_META.caution;
+          levelLabel = gm.label; badgeStyle = badge(gm);
+          scoreText = '적합도 ' + Math.round(ls.score) + '점';
+          reason = this.liveReason(ls);
+          sortScore = ls.score;
+          const rel = ls.reliability || '';
+          if (rel && rel !== '정상') {
+            reliabilityText = '데이터 신뢰도: ' + rel + (ls.reliability_reason ? ' · ' + ls.reliability_reason : '');
+            hasReliability = true;
+          }
+        } else if (region.zone && CROP_ZONE[name]) {
+          const z = CROP_ZONE[name][region.zone];
+          const meta = LEVEL_META[z.level];
+          levelLabel = meta.label; badgeStyle = badge(meta);
+          reason = z.reason;
+          sortScore = z.level === 'good' ? 85 : (z.level === 'ok' ? 65 : 45);
+          if (ls === null) { reliabilityText = '실시간 점수를 불러오지 못해 참고 등급을 표시했어요.'; hasReliability = true; }
+        } else {
+          levelLabel = '정보 없음'; badgeStyle = badge({ bg: '#EFE7D5', color: '#8A7F65' });
+          reason = '이 지역의 적합도 정보를 찾지 못했어요.'; sortScore = 0;
+        }
+
         return {
-          name, reason: z.reason, season: base.season, income: base.income, caution: base.caution,
-          levelLabel: meta.label, rank: RANK[z.level],
-          badgeStyle: { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: meta.bg, color: meta.color },
+          name, reason, season: base.season, income: base.income, caution: base.caution,
+          levelLabel, badgeStyle, isLive, scoreText, reliabilityText, hasReliability,
+          rank: -sortScore,
           favIcon: isFav ? '★' : '☆',
           favStyle: { background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer', color: isFav ? '#D97B3A' : '#C9BFA8', lineHeight: 1 },
           toggleFav: () => this.toggleFavorite(name)
@@ -1392,8 +1475,9 @@ class Component extends DCLogic {
       zoneLabel: region ? ZONE_LABEL[region.zone] : '',
       selectedDong: this.state.selectedDong,
       onDongChange: (e) => this.setState({ selectedDong: e.target.value, showResults: false }),
-      showResultsNow: () => this.setState({ showResults: true }),
+      showResultsNow: () => { this.setState({ showResults: true }); this.fetchScores(region); },
       showResults: this.state.showResults && !!region,
+      scoresLoading: this.state.scoresLoading,
       results, cropCards, favoriteCards
     };
   }
