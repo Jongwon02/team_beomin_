@@ -5,6 +5,8 @@ import logging
 import math
 from pathlib import Path
 
+from crop_station_registry import CROP_STATION_REGISTRY, DISTANCE_WARNING_THRESHOLD_KM
+
 logger = logging.getLogger(__name__)
 
 BASE_DIR = Path(__file__).resolve().parents[2]  # farm-guide/
@@ -300,6 +302,53 @@ def _match_region(raw_input, records):
     return {"stage": 7, "stage_name": "not_found", "status": "not_found", "matches": []}
 
 
+def _resolve_region_match(region_name, sigungu_data=None):
+    """region_name -> 좌표가 있는 sigungu 레코드 하나로 정규화하는 공통 로직.
+
+    find_nearest_station()과 find_nearest_station_for_crop()이 "지역명을 좌표로
+    바꾸는" 부분(모호한 이름 처리 포함)을 공유하기 위해 분리했다 - 관측소 후보를
+    무엇으로 좁힐지는 호출부마다 다르지만, 좌표 변환 로직은 완전히 동일하다.
+
+    반환: (error_dict, None) - 실패(빈 입력/not_found/ambiguous). error_dict는
+          그대로 반환해도 되는 {"status", "input", ...} 형태.
+          (None, resolved) - 성공. resolved = {"matched", "precision", "stage",
+          "stage_name"}.
+    """
+    if not region_name or not region_name.strip():
+        return {"status": "not_found", "input": region_name, "message": "지역명이 비어 있습니다."}, None
+
+    records = sigungu_data if sigungu_data is not None else _load_sigungu_records()
+    if not records:
+        return {
+            "status": "not_found",
+            "input": region_name,
+            "message": f"{SIGUNGU_COORDS_PATH} 좌표 데이터를 불러올 수 없습니다.",
+        }, None
+
+    result = _match_region(region_name, records)
+
+    if result["status"] == "not_found":
+        return {"status": "not_found", "input": region_name, "message": "지원하지 않는 지역명입니다."}, None
+
+    if result["status"] == "ambiguous":
+        return {
+            "status": "ambiguous",
+            "input": region_name,
+            "candidates": [
+                {"full_name": r["sigungu_name"], "region_code": _derive_sigungu_code(r["emd_code"])}
+                for r in result["matches"]
+            ],
+        }, None
+
+    matched = result["matches"][0]
+    return None, {
+        "matched": matched,
+        "precision": result["precision"],
+        "stage": result["stage"],
+        "stage_name": result["stage_name"],
+    }
+
+
 def find_nearest_station(region_name, sigungu_data=None, station_data=None):
     """행정구역명을 받아 가장 가까운 기상 관측소를 반환한다.
 
@@ -310,33 +359,11 @@ def find_nearest_station(region_name, sigungu_data=None, station_data=None):
       (이 경우 관측소 매핑은 하지 않고 candidates만 반환한다)
     - 지원하지 않는 지역명: {"status": "not_found", "input", "message"}
     """
-    if not region_name or not region_name.strip():
-        return {"status": "not_found", "input": region_name, "message": "지역명이 비어 있습니다."}
+    error, resolved = _resolve_region_match(region_name, sigungu_data)
+    if error is not None:
+        return error
 
-    records = sigungu_data if sigungu_data is not None else _load_sigungu_records()
-    if not records:
-        return {
-            "status": "not_found",
-            "input": region_name,
-            "message": f"{SIGUNGU_COORDS_PATH} 좌표 데이터를 불러올 수 없습니다.",
-        }
-
-    result = _match_region(region_name, records)
-
-    if result["status"] == "not_found":
-        return {"status": "not_found", "input": region_name, "message": "지원하지 않는 지역명입니다."}
-
-    if result["status"] == "ambiguous":
-        return {
-            "status": "ambiguous",
-            "input": region_name,
-            "candidates": [
-                {"full_name": r["sigungu_name"], "region_code": _derive_sigungu_code(r["emd_code"])}
-                for r in result["matches"]
-            ],
-        }
-
-    matched = result["matches"][0]
+    matched = resolved["matched"]
     stations = station_data if station_data is not None else _load_stations()
     if not stations:
         return {
@@ -348,12 +375,12 @@ def find_nearest_station(region_name, sigungu_data=None, station_data=None):
     nearest = min(stations, key=lambda st: haversine_distance(matched["lat"], matched["lon"], st["lat"], st["lon"]))
     distance_km = haversine_distance(matched["lat"], matched["lon"], nearest["lat"], nearest["lon"])
 
-    precision = result["precision"]
+    precision = resolved["precision"]
     return {
         "status": "matched",
         "input": region_name,
-        "match_stage": result["stage"],
-        "match_stage_name": result["stage_name"],
+        "match_stage": resolved["stage"],
+        "match_stage_name": resolved["stage_name"],
         "matched_region": {
             "sigungu_name": matched["sigungu_name"],
             "emd_name": matched["emd_name"] if precision == "emd" else None,
@@ -370,4 +397,84 @@ def find_nearest_station(region_name, sigungu_data=None, station_data=None):
             "cluster_name": nearest.get("cluster_name"),
         },
         "distance_km": round(distance_km, 2),
+    }
+
+
+def find_nearest_station_for_crop(region_name, crop, sigungu_data=None, station_data=None):
+    """region_name을 좌표로 바꾼 뒤, 전체 관측소가 아니라 crop_station_registry의
+    CROP_STATION_REGISTRY[crop]에 등록된(=이 작물의 근거값이 실제로 있는) 관측소들
+    중에서만 최근접을 찾는다. 좌표 변환은 find_nearest_station()과 완전히 동일한
+    로직(_resolve_region_match)을 재사용한다.
+
+    crop이 CROP_STATION_REGISTRY에 없으면 ValueError.
+
+    반환 형태:
+    - 매칭 성공: {"status": "matched", "input_region", "crop", "matched_station",
+                  "distance_km", "warning": None|str, ...registry 항목의 부가정보
+                  (cultivation_type 또는 calendar_quality)}
+      distance_km이 DISTANCE_WARNING_THRESHOLD_KM(기본 80km)보다 크면 warning에
+      "근거 관측소와 거리가 멀어 정확도가 낮을 수 있습니다"가 채워진다.
+    - 동명이인/부분일치: {"status": "ambiguous", "input_region", "crop", "candidates"}
+    - 지원하지 않는 지역명: {"status": "not_found", "input_region", "crop", "message"}
+    """
+    if crop not in CROP_STATION_REGISTRY:
+        raise ValueError(
+            f"지원하지 않는 작물명입니다: '{crop}' (지원 작물: {', '.join(CROP_STATION_REGISTRY.keys())})"
+        )
+
+    error, resolved = _resolve_region_match(region_name, sigungu_data)
+    if error is not None:
+        return {
+            "status": error["status"],
+            "input_region": region_name,
+            "crop": crop,
+            **{k: v for k, v in error.items() if k not in ("status", "input")},
+        }
+
+    matched = resolved["matched"]
+    all_stations = station_data if station_data is not None else _load_stations()
+    stations_by_name = {s["station_name"]: s for s in all_stations}
+
+    candidates = []
+    for entry in CROP_STATION_REGISTRY[crop]:
+        station_name = entry["station"]
+        station_coord = stations_by_name.get(station_name)
+        if station_coord is None:
+            logger.warning(
+                "[region_mapper] crop_station_registry의 '%s'(%s 작물) 좌표를 %s에서 "
+                "찾을 수 없어 후보에서 제외합니다.",
+                station_name, crop, STATION_MAP_PATH,
+            )
+            continue
+        candidates.append((entry, station_coord))
+
+    if not candidates:
+        return {
+            "status": "not_found",
+            "input_region": region_name,
+            "crop": crop,
+            "message": f"'{crop}'에 등록된 관측소 중 좌표를 찾을 수 있는 곳이 없습니다.",
+        }
+
+    best_entry, best_station = min(
+        candidates,
+        key=lambda pair: haversine_distance(matched["lat"], matched["lon"], pair[1]["lat"], pair[1]["lon"]),
+    )
+    distance_km = haversine_distance(matched["lat"], matched["lon"], best_station["lat"], best_station["lon"])
+
+    extra_fields = {k: v for k, v in best_entry.items() if k != "station"}
+    warning = (
+        "근거 관측소와 거리가 멀어 정확도가 낮을 수 있습니다"
+        if distance_km > DISTANCE_WARNING_THRESHOLD_KM
+        else None
+    )
+
+    return {
+        "status": "matched",
+        "input_region": region_name,
+        "crop": crop,
+        "matched_station": best_entry["station"],
+        **extra_fields,
+        "distance_km": round(distance_km, 2),
+        "warning": warning,
     }
