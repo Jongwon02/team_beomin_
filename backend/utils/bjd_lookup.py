@@ -88,3 +88,44 @@ def get_stdg_candidates(sigungu_full_name, path=BJD_CODE_CSV_PATH):
     children = sorted(child_rows["법정동코드"].tolist())
 
     return {"exact": exact_code, "children": children}
+
+
+def get_dong_codes(sigungu_full_name, path=BJD_CODE_CSV_PATH):
+    """시군구 전체명 -> 그 안의 "말단(leaf)" 법정동코드(10자리) 목록.
+
+    흙토람 토양검정정보(getSoilExamList) API는 필지별 실측 시료를 "가장 하위 행정동" 코드에만
+    담아 준다(실측 확인). 그 하위 단위가 지역마다 다르다:
+      - 도시 동: 동 코드(리 segment=00) 자체에 필지가 등록됨(예: 충주 칠금동 4313011600).
+      - 농촌 읍면: 읍면 대표 코드(리=00)는 "요청 데이터 없음"이고, 필지는 그 아래
+        리(里) 코드(리!=00)에 등록됨(예: 평창읍 상리 5176025021).
+    시군구/읍면 상위 코드로는 데이터가 안 나오므로, 아래 두 종류의 "말단" 코드만 모은다:
+      1) 리 코드(리 segment 9~10자리 != 00) - 항상 말단.
+      2) 동/읍면 코드(리=00, 읍면동 6~8자리 != 000) 중 그 아래 리 코드가 없는 것(=도시 동).
+    (읍면 코드에 리 자식이 있으면 그 읍면 코드는 데이터가 없으므로 제외한다.)
+
+    반환: 정렬된 10자리 코드 리스트(없으면 빈 리스트).
+    """
+    df = _load_df(path)
+    candidates = get_stdg_candidates(sigungu_full_name, path)
+    bases = candidates["children"] or ([candidates["exact"]] if candidates["exact"] else [])
+    if not bases:
+        return []
+
+    ri_codes = set()          # 리 코드(리!=00)
+    dong_codes = set()        # 동/읍면 코드(리=00, 읍면동!=000)
+    for base in bases:
+        prefix5 = base[:5]    # 시도(2) + 시군구(3)
+        sub = df[df["법정동코드"].str.startswith(prefix5)]
+        for code in sub["법정동코드"]:
+            if code[5:8] == "000":
+                continue      # 시군구/구 상위 코드 - 데이터 없음
+            if code[8:10] != "00":
+                ri_codes.add(code)
+            else:
+                dong_codes.add(code)
+
+    # 리 자식(같은 읍면동, 앞 8자리 동일)이 있는 동/읍면 코드는 상위라 제외한다.
+    ri_parents = {code[:8] for code in ri_codes}
+    leaf_dongs = {code for code in dong_codes if code[:8] not in ri_parents}
+
+    return sorted(ri_codes | leaf_dongs)

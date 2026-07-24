@@ -30,6 +30,7 @@ import requests
 from dotenv import load_dotenv
 
 from bjd_lookup import get_stdg_candidates
+from soil_ec import get_ec  # 흙토람 토양검정정보(getSoilExamList) 기반 실측 EC 조회
 
 load_dotenv()
 
@@ -176,12 +177,16 @@ def get_soil_variable(variable, sigungu_full_name, crop, service_key=None):
 
 
 def get_soil_readings(sigungu_full_name, crop, service_key=None):
-    """pH/유기물/유효인산 근사 평균값을 한 번에 조회한다. EC는 이 API에 없어 항상 None.
+    """pH/유기물/유효인산(SoilExamStat 근사평균)+EC(getSoilExamList 실측평균)를 한 번에 조회.
 
-    반환: {"pH": float|None, "유기물": float|None, "유효인산": float|None, "EC": None}
+    pH·유기물·유효인산은 SoilExamStat V2의 지목별 구간분포 기반 근사평균(get_soil_variable)이고,
+    EC는 이 통계 API에 항목이 없어 별도로 토양검정정보(getSoilExamList) 실측 시료의 <ELCD>를
+    읍면동별로 모아 평균낸다(soil_ec.get_ec). 각 값은 실패/무데이터 시 None.
+
+    반환: {"pH": float|None, "유기물": float|None, "유효인산": float|None, "EC": float|None}
     """
     readings = {}
     for variable in ("pH", "유기물", "유효인산"):
         readings[variable] = get_soil_variable(variable, sigungu_full_name, crop, service_key=service_key)
-    readings["EC"] = None  # 흙토람 SoilExamStat에 EC 항목 자체가 없음
+    readings["EC"] = get_ec(sigungu_full_name, service_key=service_key)
     return readings
