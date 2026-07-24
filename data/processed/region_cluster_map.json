@@ -1,0 +1,714 @@
+[
+  {
+    "station_id": 90,
+    "station_name": "속초",
+    "lat": 38.2509,
+    "lon": 128.5647,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 95,
+    "station_name": "철원",
+    "lat": 38.1479,
+    "lon": 127.3042,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 98,
+    "station_name": "동두천",
+    "lat": 37.9019,
+    "lon": 127.0607,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 99,
+    "station_name": "파주",
+    "lat": 37.8859,
+    "lon": 126.7665,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 100,
+    "station_name": "대관령",
+    "lat": 37.6771,
+    "lon": 128.7183,
+    "cluster_id": 2,
+    "cluster_name": "고랭지형"
+  },
+  {
+    "station_id": 101,
+    "station_name": "춘천",
+    "lat": 37.9026,
+    "lon": 127.7357,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 102,
+    "station_name": "백령도",
+    "lat": 37.974,
+    "lon": 124.7124,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 105,
+    "station_name": "강릉",
+    "lat": 37.7515,
+    "lon": 128.891,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 106,
+    "station_name": "동해",
+    "lat": 37.5071,
+    "lon": 129.1243,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 108,
+    "station_name": "서울",
+    "lat": 37.5714,
+    "lon": 126.9658,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 112,
+    "station_name": "인천",
+    "lat": 37.4777,
+    "lon": 126.6249,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 114,
+    "station_name": "원주",
+    "lat": 37.3375,
+    "lon": 127.9466,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 115,
+    "station_name": "울릉도독도(감)",
+    "lat": 37.48,
+    "lon": 130.9,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 121,
+    "station_name": "영월",
+    "lat": 37.1813,
+    "lon": 128.4574,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 127,
+    "station_name": "충주",
+    "lat": 36.9705,
+    "lon": 127.9525,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 129,
+    "station_name": "서산",
+    "lat": 36.7766,
+    "lon": 126.4939,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 130,
+    "station_name": "울진",
+    "lat": 36.9918,
+    "lon": 129.4128,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 131,
+    "station_name": "청주",
+    "lat": 36.6392,
+    "lon": 127.4407,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 133,
+    "station_name": "대전",
+    "lat": 36.372,
+    "lon": 127.3721,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 135,
+    "station_name": "추풍령",
+    "lat": 36.2202,
+    "lon": 127.9946,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 136,
+    "station_name": "안동",
+    "lat": 36.5729,
+    "lon": 128.7073,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 137,
+    "station_name": "상주",
+    "lat": 36.4084,
+    "lon": 128.1574,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 138,
+    "station_name": "포항",
+    "lat": 36.032,
+    "lon": 129.38,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 140,
+    "station_name": "군산",
+    "lat": 36.0053,
+    "lon": 126.7614,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 143,
+    "station_name": "대구",
+    "lat": 35.878,
+    "lon": 128.653,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 146,
+    "station_name": "전주",
+    "lat": 35.8409,
+    "lon": 127.1172,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 152,
+    "station_name": "울산",
+    "lat": 35.5824,
+    "lon": 129.3347,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 155,
+    "station_name": "창원",
+    "lat": 35.1702,
+    "lon": 128.5728,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 156,
+    "station_name": "광주",
+    "lat": 35.1729,
+    "lon": 126.8916,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 159,
+    "station_name": "부산",
+    "lat": 35.1047,
+    "lon": 129.032,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 162,
+    "station_name": "통영",
+    "lat": 34.8454,
+    "lon": 128.4356,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 165,
+    "station_name": "목포",
+    "lat": 34.8173,
+    "lon": 126.3815,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 168,
+    "station_name": "여수",
+    "lat": 34.7393,
+    "lon": 127.7406,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 169,
+    "station_name": "흑산도",
+    "lat": 34.6872,
+    "lon": 125.451,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 170,
+    "station_name": "완도",
+    "lat": 34.3959,
+    "lon": 126.7018,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 172,
+    "station_name": "고창",
+    "lat": 35.3482,
+    "lon": 126.599,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 174,
+    "station_name": "순천",
+    "lat": 35.0204,
+    "lon": 127.3694,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 184,
+    "station_name": "제주",
+    "lat": 33.5141,
+    "lon": 126.5297,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 185,
+    "station_name": "고산",
+    "lat": 33.2938,
+    "lon": 126.1628,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 188,
+    "station_name": "성산",
+    "lat": 33.3868,
+    "lon": 126.8802,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 189,
+    "station_name": "서귀포",
+    "lat": 33.2462,
+    "lon": 126.5653,
+    "cluster_id": 5,
+    "cluster_name": "도서형"
+  },
+  {
+    "station_id": 192,
+    "station_name": "진주",
+    "lat": 35.1638,
+    "lon": 128.04,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 201,
+    "station_name": "강화",
+    "lat": 37.7074,
+    "lon": 126.4463,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 202,
+    "station_name": "양평",
+    "lat": 37.4886,
+    "lon": 127.4945,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 203,
+    "station_name": "이천",
+    "lat": 37.264,
+    "lon": 127.4842,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 211,
+    "station_name": "인제",
+    "lat": 38.0599,
+    "lon": 128.1681,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 212,
+    "station_name": "홍천",
+    "lat": 37.6836,
+    "lon": 127.8804,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 216,
+    "station_name": "태백",
+    "lat": 37.1704,
+    "lon": 128.9893,
+    "cluster_id": 2,
+    "cluster_name": "고랭지형"
+  },
+  {
+    "station_id": 217,
+    "station_name": "정선군",
+    "lat": 37.3807,
+    "lon": 128.6731,
+    "cluster_id": 2,
+    "cluster_name": "고랭지형"
+  },
+  {
+    "station_id": 221,
+    "station_name": "제천",
+    "lat": 37.1593,
+    "lon": 128.1943,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 226,
+    "station_name": "보은",
+    "lat": 36.4876,
+    "lon": 127.7342,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 232,
+    "station_name": "천안",
+    "lat": 36.7624,
+    "lon": 127.2927,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 235,
+    "station_name": "보령",
+    "lat": 36.3272,
+    "lon": 126.5574,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 236,
+    "station_name": "부여",
+    "lat": 36.2724,
+    "lon": 126.9208,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 238,
+    "station_name": "금산",
+    "lat": 36.1056,
+    "lon": 127.4818,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 239,
+    "station_name": "세종",
+    "lat": 36.4852,
+    "lon": 127.2444,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 243,
+    "station_name": "부안",
+    "lat": 35.7296,
+    "lon": 126.7166,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 244,
+    "station_name": "임실",
+    "lat": 35.612,
+    "lon": 127.2856,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 245,
+    "station_name": "정읍",
+    "lat": 35.5634,
+    "lon": 126.839,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 247,
+    "station_name": "남원",
+    "lat": 35.4213,
+    "lon": 127.3965,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 248,
+    "station_name": "장수",
+    "lat": 35.657,
+    "lon": 127.5203,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 252,
+    "station_name": "영광군",
+    "lat": 35.2837,
+    "lon": 126.4778,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 253,
+    "station_name": "김해시",
+    "lat": 35.2298,
+    "lon": 128.8908,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 254,
+    "station_name": "순창군",
+    "lat": 35.3713,
+    "lon": 127.1286,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 257,
+    "station_name": "양산시",
+    "lat": 35.3074,
+    "lon": 129.0201,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 258,
+    "station_name": "보성군",
+    "lat": 34.7634,
+    "lon": 127.2123,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 259,
+    "station_name": "강진군",
+    "lat": 34.6446,
+    "lon": 126.7841,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 260,
+    "station_name": "장흥",
+    "lat": 34.6889,
+    "lon": 126.9195,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 261,
+    "station_name": "해남",
+    "lat": 34.5538,
+    "lon": 126.5691,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 262,
+    "station_name": "고흥",
+    "lat": 34.6183,
+    "lon": 127.2757,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 263,
+    "station_name": "의령군",
+    "lat": 35.3226,
+    "lon": 128.2881,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 264,
+    "station_name": "함양군",
+    "lat": 35.5114,
+    "lon": 127.7454,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 266,
+    "station_name": "광양시",
+    "lat": 34.9434,
+    "lon": 127.6914,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 268,
+    "station_name": "진도군",
+    "lat": 34.473,
+    "lon": 126.2585,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 271,
+    "station_name": "봉화",
+    "lat": 36.9436,
+    "lon": 128.9145,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 272,
+    "station_name": "영주",
+    "lat": 36.8718,
+    "lon": 128.5169,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 273,
+    "station_name": "문경",
+    "lat": 36.6273,
+    "lon": 128.1488,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 276,
+    "station_name": "청송군",
+    "lat": 36.4351,
+    "lon": 129.0401,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 277,
+    "station_name": "영덕",
+    "lat": 36.5334,
+    "lon": 129.4093,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 278,
+    "station_name": "의성",
+    "lat": 36.3561,
+    "lon": 128.6886,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 279,
+    "station_name": "구미",
+    "lat": 36.1306,
+    "lon": 128.3206,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 281,
+    "station_name": "영천",
+    "lat": 35.9774,
+    "lon": 128.9514,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 283,
+    "station_name": "경주시",
+    "lat": 35.8175,
+    "lon": 129.2012,
+    "cluster_id": 3,
+    "cluster_name": "중부내륙형"
+  },
+  {
+    "station_id": 284,
+    "station_name": "거창",
+    "lat": 35.6674,
+    "lon": 127.9099,
+    "cluster_id": 0,
+    "cluster_name": "중산간내륙형"
+  },
+  {
+    "station_id": 285,
+    "station_name": "합천",
+    "lat": 35.5651,
+    "lon": 128.1699,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 288,
+    "station_name": "밀양",
+    "lat": 35.4915,
+    "lon": 128.7441,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 289,
+    "station_name": "산청",
+    "lat": 35.413,
+    "lon": 127.8791,
+    "cluster_id": 1,
+    "cluster_name": "중남부저지대형"
+  },
+  {
+    "station_id": 294,
+    "station_name": "거제",
+    "lat": 34.8882,
+    "lon": 128.6046,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  },
+  {
+    "station_id": 295,
+    "station_name": "남해",
+    "lat": 34.8166,
+    "lon": 127.9264,
+    "cluster_id": 4,
+    "cluster_name": "남부해안형"
+  }
+]
