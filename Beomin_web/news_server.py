@@ -14,9 +14,21 @@ PORT = 8001
 CACHE_TTL = 1200  # 20분
 
 # ---- .env 로드 ----
+def find_env():
+    """이 폴더부터 상위로 올라가며 첫 .env 를 찾는다(프로젝트 루트의 통합 .env 지원)."""
+    d = BASE_DIR
+    while True:
+        path = os.path.join(d, ".env")
+        if os.path.exists(path):
+            return path
+        parent = os.path.dirname(d)
+        if parent == d:          # 루트 도달
+            return os.path.join(BASE_DIR, ".env")  # 없으면 기존 기본 경로
+        d = parent
+
 def load_env():
     env = {}
-    path = os.path.join(BASE_DIR, ".env")
+    path = find_env()
     if os.path.exists(path):
         for line in open(path, encoding="utf-8"):
             line = line.strip()
