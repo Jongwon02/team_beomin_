@@ -325,11 +325,11 @@
 
   <!-- RECOMMEND -->
   <sc-if value="{{ isRecommend }}">
-  <main style="max-width:1180px;margin:0 auto;padding:48px 24px 80px;">
+  <main style="max-width:1600px;margin:0 auto;padding:32px 24px 80px;">
     <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">지역별 작물 추천</h1>
-    <p style="font-size:15px;color:#6B6250;margin:0 0 28px;">지도의 점을 클릭하고 '이 지역 선택하기'를 눌러 시·군을 선택하세요.</p>
+    <p style="font-size:15px;color:#6B6250;margin:0 0 20px;">지도의 점을 클릭하고 '이 지역 선택하기'를 눌러 시·군을 선택하세요.</p>
 
-    <div style="border-radius:16px;overflow:hidden;border:1px solid #E4DCC8;height:520px;">
+    <div style="border-radius:16px;overflow:hidden;border:1px solid #E4DCC8;height:calc(100vh - 210px);min-height:600px;">
       <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
