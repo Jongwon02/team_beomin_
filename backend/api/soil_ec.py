@@ -17,9 +17,9 @@ SOIL_EXAM_STAT_SERVICE_KEY로 폴백).
 """
 
 import concurrent.futures
-import functools
 import logging
 import os
+import time
 import xml.etree.ElementTree as ET
 
 import requests
@@ -36,6 +36,8 @@ REQUEST_TIMEOUT_SECONDS = 10
 PAGE_SIZE = 100    # 한 코드당 조회할 최대 필지 수(대부분 동/리가 이 이하)
 MAX_QUERIES = 30   # 시군구당 조회할 말단 코드 수 상한(응답시간 방어)
 MAX_WORKERS = 16   # 병렬 HTTP 요청 수
+MAX_429_RETRIES = 2       # 429(Too Many Requests) 전용 재시도 횟수
+RETRY_BACKOFF_SECONDS = 1.5  # 재시도 간 대기(시도마다 배수 증가)
 
 
 def _even_sample(items, k):
@@ -52,19 +54,35 @@ def _even_sample(items, k):
 
 
 def _fetch_dong_ec_values(stdg_cd, service_key, base_url):
-    """읍면동 코드 1개의 ELCD(EC) 실측값 리스트. 실패/무데이터면 빈 리스트."""
+    """읍면동 코드 1개의 ELCD(EC) 실측값 리스트. 실패/무데이터면 빈 리스트.
+
+    ⚠️ 시군구 하나당 최대 MAX_WORKERS(16)개 요청이 동시에 나가는데, data.go.kr이
+    이 API에 초당 요청수 제한을 걸어놔서 그중 일부가 429(Too Many Requests)로
+    거부되는 걸 실측으로 확인했다(2026-07 진단). 429는 "데이터 없음"이 아니라
+    "잠깐 쉬었다 다시 물어보면 될 요청"이라, 짧게 대기 후 재시도한다 - 재시도 없이
+    그냥 실패 처리하면 운 나쁘게 이 읍면동들이 전부 429를 맞았을 때 EC 평균에 낄
+    표본이 그만큼 줄어든다(전부 실패하면 아래 _get_ec_cached가 None을 반환).
+    """
     params = {
         "serviceKey": service_key,
         "Page_Size": str(PAGE_SIZE),
         "Page_No": "1",
         "STDG_CD": stdg_cd,
     }
-    try:
-        resp = requests.get(base_url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
-        resp.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        logger.warning("[soil_ec] getSoilExamList 요청 실패(STDG_CD=%s): %s", stdg_cd, e)
-        return []
+    for attempt in range(MAX_429_RETRIES + 1):
+        try:
+            resp = requests.get(base_url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+            if resp.status_code == 429:
+                if attempt < MAX_429_RETRIES:
+                    time.sleep(RETRY_BACKOFF_SECONDS * (attempt + 1))
+                    continue
+                logger.warning("[soil_ec] 429 재시도 소진(STDG_CD=%s)", stdg_cd)
+                return []
+            resp.raise_for_status()
+            break
+        except requests.exceptions.RequestException as e:
+            logger.warning("[soil_ec] getSoilExamList 요청 실패(STDG_CD=%s): %s", stdg_cd, e)
+            return []
 
     try:
         root = ET.fromstring(resp.text)
@@ -88,9 +106,22 @@ def _fetch_dong_ec_values(stdg_cd, service_key, base_url):
     return values
 
 
-@functools.lru_cache(maxsize=256)
+_ec_cache = {}  # (sigungu_full_name, service_key, base_url) -> float. 실패(None)는 저장하지 않는다.
+
+
 def _get_ec_cached(sigungu_full_name, service_key, base_url):
-    """시군구 EC 평균 조회(캐시). EC는 작물과 무관해 시군구 단위로만 캐시한다."""
+    """시군구 EC 평균 조회(캐시). EC는 작물과 무관해 시군구 단위로만 캐시한다.
+
+    ⚠️ functools.lru_cache 대신 수동 dict를 쓴다 - lru_cache는 반환값이 None이어도
+    그대로 캐싱해버려서, 일시적인 429 러시로 이번 조회에서만 표본을 하나도 못 얻은
+    경우까지 "이 지역은 EC 데이터가 없다"로 서버 재시작 전까지 영구 고정되는 문제가
+    있었다(2026-07 실측). 성공(None이 아닌) 값만 캐시하면 실패는 다음 요청에서
+    자연스럽게 재시도된다.
+    """
+    cache_key = (sigungu_full_name, service_key, base_url)
+    if cache_key in _ec_cache:
+        return _ec_cache[cache_key]
+
     dong_codes = get_dong_codes(sigungu_full_name)
     if not dong_codes:
         logger.warning("[soil_ec] '%s'의 말단 법정동코드를 찾을 수 없어 EC 조회를 건너뜁니다.", sigungu_full_name)
@@ -114,7 +145,9 @@ def _get_ec_cached(sigungu_full_name, service_key, base_url):
         logger.warning("[soil_ec] '%s' EC 실측값을 한 건도 얻지 못했습니다.", sigungu_full_name)
         return None
 
-    return sum(all_values) / len(all_values)
+    average = sum(all_values) / len(all_values)
+    _ec_cache[cache_key] = average
+    return average
 
 
 def get_ec(sigungu_full_name, service_key=None):
