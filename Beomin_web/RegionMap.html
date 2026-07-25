@@ -6,6 +6,9 @@
 <!-- 네이버 지도 JS + geocoder 서브모듈(주소→좌표). Client ID만 사용, Secret 미포함 -->
 <script src="https://oapi.map.naver.com/openapi/v3/maps.js?ncpKeyId=izxxcx66y8&submodules=geocoder"></script>
 <script src="./region_tree.js"></script>
+<!-- 법정동 실좌표 테이블. 네이버 지오코딩(주소→좌표)이 이 키에서 500으로 실패해
+     읍·면·동 위치를 못 찍었기 때문에, 로컬 좌표를 1차 소스로 쓴다. -->
+<script src="./dong_coords.js"></script>
 <style>
   html, body, #map { margin:0; padding:0; height:100%; width:100%; font-family:'Pretendard',sans-serif; }
   #map { position:absolute; inset:0; }
@@ -122,27 +125,60 @@
     document.getElementById('map-error').style.display = 'block';
   }
 
-  function placeMarker(ll) {
+  // 선택한 지점을 화살표로 가리키는 마커. 화살표 끝(아래 꼭지점)이 좌표에 정확히 닿도록
+  // anchor를 콘텐츠 하단 중앙에 맞춘다. label은 지금 가리키는 지역명.
+  function placeMarker(ll, label, approx) {
     if (!map) return;
     if (focusMarker) focusMarker.setMap(null);
-    focusMarker = new naver.maps.Marker({ position: ll, map: map });
+    var text = (label || '') + (approx ? ' (대략)' : '');
+    var content = ''
+      + '<div style="position:relative;transform:translate(-50%,-100%);white-space:nowrap;pointer-events:none;">'
+      +   '<div style="display:inline-block;background:#D97B3A;color:#FFF8ED;font-size:12px;font-weight:700;'
+      +        'padding:5px 10px;border-radius:8px;box-shadow:0 2px 6px rgba(74,53,30,.35);'
+      +        'font-family:Pretendard,sans-serif;">' + text + '</div>'
+      +   '<div style="width:0;height:0;margin:0 auto;border-left:7px solid transparent;'
+      +        'border-right:7px solid transparent;border-top:10px solid #D97B3A;"></div>'
+      + '</div>';
+    focusMarker = new naver.maps.Marker({
+      position: ll, map: map,
+      icon: { content: content, anchor: new naver.maps.Point(0, 0) },
+      zIndex: 200
+    });
   }
 
-  // 주소를 좌표로 변환해 지도 확대. 실패 시 fallback(center) 사용.
-  function zoomToAddress(query, zoom, fallbackCenter) {
+  // 법정동코드 → 실좌표. 없으면 null. (세 번째 값 1이면 시·군 중심으로 대체된 대략 좌표)
+  function dongLatLng(code) {
+    var t = (window.DONG_COORDS || {})[String(code)];
+    if (!t) return null;
+    return { ll: new naver.maps.LatLng(t[0], t[1]), approx: t.length > 2 && t[2] === 1 };
+  }
+  function sigunguLatLng(prov, sg) {
+    var t = (window.SIGUNGU_CENTERS || {})[prov + ' ' + sg];
+    return t ? new naver.maps.LatLng(t[0], t[1]) : null;
+  }
+
+  // 좌표를 알고 있을 때: 그 지점으로 확대하고 화살표로 가리킨다.
+  function focusAt(ll, zoom, label, approx) {
+    if (!map || !ll) return;
+    map.morph(ll, zoom);
+    placeMarker(ll, label, approx);
+  }
+
+  // 주소를 좌표로 변환해 지도 확대(로컬 좌표가 없는 경우의 보조 수단).
+  // 실패 시 fallback(center) 사용.
+  function zoomToAddress(query, zoom, fallbackCenter, label) {
     if (!map) return;
     var hasGeo = naver.maps.Service && naver.maps.Service.geocode;
     if (!hasGeo) {
-      if (fallbackCenter) { var c = new naver.maps.LatLng(fallbackCenter[0], fallbackCenter[1]); map.morph(c, zoom); placeMarker(c); }
+      if (fallbackCenter) focusAt(new naver.maps.LatLng(fallbackCenter[0], fallbackCenter[1]), zoom, label, true);
       return;
     }
     naver.maps.Service.geocode({ query: query }, function (status, response) {
       if (status === naver.maps.Service.Status.OK && response.v2.addresses && response.v2.addresses.length) {
         var a = response.v2.addresses[0];
-        var ll = new naver.maps.LatLng(parseFloat(a.y), parseFloat(a.x));
-        map.morph(ll, zoom); placeMarker(ll);
+        focusAt(new naver.maps.LatLng(parseFloat(a.y), parseFloat(a.x)), zoom, label, false);
       } else if (fallbackCenter) {
-        var c2 = new naver.maps.LatLng(fallbackCenter[0], fallbackCenter[1]); map.morph(c2, zoom); placeMarker(c2);
+        focusAt(new naver.maps.LatLng(fallbackCenter[0], fallbackCenter[1]), zoom, label, true);
       }
     });
   }
@@ -172,7 +208,7 @@
 
   function selectProvince(p) {
     state.level = 'sigungu'; state.province = p; state.sigungu = null;
-    zoomToAddress(geoName(p), 9, TREE[p].center);   // 도 확대
+    focusAt(new naver.maps.LatLng(TREE[p].center[0], TREE[p].center[1]), 9, p, false);   // 도 확대
     backEl.style.display = 'inline-block'; searchWrap.style.display = 'none';
     pathEl.innerHTML = '<b>' + p + '</b> · 시/군/구를 선택하세요';
     clearList();
@@ -181,7 +217,10 @@
 
   function selectSigungu(sg) {
     state.level = 'dong'; state.sigungu = sg;
-    zoomToAddress(geoName(state.province) + ' ' + sg, 12);   // 시군구 확대
+    // 시·군 중심(그 시군구 읍면동 좌표 평균)으로 확대. 없으면 지오코딩으로 보조.
+    var sgLL = sigunguLatLng(state.province, sg);
+    if (sgLL) focusAt(sgLL, 12, state.province + ' ' + sg, false);
+    else zoomToAddress(geoName(state.province) + ' ' + sg, 12, TREE[state.province].center, state.province + ' ' + sg);
     backEl.style.display = 'inline-block';
     searchWrap.style.display = 'block'; searchInput.value = '';
     pathEl.innerHTML = '<b>' + state.province + ' ' + sg + '</b> · 읍/면/동을 선택하세요';
@@ -198,7 +237,15 @@
   searchInput.addEventListener('input', function () { renderDongs(this.value.trim()); });
 
   function selectDong(dong, code) {
-    zoomToAddress(geoName(state.province) + ' ' + state.sigungu + ' ' + dong, 14);  // 동 확대
+    // 읍·면·동 실좌표로 정확히 확대 + 화살표 표시. 좌표가 없으면 지오코딩 → 시·군 중심 순으로 대체.
+    var hit = dongLatLng(code);
+    if (hit) {
+      focusAt(hit.ll, hit.approx ? 13 : 15, dong, hit.approx);
+    } else {
+      var fb = sigunguLatLng(state.province, state.sigungu) || null;
+      zoomToAddress(geoName(state.province) + ' ' + state.sigungu + ' ' + dong, 15,
+                    fb ? [fb.lat(), fb.lng()] : TREE[state.province].center, dong);
+    }
     openConfirm(dong, code);
   }
 
