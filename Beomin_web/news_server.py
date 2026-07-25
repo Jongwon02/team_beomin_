@@ -6,7 +6,7 @@
 - 호출:  GET http://localhost:8001/api/news/감자
 - 키:    같은 폴더의 .env 에서 NAVER_NEWS_CLIENT_ID / _SECRET 읽음
 """
-import os, re, json, time, ssl, html, urllib.parse, urllib.request
+import os, re, json, time, ssl, html, datetime, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -56,6 +56,65 @@ BLACKLIST = ["레시피", "맛집", "드라마", "아이돌", "요리법", "다�
 
 _cache = {}   # crop -> (ts, data)
 _ctx = ssl.create_default_context(); _ctx.check_hostname = False; _ctx.verify_mode = ssl.CERT_NONE
+
+# ---- 농사 계획 캘린더용 실시간 날씨 (기상청 ASOS 일자료) ----
+# CropAdvisor의 '내 농사 계획' 체크리스트가 GET /api/weather/<도> 로 최근 실측 기상을
+# 요청한다(저온·가뭄·장마·고온 경고 판정용). 도별 대표 종관관측소는
+# data/processed/region_cluster_map.json 에 실재하는 지점으로만 골랐다.
+ASOS_URL = "https://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList"
+ASOS_KEY = ENV.get("ASOS_DALY_SERVICE_KEY", "") or ENV.get("KMA_SERVICE_KEY", "")
+PROVINCE_STATION = {
+    "경기도": (203, "이천"), "강원도": (114, "원주"),
+    "충청북도": (131, "청주"), "충청남도": (232, "천안"),
+    "전라북도": (146, "전주"), "전라남도": (156, "광주"),
+    "경상북도": (136, "안동"), "경상남도": (192, "진주"),
+    "제주도": (184, "제주"),
+}
+WEATHER_DAYS = 14          # 프런트 summarizeWeather()가 최근 14일 누적/극값을 본다
+WEATHER_TTL = 3 * 3600     # 일자료는 하루 1회만 갱신되므로 3시간 캐시(프런트도 3시간 캐시)
+_weather_cache = {}        # province -> (ts, days)
+
+
+def _f(v):
+    """ASOS 응답의 결측('', ' ', '-')을 None으로, 나머지는 float으로."""
+    try:
+        return float(str(v).strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def fetch_weather(province):
+    """도(province) 대표 관측소의 최근 WEATHER_DAYS일 일자료. 실패/미지원 도는 빈 리스트."""
+    st = PROVINCE_STATION.get(province)
+    if not st or not ASOS_KEY:
+        return []
+    now = time.time()
+    if province in _weather_cache and now - _weather_cache[province][0] < WEATHER_TTL:
+        return _weather_cache[province][1]
+
+    stn_id, stn_name = st
+    # 일자료는 전날까지만 확정 제공되므로 어제를 끝으로 조회한다.
+    end = datetime.date.today() - datetime.timedelta(days=1)
+    start = end - datetime.timedelta(days=WEATHER_DAYS - 1)
+    qs = urllib.parse.urlencode({
+        "serviceKey": ASOS_KEY, "pageNo": 1, "numOfRows": WEATHER_DAYS + 5,
+        "dataType": "JSON", "dataCd": "ASOS", "dateCd": "DAY",
+        "startDt": start.strftime("%Y%m%d"), "endDt": end.strftime("%Y%m%d"), "stnIds": stn_id,
+    })
+    with urllib.request.urlopen(ASOS_URL + "?" + qs, context=_ctx, timeout=15) as r:
+        raw = json.load(r)
+    items = (((raw.get("response") or {}).get("body") or {}).get("items") or {}).get("item") or []
+    days = []
+    for it in items:
+        days.append({
+            "date": it.get("tm", ""),
+            "stnName": it.get("stnNm") or stn_name,
+            "avgTa": _f(it.get("avgTa")), "maxTa": _f(it.get("maxTa")), "minTa": _f(it.get("minTa")),
+            "sumRn": _f(it.get("sumRn")) or 0.0,   # 강수 없는 날은 빈 값으로 오므로 0으로 채움
+        })
+    days.sort(key=lambda d: d["date"])
+    _weather_cache[province] = (now, days)
+    return days
 
 def clean(t):
     t = re.sub(r"<[^>]+>", "", t)          # 태그 제거
@@ -107,9 +166,17 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        m = re.match(r"^/api/news/(.+)$", urllib.parse.urlparse(self.path).path)
+        path = urllib.parse.urlparse(self.path).path
+        w = re.match(r"^/api/weather/(.+)$", path)
+        if w:
+            province = urllib.parse.unquote(w.group(1))
+            try:
+                return self._send(200, fetch_weather(province))
+            except Exception as e:
+                return self._send(502, {"error": str(e)})
+        m = re.match(r"^/api/news/(.+)$", path)
         if not m:
-            return self._send(404, {"error": "use /api/news/<crop>"})
+            return self._send(404, {"error": "use /api/news/<crop> or /api/weather/<province>"})
         crop = urllib.parse.unquote(m.group(1))
         if not CID or not CSECRET:
             return self._send(500, {"error": "NAVER_NEWS keys missing in .env"})
