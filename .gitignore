@@ -16,6 +16,3 @@ build/
 # python
 __pycache__/
 *.pyc
-
-# 백엔드 대용량 원천 데이터(선택) — 필요 시 주석 해제
-# data/raw/hourly_temp_fruit_full.csv

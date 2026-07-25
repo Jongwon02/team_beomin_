@@ -1,7 +1,0 @@
-﻿station,nearest_bloom_farm,distance_km,n_years_observed,earliest_ecln_monthday,latest_ecln_monthday,earliest_flblms_monthday,latest_flblms_monthday,starts_after_window_start(3/1)
-영주,상주,62.6,4,03-21,03-24,04-11,04-12,True
-안동,상주,51.6,4,03-21,03-24,04-11,04-12,True
-문경,상주,28.1,4,03-21,03-24,04-11,04-12,True
-거창,완주,70.5,7,03-09,03-22,04-13,04-13,True
-천안,천안,0.0,7,03-21,03-22,04-09,04-14,True
-광주,나주,24.1,7,03-07,03-18,04-04,04-10,True

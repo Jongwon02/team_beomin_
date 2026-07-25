@@ -1,17 +1,19 @@
 # -*- coding: utf-8 -*-
-"""농업 뉴스 서버 (네이버 뉴스검색 API + 농업 필터 + 캐싱).
+"""농업 뉴스 · 기상 서버 (네이버 뉴스검색 API + 기상청 ASOS 일자료 API + 캐싱).
 
 - 무설치: 파이썬 표준 라이브러리만 사용
 - 실행:  python news_server.py   (기본 포트 8001)
 - 호출:  GET http://localhost:8001/api/news/감자
-- 키:    같은 폴더의 .env 에서 NAVER_NEWS_CLIENT_ID / _SECRET 읽음
+-        GET http://localhost:8001/api/weather/강원도   (최근 14일 실측 기상, 어제까지)
+- 키:    같은 폴더의 .env 에서 NAVER_NEWS_CLIENT_ID / _SECRET, ASOS_DALY_SERVICE_KEY 읽음
 """
-import os, re, json, time, ssl, html, urllib.parse, urllib.request
+import os, re, json, time, ssl, html, datetime, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PORT = 8001
-CACHE_TTL = 1200  # 20분
+CACHE_TTL = 1200      # 20분 (뉴스)
+WEATHER_TTL = 10800   # 3시간 (기상청 일자료는 하루 1회 갱신이라 자주 안 불러도 됨)
 
 # ---- .env 로드 ----
 def find_env():
@@ -43,6 +45,19 @@ CID = ENV.get("NAVER_NEWS_CLIENT_ID", "")
 CSECRET = ENV.get("NAVER_NEWS_CLIENT_SECRET", "")
 NEWS_URL = ENV.get("NAVER_NEWS_ENDPOINT", "https://openapi.naver.com/v1/search/news.json")
 
+ASOS_KEY = ENV.get("ASOS_DALY_SERVICE_KEY", "")
+ASOS_BASE = ENV.get("ASOS_DALY_BASE_URL", "https://apis.data.go.kr/1360000/AsosDalyInfoService")
+ASOS_OP = ENV.get("ASOS_DALY_ENDPOINT", "/getWthrDataList")
+
+# 도(道) -> 대표 ASOS 관측소(stnId). 정밀 최근접 매핑 대신 도 단위 대표 관측소로 근사.
+PROVINCE_STATION = {
+    "강원도": ("105", "강릉"), "경기도": ("98", "수원"),
+    "충청북도": ("131", "청주"), "충청남도": ("133", "대전"),
+    "전라북도": ("146", "전주"), "전라남도": ("156", "광주"),
+    "경상북도": ("136", "안동"), "경상남도": ("192", "진주"),
+    "제주도": ("184", "제주"),
+}
+
 # ---- 작물별 검색어 & 농업 필터 ----
 CROP_QUERY = {
     "감자": "감자 재배", "오이": "오이 재배", "상추": "상추 재배",
@@ -54,7 +69,8 @@ AGRI_WORDS = ["농사", "재배", "수확", "농가", "출하", "시세", "병�
 BLACKLIST = ["레시피", "맛집", "드라마", "아이돌", "요리법", "다이어트", "여행", "게임",
              "냉면", "장학", "봉사", "라이온스", "정형외과", "사과문", "사과드", "사과했", "사과와 함께"]
 
-_cache = {}   # crop -> (ts, data)
+_cache = {}    # crop -> (ts, data)
+_wcache = {}   # province -> (ts, data)
 _ctx = ssl.create_default_context(); _ctx.check_hostname = False; _ctx.verify_mode = ssl.CERT_NONE
 
 def clean(t):
@@ -91,10 +107,43 @@ def fetch_news(crop):
         it = {"title": clean(i.get("title", "")), "desc": clean(i.get("description", "")),
               "link": i.get("link", ""), "date": fmt_date(i.get("pubDate", ""))}
         items.append(it)
-    agri = [{"title": i["title"], "link": i["link"], "date": i["date"]}
+    agri = [{"title": i["title"], "desc": i["desc"], "link": i["link"], "date": i["date"]}
             for i in items if relevant(i, crop)][:6]
     _cache[crop] = (now, agri)
     return agri
+
+def fetch_weather(province):
+    now = time.time()
+    if province in _wcache and now - _wcache[province][0] < WEATHER_TTL:
+        return _wcache[province][1]
+    stn = PROVINCE_STATION.get(province)
+    if not stn:
+        raise ValueError(f"지원하지 않는 지역입니다: {province}")
+    stn_id, stn_name = stn
+    yesterday = datetime.date.today() - datetime.timedelta(days=1)   # ASOS는 '전날 자료까지'만 제공
+    start = yesterday - datetime.timedelta(days=13)                  # 최근 14일
+    url = (f"{ASOS_BASE}{ASOS_OP}?serviceKey={ASOS_KEY}&dataCd=ASOS&dateCd=DAY"
+           f"&stnIds={stn_id}&startDt={start:%Y%m%d}&endDt={yesterday:%Y%m%d}"
+           f"&dataType=JSON&numOfRows=20")
+    with urllib.request.urlopen(url, context=_ctx, timeout=10) as r:
+        raw = json.load(r)
+    header = raw.get("response", {}).get("header", {})
+    if header.get("resultCode") != "00":
+        raise RuntimeError(header.get("resultMsg", "기상청 API 오류"))
+    items = raw.get("response", {}).get("body", {}).get("items", {}).get("item", []) or []
+
+    def num(v):
+        try: return float(v)
+        except (TypeError, ValueError): return None
+
+    days = [{
+        "date": it.get("tm", ""), "stnName": stn_name,
+        "avgTa": num(it.get("avgTa")), "maxTa": num(it.get("maxTa")), "minTa": num(it.get("minTa")),
+        "sumRn": num(it.get("sumRn")) or 0, "sumSsHr": num(it.get("sumSsHr"))
+    } for it in items]
+    days.sort(key=lambda d: d["date"])
+    _wcache[province] = (now, days)
+    return days
 
 class Handler(BaseHTTPRequestHandler):
     def _send(self, code, payload):
@@ -107,9 +156,20 @@ class Handler(BaseHTTPRequestHandler):
         self.wfile.write(body)
 
     def do_GET(self):
-        m = re.match(r"^/api/news/(.+)$", urllib.parse.urlparse(self.path).path)
+        path = urllib.parse.urlparse(self.path).path
+        mw = re.match(r"^/api/weather/(.+)$", path)
+        if mw:
+            province = urllib.parse.unquote(mw.group(1))
+            if not ASOS_KEY:
+                return self._send(500, {"error": "ASOS_DALY_SERVICE_KEY missing in .env"})
+            try:
+                return self._send(200, fetch_weather(province))
+            except Exception as e:
+                return self._send(502, {"error": str(e)})
+
+        m = re.match(r"^/api/news/(.+)$", path)
         if not m:
-            return self._send(404, {"error": "use /api/news/<crop>"})
+            return self._send(404, {"error": "use /api/news/<crop> or /api/weather/<province>"})
         crop = urllib.parse.unquote(m.group(1))
         if not CID or not CSECRET:
             return self._send(500, {"error": "NAVER_NEWS keys missing in .env"})
@@ -123,5 +183,5 @@ class Handler(BaseHTTPRequestHandler):
 
 if __name__ == "__main__":
     print(f"농업 뉴스 서버 실행: http://localhost:{PORT}/api/news/감자")
-    print(f"키 로드: ID={'OK' if CID else 'MISSING'} / SECRET={'OK' if CSECRET else 'MISSING'}")
+    print(f"키 로드: 뉴스 ID={'OK' if CID else 'MISSING'} / SECRET={'OK' if CSECRET else 'MISSING'} · 기상청={'OK' if ASOS_KEY else 'MISSING'}")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
