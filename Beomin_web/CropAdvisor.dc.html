@@ -244,6 +244,60 @@
     }
     .stage-chip .st-task { font-size: 13px; font-weight: 700; color: #2B2620; line-height: 1.35; }
     .stage-chip .st-note { font-size: 11px; color: #6B6250; line-height: 1.45; margin-top: 5px; }
+
+    /* === 적합도 계산 중 로딩 연출 ===
+       트랙터가 밭을 좌↔우로 왕복하고, 지나간 자리(트랙터 뒤)에서 작물 5종이
+       땅에서 튀어나온다. 진행률 표시가 아니라 "작업 중" 연출이다 - 백엔드가
+       작물별 완료를 스트리밍하지 않아 실제 진행률을 알 수 없기 때문.
+       작물이 솟는 타이밍은 트랙터가 그 지점을 지난 뒤 0.35초로 맞췄다. 주행을
+       linear로 둔 이유가 이것 - ease-in-out이면 양 끝에서 트랙터가 느려져
+       위치↔시간 대응이 깨지고 작물이 트랙터와 겹쳐 솟는다.
+       왕복 8초 = 좌끝 정지 0.24s → 편도 3.52s → 우끝 정지 0.48s → 복귀 3.52s.
+       지점 비율 p의 지연: 가는 길 0.24+p*3.52+0.35 / 오는 길 4.24+(1-p)*3.52+0.35 */
+    .plow { position: relative; height: 104px; margin-top: 16px; }
+    .plow-soil {   /* 밭(흙) 띠 - 작물의 뿌리 쪽을 가려 땅에서 솟는 것처럼 보이게 한다 */
+      position: absolute; left: 0; right: 0; bottom: 0; height: 20px; z-index: 2;
+      border: 1px solid #D8CDB0; border-radius: 999px;
+      background: repeating-linear-gradient(115deg,#8B6444 0 8px,#75543A 8px 16px);
+    }
+    .plow-crop {   /* 흙(z2)보다 뒤, 트랙터(z3)보다 뒤 → 트랙터 뒤에서 솟아오름 */
+      position: absolute; bottom: 15px; z-index: 1; display: block;
+      transform-origin: 50% 100%;   /* 착지 순간 눌리는(스쿼시) 기준을 밑면으로 */
+      transform: translateY(14px) scale(0.75); opacity: 0;
+      animation: cropToss 8s linear infinite;
+    }
+    .plow-tractor {
+      position: absolute; bottom: 11px; left: 0; width: 58px; z-index: 3; display: block;
+      animation: plowSweep 8s linear infinite, plowFlip 8s linear infinite;
+    }
+    @keyframes plowSweep {   /* 좌 → 우 → 좌 왕복 */
+      0%,  3%   { left: 0; }
+      47%, 53%  { left: calc(100% - 58px); }
+      97%, 100% { left: 0; }
+    }
+    @keyframes plowFlip {    /* 끝에서 방향 전환(좌우 반전) */
+      0%, 49.9%   { transform: scaleX(1); }
+      50%, 99.9%  { transform: scaleX(-1); }
+      100%        { transform: scaleX(1); }
+    }
+    /* 땅에서 튀어올라 중력으로 떨어지는 포물선(총 약 1.6초). 구간별 timing-function이
+       핵심 - 상승은 감속(ease-out), 낙하는 가속(ease-in)이어야 중력처럼 보인다. */
+    @keyframes cropToss {
+      0%    { transform: translateY(14px) scale(0.75) rotate(-10deg); opacity: 0;
+              animation-timing-function: cubic-bezier(0.16,0.72,0.34,1); }   /* 솟구침 → 감속 */
+      4.5%  { transform: translateY(-36px) scale(1) rotate(6deg); opacity: 1;
+              animation-timing-function: cubic-bezier(0.5,0,0.9,0.7); }      /* 정점 → 낙하 가속 */
+      8.5%  { transform: translateY(0) scale(1) rotate(10deg); opacity: 1;
+              animation-timing-function: ease-out; }                         /* 착지 */
+      9.8%  { transform: translateY(0) scale(1.08, 0.9) rotate(10deg); }     /* 착지 충격에 눌림 */
+      11%   { transform: translateY(0) scale(1) rotate(10deg); }             /* 원래 모양 복귀 */
+      17%   { transform: translateY(0) scale(1) rotate(10deg); opacity: 1; }
+      20%, 100% { transform: translateY(8px) scale(0.9) rotate(10deg); opacity: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .plow-tractor, .plow-crop { animation: none; }
+      .plow-crop { transform: none; opacity: 1; }
+    }
   </style>
 </helmet>
 
@@ -258,7 +312,6 @@
       </div>
       <nav style="display:flex;gap:4px;flex-wrap:wrap;">
         <button type="button" style="{{ navStyles.home }}" onClick="{{ goHome }}">홈</button>
-        <button type="button" style="{{ navStyles.recommend }}" onClick="{{ goRecommend }}">지역별 추천</button>
         <button type="button" style="{{ navStyles.crops }}" onClick="{{ goCrops }}">작물 정보</button>
         <button type="button" style="{{ navStyles.guide }}" onClick="{{ goGuide }}">귀농 가이드</button>
         <button type="button" style="{{ navStyles.policy }}" onClick="{{ goPolicy }}">정책·지원금</button>
@@ -271,7 +324,7 @@
   <!-- HOME -->
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
   <main>
-    <section style="max-width:1180px;margin:0 auto;padding:64px 24px 40px;">
+    <section style="max-width:1180px;margin:0 auto;padding:56px 24px 28px;">
       <div style="display:flex;align-items:center;gap:32px;">
         <div style="flex:1;">
           <p style="font-size:17px;font-weight:700;color:#2F5D42;letter-spacing:0.02em;margin:0 0 14px;">귀농 초보자와 함께하는 첫 걸음</p>
@@ -282,63 +335,20 @@
           <img src="uploads/ChatGPT Image 2026년 7월 23일 오후 01_14_44-Photoroom.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:360px;height:auto;" />
         </div>
       </div>
-      <div style="display:flex;gap:20px;align-items:stretch;margin-top:28px;">
-        <div style="display:flex;flex-direction:column;gap:16px;width:300px;flex-shrink:0;">
-          <div style="position:relative;">
-            <div style="background:#FFFDF8;border:2px solid #D9C9AE;border-radius:16px;overflow:hidden;">
-              <div style="height:10px;background:repeating-linear-gradient(95deg,#3E7A50 0px,#3E7A50 5px,#4C8F5E 5px,#4C8F5E 10px,#356A45 10px,#356A45 15px);border-bottom:3px solid #8B6444;position:relative;"></div>
-              <div style="padding:22px 24px 22px 34px;">
-                <h3 style="font-size:16px;font-weight:700;margin:0 0 6px;">지도에서 지역 선택</h3>
-                <p style="font-size:13px;line-height:1.6;color:#6B6250;margin:0;">전국 지도를 클릭해 관심 있는 시·군과 읍·면·동을 선택하세요.</p>
-              </div>
-            </div>
-            <div style="position:absolute;left:-16px;top:16px;width:36px;height:36px;border-radius:50%;background:#8B6444;border:3px solid #FFFDF8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#FFF8ED;box-shadow:0 2px 6px rgba(74,53,30,0.25);">1</div>
-          </div>
-          <div style="position:relative;">
-            <div style="background:#FFFDF8;border:2px solid #D9C9AE;border-radius:16px;overflow:hidden;">
-              <div style="height:10px;background:repeating-linear-gradient(95deg,#3E7A50 0px,#3E7A50 5px,#4C8F5E 5px,#4C8F5E 10px,#356A45 10px,#356A45 15px);border-bottom:3px solid #8B6444;position:relative;"></div>
-              <div style="padding:22px 24px 22px 34px;">
-                <h3 style="font-size:16px;font-weight:700;margin:0 0 6px;">맞춤 작물 추천</h3>
-                <p style="font-size:13px;line-height:1.6;color:#6B6250;margin:0;">기후·토양 조건을 바탕으로 오이·배·사과·감자·상추의 적합도를 비교해 보여드려요.</p>
-              </div>
-            </div>
-            <div style="position:absolute;left:-16px;top:16px;width:36px;height:36px;border-radius:50%;background:#8B6444;border:3px solid #FFFDF8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#FFF8ED;box-shadow:0 2px 6px rgba(74,53,30,0.25);">2</div>
-          </div>
-          <div style="position:relative;">
-            <div style="background:#FFFDF8;border:2px solid #D9C9AE;border-radius:16px;overflow:hidden;">
-              <div style="height:10px;background:repeating-linear-gradient(95deg,#3E7A50 0px,#3E7A50 5px,#4C8F5E 5px,#4C8F5E 10px,#356A45 10px,#356A45 15px);border-bottom:3px solid #8B6444;position:relative;"></div>
-              <div style="padding:22px 24px 22px 34px;">
-                <h3 style="font-size:16px;font-weight:700;margin:0 0 6px;">가이드·정책까지 한 번에</h3>
-                <p style="font-size:13px;line-height:1.6;color:#6B6250;margin:0;">귀농 정착 가이드와 지원금 정보까지 확인하고 즐겨찾기로 모아두세요.</p>
-              </div>
-            </div>
-            <div style="position:absolute;left:-16px;top:16px;width:36px;height:36px;border-radius:50%;background:#8B6444;border:3px solid #FFFDF8;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#FFF8ED;box-shadow:0 2px 6px rgba(74,53,30,0.25);">3</div>
-          </div>
-        </div>
-        <div style="flex:1;height:620px;border-radius:20px;overflow:hidden;border:2px solid #D9C9AE;">
-          <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
-        </div>
-      </div>
     </section>
-  </main>
-  </sc-if>
 
-  <!-- RECOMMEND -->
-  <sc-if value="{{ isRecommend }}">
-  <main style="max-width:1600px;margin:0 auto;padding:32px 24px 80px;">
-    <h1 style="font-size:28px;font-weight:700;margin:0 0 6px;">지역별 작물 추천</h1>
-    <p style="font-size:15px;color:#6B6250;margin:0 0 20px;">지도의 점을 클릭하고 '이 지역 선택하기'를 눌러 시·군을 선택하세요.</p>
-
-    <div style="border-radius:16px;overflow:hidden;border:1px solid #E4DCC8;height:calc(100vh - 210px);min-height:600px;">
-      <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
-      <span style="width:10px;height:10px;border-radius:50%;background:#2F5D42;display:inline-block;"></span> 선택 가능 지역
-      <span style="width:10px;height:10px;border-radius:50%;background:#D97B3A;display:inline-block;margin-left:12px;"></span> 선택된 지역
-    </div>
-
+    <!-- 지역 선택 지도 + 작물 추천 (구 '지역별 추천' 탭 기능을 홈으로 통합).
+         지도는 히어로(1180px)보다 넓은 1600px 컨테이너에 전체폭으로 크게 띄운다. -->
+    <section style="max-width:1600px;margin:0 auto;padding:0 24px 80px;">
+      <div style="border-radius:20px;overflow:hidden;border:2px solid #D9C9AE;height:calc(100vh - 190px);min-height:680px;">
+        <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#2F5D42;display:inline-block;"></span> 선택 가능 지역
+        <span style="width:10px;height:10px;border-radius:50%;background:#D97B3A;display:inline-block;margin-left:12px;"></span> 선택된 지역
+      </div>
     <sc-if value="{{ selectedRegion }}">
-      <div style="margin-top:32px;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:28px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+      <div id="region-recommend" style="margin-top:32px;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:28px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;">
         <div>
           <p style="font-size:13px;color:#9A9080;margin:0 0 4px;">선택한 지역</p>
           <p style="font-size:20px;font-weight:700;margin:0;">{{ selectedRegion.name }}</p>
@@ -367,15 +377,54 @@
         <h2 style="font-size:22px;font-weight:700;margin:0 0 6px;">{{ selectedRegion.name }} {{ selectedDong }}에 추천하는 작물</h2>
         <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">실측 기상·토양 데이터로 계산한 적합도 순이에요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
         <sc-if value="{{ scoresLoading }}">
-          <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:22px;text-align:center;color:#8A7F65;font-size:14px;margin-bottom:16px;">
+          <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:22px;text-align:center;color:#8A7F65;font-size:14px;margin-bottom:16px;" role="status" aria-live="polite">
             지역 데이터로 적합도를 계산하고 있어요… ⏳ <span style="color:#B3A98F;">(기상·토양 API 조회로 수 초 걸릴 수 있어요)</span>
+            <div class="plow" aria-hidden="true">
+              <!-- 트랙터가 지나간 뒤 솟아나는 작물들. 왼→오 주행(0~3.8초)에 5개,
+                   되돌아오는 주행(4~7.8초)에 5개가 순서대로 튀어나온다. -->
+              <img class="plow-crop" src="uploads/crops/lettuce.png"  alt="" style="left:8%;margin-left:-25px;width:50px;animation-delay:0.87s;" />
+              <img class="plow-crop" src="uploads/crops/apple.png"    alt="" style="left:24%;margin-left:-27px;width:54px;animation-delay:1.43s;" />
+              <img class="plow-crop" src="uploads/crops/cucumber.png" alt="" style="left:40%;margin-left:-23px;width:46px;animation-delay:2.00s;" />
+              <img class="plow-crop" src="uploads/crops/pear.png"     alt="" style="left:56%;margin-left:-26px;width:52px;animation-delay:2.56s;" />
+              <img class="plow-crop" src="uploads/crops/potato.png"   alt="" style="left:72%;margin-left:-25px;width:50px;animation-delay:3.12s;" />
+              <img class="plow-crop" src="uploads/crops/apple.png"    alt="" style="left:88%;margin-left:-26px;width:52px;animation-delay:5.01s;" />
+              <img class="plow-crop" src="uploads/crops/potato.png"   alt="" style="left:64%;margin-left:-23px;width:46px;animation-delay:5.86s;" />
+              <img class="plow-crop" src="uploads/crops/lettuce.png"  alt="" style="left:48%;margin-left:-27px;width:54px;animation-delay:6.42s;" />
+              <img class="plow-crop" src="uploads/crops/pear.png"     alt="" style="left:32%;margin-left:-25px;width:50px;animation-delay:6.98s;" />
+              <img class="plow-crop" src="uploads/crops/cucumber.png" alt="" style="left:16%;margin-left:-25px;width:50px;animation-delay:7.55s;" />
+              <div class="plow-soil"></div>
+              <svg class="plow-tractor" viewBox="0 0 120 70">
+                <line x1="4" y1="60" x2="30" y2="48" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"/>
+                <line x1="4" y1="66" x2="30" y2="54" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"/>
+                <rect x="30" y="40" width="64" height="10" rx="2" fill="#2B2620"/>
+                <rect x="30" y="26" width="34" height="16" rx="3" fill="#4C8F5E"/>
+                <rect x="60" y="6" width="30" height="34" rx="6" fill="#2F5D42"/>
+                <rect x="66" y="11" width="12" height="10" rx="2" fill="#CFE7D6"/>
+                <rect x="84" y="0" width="6" height="10" rx="2" fill="#3A342A"/>
+                <circle cx="36" cy="48" r="16" fill="#2B2620"/>
+                <circle cx="36" cy="48" r="7" fill="#8B6444"/>
+                <circle cx="90" cy="54" r="10" fill="#2B2620"/>
+                <circle cx="90" cy="54" r="5" fill="#8B6444"/>
+              </svg>
+            </div>
           </div>
         </sc-if>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
           <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
             <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-                <h3 style="font-size:19px;font-weight:700;margin:0;">{{ r.name }}</h3>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="{{ r.rankStyle }}">{{ r.rankLabel }}</span>
+                  <sc-if value="{{ r.hasPhoto }}">
+                    <div style="position:relative;flex:0 0 auto;">
+                      <img src="{{ r.photo }}" alt="{{ r.name }} 사진" loading="lazy" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                      <sc-if value="{{ r.hasMedal }}">
+                        <span style="{{ r.medalStyle }}" title="적합도 {{ r.rankLabel }}">{{ r.medal }}</span>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                  <h3 style="font-size:19px;font-weight:700;margin:0;">{{ r.name }}</h3>
+                </div>
                 <div style="display:flex;align-items:center;gap:10px;">
                   <sc-if value="{{ r.isLive }}"><span style="font-size:13px;font-weight:700;color:#2F5D42;">{{ r.scoreText }}</span></sc-if>
                   <span style="{{ r.badgeStyle }}">{{ r.levelLabel }}</span>
@@ -410,6 +459,7 @@
         </div>
       </div>
     </sc-if>
+    </section>
   </main>
   </sc-if>
 
@@ -856,7 +906,7 @@
 
     <sc-if value="{{ noProfile }}">
       <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:40px;text-align:center;color:#8A7F65;font-size:14px;">
-        아직 저장한 귀농 지역이 없어요. '지역별 추천'의 지도에서 지역을 선택하고 <b>확인</b>을 누르면 여기에 모여요.
+        아직 저장한 귀농 지역이 없어요. '홈'의 지도에서 지역을 선택하고 <b>확인</b>을 누르면 여기에 모여요.
       </div>
     </sc-if>
   </main>
@@ -959,9 +1009,23 @@ const GRADE_META = {
   caution: { label: '주의', bg: '#FBE8D6', color: '#8A5A22' },
   bad:     { label: '위험', bg: '#F3E2DC', color: '#B5482F' }
 };
+// 적합도 1~3위 메달 (사진 좌측 상단 배지 + '1위/2위/3위' 라벨 색). 4위 이하는 null.
+const MEDALS = [
+  { icon: '🥇', bg: '#F0C24B', fg: '#4A3410', bd: '#D9A62E' },   // 금
+  { icon: '🥈', bg: '#D8DCE1', fg: '#454A50', bd: '#BFC5CC' },   // 은
+  { icon: '🥉', bg: '#D79A6A', fg: '#4A2E17', bd: '#BE8153' }    // 동
+];
 const CROP_SCORE_API = 'http://localhost:8002';
 const CROPS = ['오이', '배', '사과', '감자', '상추'];
 const CROP_IMG = { '상추': 'uploads/lettuce.png', '사과': 'uploads/apple.png' };   // 실제 이미지가 있는 작물
+
+// 적합도 카드 썸네일 (uploads/crops/*.png) - uploads/fall의 원본(1~2MB, 1254px)을
+// 144px로 줄인 것. 원본을 46px 자리에 그대로 쓰면 홈 화면에서만 7MB를 내려받게 된다.
+const CROP_PHOTO = {
+  '사과': 'uploads/crops/apple.png', '배': 'uploads/crops/pear.png',
+  '오이': 'uploads/crops/cucumber.png', '감자': 'uploads/crops/potato.png',
+  '상추': 'uploads/crops/lettuce.png'
+};
 
 // 상세페이지를 여는 작물 & 이모지
 const HAS_DETAIL = ['감자', '배', '오이', '상추'];
@@ -1041,11 +1105,15 @@ class Component extends DCLogic {
       if (!d || d.type !== 'selectRegion') return;
       this.loadProfile();   // 지도에서 '확인' 시 프로필 새로고침
       const dongs = Array.isArray(d.dongs) ? d.dongs : (d.dong ? [d.dong] : []);
-      this.setState({
-        selectedRegion: { id: d.id, name: d.name, province: d.province, zone: d.zone || null, dongs: dongs },
-        selectedDong: d.dong || dongs[0] || '',
-        showResults: false
-      });
+      const region = { id: d.id, name: d.name, province: d.province, zone: d.zone || null, dongs: dongs };
+      const dong = d.dong || dongs[0] || '';
+      // 지도에서 지역을 고르면 '추천 결과 보기'를 누르지 않아도 바로 적합도를 계산해 보여준다.
+      // 지도가 화면을 거의 채우고 있어 결과가 스크롤 아래에 숨으므로, 렌더가 끝난 뒤
+      // (setState 콜백 = DOM 커밋 이후) 결과 영역으로 화면을 내려준다.
+      this.setState({ selectedRegion: region, selectedDong: dong, showResults: true },
+        () => this.scrollToRecommend());
+      // fetchScores는 state 대신 dong을 직접 받는다 - setState 반영 타이밍에 의존하지 않도록.
+      this.fetchScores(region, dong);
     };
     window.addEventListener('message', this._onMsg);
   }
@@ -1251,13 +1319,26 @@ class Component extends DCLogic {
     this.setState({ favorites: list });
   }
 
+  // 결과 영역으로 부드럽게 스크롤. 지도 카드가 뷰포트를 거의 채우기 때문에 지역을
+  // 선택해도 결과가 화면 밖에 있어서, 선택 직후 이 위치로 내려준다.
+  scrollToRecommend() {
+    const el = document.getElementById('region-recommend');
+    if (!el) return;
+    const HEADER_OFFSET = 104;   // sticky 헤더(로고 72px + 위아래 패딩) 높이만큼 덜 내려야 카드가 가려지지 않음
+    const y = Math.max(0, el.getBoundingClientRect().top + window.pageYOffset - HEADER_OFFSET);
+    try { window.scrollTo({ top: y, behavior: 'smooth' }); }
+    catch (e) { window.scrollTo(0, y); }   // scrollTo 옵션 객체 미지원 브라우저 폴백
+  }
+
   // 지역별 라이브 작물 적합도 점수 (backend /api/crop-score) — 5작물 병렬 호출
-  fetchScores(region) {
+  fetchScores(region, dongOverride) {
     if (!region || !region.name) return;
     // region.name은 시군구 단위(도+시군구)까지만 담고 있어서, 실제 좌표 조회 정밀도를
-    // 위해 현재 선택된 읍·면·동(selectedDong)까지 합쳐서 넘긴다(드롭다운으로 동을
-    // 바꾼 뒤 다시 조회하면 그 동 기준으로 반영되도록).
-    const regionName = (region.name + ' ' + (this.state.selectedDong || '')).trim();
+    // 위해 현재 선택된 읍·면·동까지 합쳐서 넘긴다(드롭다운으로 동을 바꾼 뒤 다시
+    // 조회하면 그 동 기준으로 반영되도록). dongOverride가 오면 그 값을 우선 쓴다 -
+    // 지도 선택 직후처럼 setState가 아직 렌더에 반영되기 전에 호출되는 경로 때문.
+    const dong = (dongOverride === undefined || dongOverride === null) ? (this.state.selectedDong || '') : dongOverride;
+    const regionName = (region.name + ' ' + dong).trim();
     this.setState({ scoresLoading: true, liveScores: {} });
     Promise.all(CROPS.map(function (name) {
       return fetch(CROP_SCORE_API + '/api/crop-score/' + encodeURIComponent(name) + '?region=' + encodeURIComponent(regionName))
@@ -1369,12 +1450,33 @@ class Component extends DCLogic {
           name, reason, season: base.season, income: base.income, caution: base.caution,
           levelLabel, badgeStyle, isLive, scoreText, reliabilityText, hasReliability,
           breakdownItems, hasBreakdown,
+          photo: CROP_PHOTO[name] || '', hasPhoto: !!CROP_PHOTO[name],
           rank: -sortScore,
           favIcon: isFav ? '★' : '☆',
           favStyle: { background: 'transparent', border: 'none', fontSize: 20, cursor: 'pointer', color: isFav ? '#D97B3A' : '#C9BFA8', lineHeight: 1 },
           toggleFav: () => this.toggleFavorite(name)
         };
-      }).sort((a, b) => a.rank - b.rank);
+      }).sort((a, b) => a.rank - b.rank)
+        // 정렬 결과를 카드에 "1위/2위…"로 명시한다 - 2열 그리드라 순서만으로는
+        // 적합도 순이라는 게 잘 안 읽혀서, 순위 배지 + 1~3위 메달로 눈에 보이게 한다.
+        .map((r, i) => {
+          const m = MEDALS[i] || null;   // 4위 이하는 메달 없음
+          return Object.assign(r, {
+            rankLabel: (i + 1) + '위',
+            rankStyle: {
+              flex: '0 0 auto', fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999,
+              background: m ? m.bg : '#EFE7D5', color: m ? m.fg : '#6B6250',
+              border: '1px solid ' + (m ? m.bd : '#E4DCC8')
+            },
+            medal: m ? m.icon : '', hasMedal: !!m,
+            // 사진 좌측 상단에 걸치도록 살짝 밖으로 빼고, 사진 색에 묻히지 않게 밝은 원판을 깐다.
+            medalStyle: {
+              position: 'absolute', left: '-11px', top: '-11px', fontSize: 24, lineHeight: 1,
+              background: '#FFFDF8', borderRadius: 999, padding: '2px 3px',
+              boxShadow: '0 1px 4px rgba(74,53,30,0.28)'
+            }
+          });
+        });
     }
 
     const cropCards = CROPS.map(name => {
@@ -1475,16 +1577,15 @@ class Component extends DCLogic {
     const noMatchAtAll = R && R.eligibleCount === 0 && R.checkCount === 0;
 
     return {
-      isHome: tab === 'home', isRecommend: tab === 'recommend', isCrops: tab === 'crops', isGuide: tab === 'guide', isPolicy: tab === 'policy', isFavorites: tab === 'favorites', isDetail: tab === 'detail', isNews: tab === 'news',
+      isHome: tab === 'home', isCrops: tab === 'crops', isGuide: tab === 'guide', isPolicy: tab === 'policy', isFavorites: tab === 'favorites', isDetail: tab === 'detail', isNews: tab === 'news',
       detail, closeDetail: () => this.closeDetail(),
       sceneBae: () => this.openDetail('배'), sceneOi: () => this.openDetail('오이'),
       sceneApple: () => this.openDetail('사과'), sceneGamja: () => this.openDetail('감자'),
       sceneSangchu: () => this.openDetail('상추'),
       newsGroups, newsLoading: this.state.newsLoading,
       goNews: () => { this.setState({ activeTab: 'news' }); this.loadNews(); },
-      navStyles: { home: this.navBtnStyle('home'), recommend: this.navBtnStyle('recommend'), crops: this.navBtnStyle('crops'), guide: this.navBtnStyle('guide'), policy: this.navBtnStyle('policy'), favorites: this.navBtnStyle('favorites'), news: this.navBtnStyle('news') },
+      navStyles: { home: this.navBtnStyle('home'), crops: this.navBtnStyle('crops'), guide: this.navBtnStyle('guide'), policy: this.navBtnStyle('policy'), favorites: this.navBtnStyle('favorites'), news: this.navBtnStyle('news') },
       goHome: () => this.setState({ activeTab: 'home' }),
-      goRecommend: () => this.setState({ activeTab: 'recommend' }),
       goCrops: () => this.setState({ activeTab: 'crops' }),
       goGuide: () => this.setState({ activeTab: 'guide' }),
       goPolicy: () => this.setState({ activeTab: 'policy' }),
