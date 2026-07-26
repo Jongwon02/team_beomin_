@@ -19,6 +19,16 @@ SIDO_RENAME_MAP = {
     "전북특별자치도": "전라북도",
 }
 
+# 제주는 위 두 경우와 반대 방향(구->신)이다 - sigungu_coordinates.json이 이미
+# "제주특별자치도"로 갱신되어 있어서, 프론트엔드/사용자가 예전 이름 "제주도"로
+# 입력했을 때만 신 명칭으로 올려준다. 이 매핑이 없으면 "제주도 제주시"처럼 시도+시군구
+# 2어절 입력은 시도 어간 비교(_sido_stem)가 둘 다 "제주"로 줄어들어 우연히 매칭되지만,
+# "제주도 제주시 <읍면동>" 3어절 입력은 emd_exact/sigungu_exact 단계에서 전혀
+# 매칭되지 않아 ambiguous로 빠진다 (제주 전역 추천이 안 뜨는 버그의 원인).
+SIDO_OLD_TO_NEW_MAP = {
+    "제주도": "제주특별자치도",
+}
+
 # 개별 시군구 단위 행정구역 개편(시 승격/광역시 편입/개칭) 대응. SIDO_RENAME_MAP과
 # 정반대 방향(구 명칭 -> 신 명칭)이다 - sigungu_coordinates.json은 이미 최신 명칭으로
 # 갱신해뒀으므로, 사용자가 예전 이름으로 입력했을 때만 신 명칭으로 올려준다.
@@ -53,6 +63,9 @@ def _canonicalize_sido_prefix(s):
     for new_name, old_name in SIDO_RENAME_MAP.items():
         if s.startswith(new_name):
             return old_name + s[len(new_name):]
+    for old_name, new_name in SIDO_OLD_TO_NEW_MAP.items():
+        if s.startswith(old_name):
+            return new_name + s[len(old_name):]
     return s
 
 
@@ -369,6 +382,45 @@ def _match_region(raw_input, records):
             )
         ]
     )
+    if len(partial_groups) > 1:
+        # 상위(시) 레코드와 하위(시+구) 레코드가 함께 후보로 잡히는 경우가 있다(예: 입력이
+        # "청주시 상당구 가덕면"인데 "충청북도 청주시"와 "충청북도 청주시 상당구"가 둘 다
+        # 부분일치로 걸림). 입력에 하위 구/군 이름이 더 구체적으로 들어있으므로, 다른 후보의
+        # sigungu_name을 그대로 접두어로 포함하는(=상위인) 후보는 제거하고 더 구체적인
+        # 쪽을 우선한다.
+        names = list(partial_groups.keys())
+        to_drop = {a for a in names for b in names if a != b and b.startswith(a + " ")}
+        if to_drop:
+            partial_groups = {k: v for k, v in partial_groups.items() if k not in to_drop}
+
+    if len(partial_groups) > 1:
+        # 공백을 없앤 compact 문자열로 부분일치를 검사하다 보니, 서로 다른 단어가 이어지는
+        # 경계에서 우연히 다른 지명과 겹치는 경우가 있다(예: "청주시"+"흥덕구"가 이어지며
+        # "시흥"(시흥시)이 우연히 생기거나, "여주시"+"하동"의 "하동"이 하동군과 우연히
+        # 겹치는 등). 반면 진짜 대상 후보는 입력을 공백으로 나눈 실제 단어(tokens)와
+        # 정확히 일치하는 경우가 많으므로, 그런 정확 일치 후보가 하나라도 있으면 그 후보(들)만
+        # 남기고 나머지(=단어 경계를 무시한 우연한 부분일치)는 후보에서 제외한다.
+        exact_token_keys = {k for k in partial_groups if _sigungu_only_part(k) in tokens}
+        if exact_token_keys:
+            partial_groups = {k: v for k, v in partial_groups.items() if k in exact_token_keys}
+
+    if len(partial_groups) == 1:
+        # 3~5단계와 동일한 규칙 - 후보가 하나뿐이면 동명이인 우려가 없으므로 바로 확정한다.
+        # 예전에는 부분일치 단계에 도달하면 후보 수와 무관하게 항상 ambiguous로 빠졌는데,
+        # 실제로는 읍/면/동이 좌표 데이터에 없을 뿐 시군구 자체는 유일하게 식별되는 경우가
+        # 대부분이라(예: "여주시 오학동"처럼 여주시의 특정 동이 데이터에 없는 경우),
+        # 이 사용자 확인 없이 시군구 대표좌표로 매칭되지 못해 적합도 계산 자체가 실패했다.
+        logger.info("[region_mapper] '%s' -> 6단계(부분일치, 후보 1개 -> 시군구 대표좌표로 확정)", raw_input)
+        rep = next(iter(partial_groups.values()))[0]
+        return {
+            "stage": 6,
+            "stage_name": "partial_unique",
+            "status": "matched",
+            "matches": [rep],
+            "precision": "sigungu",
+            "match_type": "partial_unique",
+        }
+
     if partial_groups:
         logger.warning("[region_mapper] '%s' -> 6단계(부분일치) %d개 후보, 사용자 확인 필요", raw_input, len(partial_groups))
         return {

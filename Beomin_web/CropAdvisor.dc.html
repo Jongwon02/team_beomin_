@@ -303,7 +303,12 @@
 
 <div style="font-family:'Pretendard',sans-serif;background:#FBF7EF;color:#2B2620;min-height:100vh;display:flex;flex-direction:column;">
 
-  <header style="position:sticky;top:0;z-index:50;background:#FBF7EFEE;backdropFilter:blur(6px);borderBottom:1px solid #E4DCC8;">
+  <!-- sticky 헤더에 backdrop-filter(blur)를 얹으면 스크롤할 때마다 뒤 배경을 매 프레임
+       다시 블러링해 합성해야 해서(브라우저 컴포지터 부하), 페이지 전체 스크롤이 느려지고
+       - 특히 생년월일 네이티브 달력 팝오버처럼 위에 또 다른 오버레이가 뜰 때 - 그 안에서의
+       스크롤/연도 선택까지 버벅인다. 배경색 자체가 이미 반투명(EE ≈ 93% 불투명)이라
+       blur 없이도 시각적으로 거의 동일해서 blur만 제거한다. -->
+  <header style="position:sticky;top:0;z-index:50;background:#FBF7EFEE;borderBottom:1px solid #E4DCC8;">
     <div style="max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;gap:24px;">
       <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onClick="{{ goHome }}">
         <img src="uploads/logo.png" alt="안농 로고" style="width:72px;height:72px;object-fit:contain;" />
@@ -412,7 +417,7 @@
         <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">적합도가 높은 순으로 정렬했어요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
           <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
-            <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;">
+            <div onClick="{{ r.openDetail }}" title="{{ r.name }} 상세정보 보기" style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;cursor:pointer;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <div style="display:flex;align-items:center;gap:10px;">
                   <span style="{{ r.rankStyle }}">{{ r.rankLabel }}</span>
@@ -764,6 +769,97 @@
         <p style="font-size:13px;color:#9A9080;margin:0;">{{ detail.subtitle }}</p>
       </div>
     </div>
+
+    <!-- 홈의 추천 결과 카드에서 넘어왔을 때만 나오는, 선택 지역 실측 기상·토양 기반 맞춤 정보 -->
+    <sc-if value="{{ detail.hasRegionInfo }}">
+      <div style="margin-top:22px;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:22px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
+          <h2 style="font-size:18px;font-weight:700;color:#2B2620;margin:0;">📍 {{ detail.regionName }} 맞춤 정보</h2>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <span style="font-size:13px;font-weight:700;color:#2F5D42;">{{ detail.regionScoreText }}</span>
+            <span style="{{ detail.regionBadgeStyle }}">{{ detail.regionGradeLabel }}</span>
+          </div>
+        </div>
+        <p style="font-size:13px;color:#6B6250;margin:6px 0 14px;">실측 기상·토양 데이터로 계산한 이 지역의 {{ detail.name }} 적합도예요.</p>
+
+        <sc-if value="{{ detail.hasRegionStationWarning }}">
+          <p style="font-size:12px;color:#9A8A63;background:#FBF4E3;border-radius:8px;padding:6px 10px;margin:0 0 12px;">ℹ️ {{ detail.regionStationWarning }}</p>
+        </sc-if>
+
+        <sc-if value="{{ detail.hasRegionBreakdown }}">
+          <div style="display:grid;gap:6px;margin:0 0 16px;">
+            <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 실측 점수 (작물별 가중치 반영)</p>
+            <sc-for list="{{ detail.regionBreakdown }}" as="b" hint-placeholder-count="5">
+              <div style="display:flex;align-items:center;gap:8px;" title="{{ b.reasonTitle }}">
+                <span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">{{ b.label }}</span>
+                <div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;">
+                  <div style="{{ b.barStyle }}"></div>
+                </div>
+                <span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">{{ b.scoreLabel }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ detail.hasRegionTips }}">
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <p style="font-size:14px;font-weight:700;color:#8A7B55;margin:0;">이 지역에서 특히 신경 쓸 점</p>
+            <div style="display:flex;flex-direction:column;gap:12px;">
+              <sc-for list="{{ detail.regionTips }}" as="t" hint-placeholder-count="3">
+                <div style="background:#FCFAF2;border:1px solid #EFE8D6;border-radius:14px;overflow:hidden;">
+                  <button type="button" onClick="{{ t.onToggle }}" style="width:100%;font:inherit;text-align:left;background:none;border:none;cursor:pointer;display:flex;align-items:flex-start;gap:14px;padding:16px 18px;">
+                    <span style="font-size:17px;line-height:1.4;flex:none;">{{ t.icon }}</span>
+                    <p style="margin:0;flex:1;font-size:14px;line-height:1.5;color:#3C3527;">
+                      <strong style="font-weight:700;">{{ t.title }}</strong> —
+                      <sc-for list="{{ t.bodySegments }}" as="seg" hint-placeholder-count="4">
+                        <sc-if value="{{ seg.isTerm }}"><span title="{{ seg.def }}" style="border-bottom:1px dotted #8A8069;cursor:help;">{{ seg.text }}</span></sc-if>
+                        <sc-if value="{{ seg.plain }}">{{ seg.text }}</sc-if>
+                      </sc-for>
+                    </p>
+                    <span style="flex:none;font-size:11px;color:#8A8069;line-height:1.9;{{ t.caret }}">▼</span>
+                  </button>
+                  <div style="{{ t.rows }}">
+                    <div style="overflow:hidden;">
+                      <div style="padding:0 18px 18px 49px;display:flex;flex-direction:column;gap:14px;">
+                        <div style="height:1px;background:#EFE8D6;"></div>
+                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                          <span style="font-size:13px;color:#8A8069;font-weight:600;">대응 난이도</span>
+                          <span style="font-size:13px;font-weight:700;color:{{ t.diffColor }};background:{{ t.diffBg }};border:1px solid {{ t.diffBorder }};border-radius:999px;padding:4px 12px;">{{ t.difficulty }}</span>
+                          <span style="font-size:13px;color:#8A8069;">{{ t.cost }}</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:5px;">
+                          <span style="font-size:13px;font-weight:700;color:#8A7B55;">언제 문제가 되나요</span>
+                          <p style="margin:0;font-size:14px;line-height:1.6;color:#4A4334;">
+                            <sc-for list="{{ t.whenSegments }}" as="seg" hint-placeholder-count="4">
+                              <sc-if value="{{ seg.isTerm }}"><span title="{{ seg.def }}" style="border-bottom:1px dotted #8A8069;cursor:help;">{{ seg.text }}</span></sc-if>
+                              <sc-if value="{{ seg.plain }}">{{ seg.text }}</sc-if>
+                            </sc-for>
+                          </p>
+                        </div>
+                        <div style="display:flex;flex-direction:column;gap:7px;">
+                          <span style="font-size:13px;font-weight:700;color:#8A7B55;">구체적인 대책</span>
+                          <sc-for list="{{ t.actions }}" as="a" hint-placeholder-count="3">
+                            <div style="display:flex;align-items:flex-start;gap:10px;">
+                              <span style="flex:none;width:6px;height:6px;border-radius:999px;background:#7A9E5E;margin-top:8px;"></span>
+                              <p style="margin:0;font-size:14px;line-height:1.6;color:#4A4334;">
+                                <sc-for list="{{ a.segments }}" as="seg" hint-placeholder-count="4">
+                                  <sc-if value="{{ seg.isTerm }}"><span title="{{ seg.def }}" style="border-bottom:1px dotted #8A8069;cursor:help;">{{ seg.text }}</span></sc-if>
+                                  <sc-if value="{{ seg.plain }}">{{ seg.text }}</sc-if>
+                                </sc-for>
+                              </p>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
 
     <div style="margin-top:24px;">
       <h2 style="font-size:20px;font-weight:700;color:#2B2620;margin:0 0 14px;">📰 {{ detail.name }} 실시간 소식</h2>
@@ -1736,6 +1832,38 @@ const MYFARM_KEY = 'beomin_my_farm';
 const CHECK_KEY = 'beomin_checklist_status';
 // 지역 여러 곳 저장 / 작물 즐겨찾기 여러 개는 폐지됐다. 예전 데이터는 첫 실행 때 지운다.
 const LEGACY_KEYS = ['gwinong_favorites', 'beomin_saved_regions', 'beomin_farm_plans'];
+// 초보 귀농인이 처음 보는 농사 용어를 마우스로 가리키면 바로 뜻을 알 수 있게 하기 위한
+// 사전. splitGlossary()가 문장 안에서 이 키들을 찾아 그 부분만 밑줄 span(title 툴팁)으로
+// 감싼다. 긴 용어부터 매칭되도록 GLOSSARY_RE를 만들 때 길이 내림차순으로 정렬해둔다.
+const GLOSSARY = {
+  '유효인산': '식물이 뿌리로 바로 빨아들일 수 있는 인 성분이에요. 뿌리와 꽃·열매가 자라는 데 필요해요.',
+  'pH': '흙이 산성인지 알칼리성인지 나타내는 수치예요. 7이면 중성, 낮으면 산성, 높으면 알칼리성이에요.',
+  'EC': '흙 속에 녹아있는 염류(소금기)가 얼마나 되는지 나타내는 수치예요. 너무 높으면 뿌리가 물을 잘 못 빨아들여요.',
+  '유기물': '흙 속 동식물 찌꺼기가 삭아서 생긴 성분으로, 흙을 기름지게 만들어줘요.',
+  '토양검정': '흙 상태(산도, 영양분 등)를 검사받는 거예요. 가까운 농업기술센터에서 무료로 받을 수 있어요.',
+  '배수로': '빗물이나 남는 물이 잘 빠져나가도록 만든 물길이에요.',
+  '점적관수': '가는 관을 따라 뿌리 근처에만 물을 조금씩 흘려주는 물주기 방법이에요.',
+  '소석회': '흙의 산성을 낮춰주는 석회 비료예요.',
+  '고토석회': '산성도 낮춰주고 마그네슘도 같이 보충해주는 석회 비료예요.',
+  '용성인비': '인 성분을 천천히 오래 공급해주는 비료예요.',
+  '심경': '평소보다 흙을 깊게 갈아엎는 작업이에요.',
+  '객토': '다른 곳의 좋은 흙을 가져와 섞어주는 거예요.',
+  '담수': '밭에 물을 채워두는 거예요.',
+  '방상팬': '서리가 내릴 만큼 추운 새벽에 큰 선풍기를 돌려 찬 공기를 흩어주는 장치예요.',
+  '미세살수': '아주 가는 물방울을 뿌려 온도를 낮추거나 서리를 막는 방법이에요.',
+  '차광망': '햇빛을 가려 그늘을 만들어주는 그물이에요.',
+  '전정': '가지치기예요. 필요 없는 가지를 잘라내는 작업이에요.',
+  '재식 거리': '식물을 심을 때 서로 얼마나 떨어뜨려 심는지, 그 간격이에요.',
+  '밑거름': '작물을 심기 전에 미리 흙에 넣어두는 비료예요.',
+  '녹비작물': '땅을 기름지게 하려고 심었다가 그대로 갈아엎어 비료 대신 쓰는 식물이에요.',
+  '열과': '열매가 물을 갑자기 많이 빨아들여 껍질이 터지는 현상이에요.'
+};
+const GLOSSARY_RE = new RegExp(
+  '(' + Object.keys(GLOSSARY).sort((a, b) => b.length - a.length)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')',
+  'g'
+);
+
 const PI_KEY = 'beomin_personal_info';        // 정책 수혜용 인적사항
 const PI_DEFAULTS = {
   name: '', birth: '', gender: '',
@@ -2072,7 +2200,7 @@ function pickSeasonInstance(seasonsData, zone, today) {
 const EVENT_COLORS = ['#4285F4', '#33B679', '#F4511E', '#8E24AA', '#F6BF26'];
 
 class Component extends DCLogic {
-  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {},
+  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, detailRegionName: null, detailLiveScore: null, detailTipOpen: {}, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {},
     chatOpen: false, chatMessages: [], chatStreaming: false };
 
   componentDidMount() {
@@ -2189,6 +2317,145 @@ class Component extends DCLogic {
     this.setState({ myFarm: null, farmPlans: {}, planViewMonth: null, planSelectedDay: {} });
   }
 
+  // ── 지역 맞춤 정보 (작물 상세페이지) ────────────────────────────────────
+  // 문장을 GLOSSARY(파일 상단 용어 사전) 기준으로 잘라 [{text, isTerm, def}, ...] 배열로
+  // 만든다. isTerm이 true인 조각만 템플릿에서 title 툴팁이 붙은 span으로 렌더링된다.
+  splitGlossary(text) {
+    if (!text) return [];
+    return text.split(GLOSSARY_RE).filter((s) => s !== '').map((s) => (
+      GLOSSARY[s] ? { text: s, isTerm: true, plain: false, def: GLOSSARY[s] }
+                  : { text: s, isTerm: false, plain: true, def: '' }
+    ));
+  }
+
+  // 지역 실측 breakdown 점수를 근거로 한 초보자용 대응 가이드. 점수가 낮으면(적정 범위를
+  // 벗어남) 변수별로 흔히 쓰이는 대응법을 안내한다 - 방향(너무 높음/낮음)이나 정확한
+  // 임계값은 백엔드가 내려주지 않아 프론트에서 알 수 없으므로, "며칠간 몇% 초과" 같은
+  // 구체 통계는 지어내지 않고 실측값 자체를 근거로 삼는다. 위험 신호(냉해·폭염 등)만
+  // risky_days가 실제로 있어 그 수치를 그대로 인용한다. 실측값은 소수점 첫째 자리까지만
+  // 보여준다(원본 그대로면 의미 없이 복잡해 보여서).
+  regionTipsFor(ls) {
+    const VARIABLE_GUIDE = {
+      '온도': { titleLabel: '온도',
+        body: '이 작물이 잘 자라는 온도 범위를 벗어나는 시기가 있어요. 추울 때는 덮어주고, 더울 때는 그늘을 만들어주세요.',
+        difficulty: '어려움', cost: '설치 비용이 좀 들고, 해마다 관리가 필요해요.', unit: '℃',
+        actions: [
+          '너무 추울 때는 부직포나 비닐로 덮어 온도를 지켜주세요. 필요하면 비닐하우스 재배도 고려해보세요.',
+          '너무 더울 때는 차광망을 씌우고, 한낮에는 미세살수로 온도를 낮춰주세요.',
+          '씨를 뿌리거나 모종을 심는 시기를 며칠 앞뒤로 옮기면 위험한 시기를 피할 수 있어요.'
+        ] },
+      '강수': { titleLabel: '강수(비의 양)',
+        body: '비가 오는 양이 이 작물에는 맞지 않는 편이에요. 물이 잘 빠지는 길을 만들거나, 물 줄 시설을 미리 준비해두세요.',
+        difficulty: '보통', cost: '만드는 데 비용이 좀 들지만, 한 번 갖춰두면 계속 쓸 수 있어요.', unit: 'mm',
+        actions: [
+          '비가 많이 올 때를 대비해 배수로를 미리 만들어두고, 낮은 땅에는 두둑을 높여 심으세요.',
+          '가물 때를 대비해 점적관수 같은 물주기 시설을 갖추고, 흙이 마르면 조금씩 자주 물을 주세요.',
+          '수확 직전에 갑자기 물을 많이 주면 열과가 생길 수 있으니 물 주는 양을 서서히 줄여주세요.'
+        ] },
+      '일조': { titleLabel: '일조(햇빛량)',
+        body: '햇빛을 받는 양이 부족하거나 너무 많을 수 있어요. 심는 간격을 넓히거나 가지치기로 햇빛이 잘 들게 해주세요.',
+        difficulty: '쉬움', cost: '추가로 드는 비용은 거의 없고, 손이 좀 가는 작업이에요.', unit: '시간',
+        actions: [
+          '겹치는 가지와 잎을 전정해서 안쪽까지 햇빛이 들어오게 하세요.',
+          '재식 거리를 넓히면 한 그루가 받는 햇빛의 양이 늘어나요.',
+          '색이나 당도가 중요한 작물은 반사필름을 깔아 햇빛 부족을 보완할 수 있어요.'
+        ] },
+      'pH': { titleLabel: 'pH(흙의 산도)',
+        body: '흙의 산도가 이 작물에 맞는 범위를 벗어났어요. 석회를 뿌리는 등의 방법으로 산도를 맞춰주세요.',
+        difficulty: '쉬움', cost: '300평(10a) 기준 5~15만 원 정도 들어요.', unit: '',
+        actions: [
+          '흙이 너무 산성이면 소석회나 고토석회를 뿌리고 깊이 갈아 섞어주세요.',
+          '흙이 너무 알칼리성이면 유황 처리 등으로 산도를 낮추는 방법을 알아보세요.',
+          '석회는 효과가 천천히 나타나니 한 번에 너무 많이 넣지 말고 나눠서 주세요.',
+          '조정한 뒤에는 토양검정을 다시 받아 산도가 잘 맞춰졌는지 확인하세요.'
+        ] },
+      '유기물': { titleLabel: '유기물(흙 속 영양 성분)',
+        body: '흙 속 유기물이 부족한 편이에요. 퇴비나 유기질 비료로 흙을 기름지게 만들어주세요.',
+        difficulty: '쉬움', cost: '300평(10a) 기준 10~20만 원 정도 들어요.', unit: 'g/kg',
+        actions: [
+          '잘 삭은 퇴비를 심기 전에 밑거름으로 충분히 넣어주세요.',
+          '녹비작물을 심었다가 갈아엎는 방법도 있어요.',
+          '유기물은 천천히 늘어나니 매년 꾸준히 넣어주는 게 중요해요.'
+        ] },
+      '유효인산': { titleLabel: '유효인산',
+        body: '흙 속 유효인산 수치가 적정 범위를 벗어났어요. 토양검정 결과에 맞춰 비료량을 조정하세요.',
+        difficulty: '쉬움', cost: '300평(10a) 기준 5~10만 원 정도 들어요.', unit: 'mg/kg',
+        actions: [
+          '농업기술센터에서 무료로 토양검정을 받고, 그 결과에 맞춰 비료량을 정하세요.',
+          '부족하면 용성인비 같은 비료를 밑거름으로 골고루 뿌려주세요.',
+          '너무 많으면 몇 년간 인 성분 비료를 줄이고 퇴비 위주로 관리하세요.'
+        ] },
+      'EC': { titleLabel: 'EC(흙 속 염류 농도)',
+        body: '흙 속 염류(EC) 수치가 높은 편이에요. 물을 채우거나 흙을 바꿔서 염류를 낮춰주세요.',
+        difficulty: '보통', cost: '물 채우기나 흙 교체 비용이 들어요.', unit: 'dS/m',
+        actions: [
+          '비닐하우스라면 여름철에 담수(물 채우기)로 흙 속 염류를 씻어낼 수 있어요.',
+          '심경(깊이갈이)이나 객토로 염류가 쌓인 겉흙을 뒤섞거나 바꿔주는 것도 방법이에요.',
+          '화학비료를 너무 많이 쓰지 말고 퇴비 위주로 관리하면 염류가 더 쌓이는 걸 막을 수 있어요.'
+        ] }
+    };
+    const RISK_GUIDE = {
+      '냉해': { icon: '⚠️', difficulty: '어려움', cost: '방상팬·미세살수 같은 설비에 투자가 필요해요.',
+        actions: [
+          '서리가 온다는 예보가 있으면 새벽에 미세살수를 하거나 방상팬을 돌려 온도를 지켜주세요.',
+          '꽃이 피거나 모종을 심는 시기를 늦추면 추위 위험을 피할 수 있어요.',
+          '위험한 시기에는 부직포나 비닐로 미리 덮어 보온해주세요.'
+        ] },
+      '폭염': { icon: '⚠️', difficulty: '어려움', cost: '차광망·관수 설비에 투자가 필요해요.',
+        actions: [
+          '더위가 시작되기 전에 차광망을 미리 설치해두세요.',
+          '한낮에는 미세살수로 잎과 열매의 온도를 낮춰주세요.',
+          '흙이 마르면 피해가 커지니, 더운 시기에는 물 주는 간격을 줄여주세요.'
+        ] },
+      '서리': { icon: '⚠️', difficulty: '어려움', cost: '방상팬·미세살수 같은 설비에 투자가 필요해요.',
+        actions: [
+          '서리 예보가 뜨면 새벽에 미세살수를 하거나 방상팬을 돌리세요.',
+          '불을 피워 온도를 지키는 전통적인 방법(연소 방상)도 있어요.'
+        ] }
+    };
+    const DEFAULT_RISK_GUIDE = { icon: 'ℹ️', difficulty: '보통', cost: '상황에 따라 달라요.',
+      actions: ['가까운 농업기술센터에 문의해 이 위험에 맞는 대응법을 확인해보세요.'] };
+
+    const b = ls.breakdown || {};
+    const raw = ls.raw_readings || {};
+    const tips = [];
+    Object.keys(b).forEach((k) => {
+      const g = VARIABLE_GUIDE[k];
+      const sc = (b[k] && typeof b[k].score === 'number') ? Math.round(b[k].score) : null;
+      if (!g || sc === null || sc >= 60) return;
+      const rawVal = raw[k];
+      const rawRounded = (typeof rawVal === 'number') ? Math.round(rawVal * 10) / 10 : null;
+      const when = (rawRounded !== null)
+        ? ('이 지역에서 실제로 잰 ' + k + ' 값은 ' + rawRounded + g.unit + '예요. 이 작물한테는 적합도 ' + sc + '점으로, 알맞은 범위를 벗어난 것으로 나왔어요.')
+        : ('이 지역은 ' + k + ' 항목에서 적합도 ' + sc + '점으로, 알맞은 범위를 벗어난 것으로 나왔어요.');
+      tips.push({
+        icon: '💡', title: g.titleLabel || k, difficulty: g.difficulty, cost: g.cost,
+        bodySegments: this.splitGlossary(g.body),
+        whenSegments: this.splitGlossary(when),
+        actions: g.actions.map((a) => ({ segments: this.splitGlossary(a) }))
+      });
+    });
+    Object.entries(ls.risk_signals || {}).forEach(([varName, risks]) => {
+      Object.entries(risks || {}).forEach(([riskName, info]) => {
+        if (!info || !(info.risk_grade === '주의' || info.risk_grade === '높음')) return;
+        const g = RISK_GUIDE[riskName] || DEFAULT_RISK_GUIDE;
+        const days = (typeof info.risky_days === 'number') ? info.risky_days : null;
+        const when = riskName + ' 위험이 \'' + info.risk_grade + '\' 수준으로 예상돼요' + (days !== null ? ' (예상 ' + days + '일).' : '.');
+        tips.push({
+          icon: g.icon, title: varName + ' · ' + riskName, difficulty: g.difficulty, cost: g.cost,
+          bodySegments: this.splitGlossary(when),
+          whenSegments: this.splitGlossary(when),
+          actions: g.actions.map((a) => ({ segments: this.splitGlossary(a) }))
+        });
+      });
+    });
+    return tips;
+  }
+
+  toggleDetailTip(i) {
+    this.setState((s) => ({ detailTipOpen: { ...s.detailTipOpen, [i]: !s.detailTipOpen[i] } }));
+  }
+
   // ── 인적사항(정책 수혜용) ──
   loadPersonalInfo() {
     try {
@@ -2242,21 +2509,29 @@ class Component extends DCLogic {
     const A = { '서울': '서울특별시', '부산': '부산광역시', '대구': '대구광역시', '인천': '인천광역시',
       '광주': '광주광역시', '대전': '대전광역시', '울산': '울산광역시', '세종': '세종특별자치시',
       '경기': '경기도', '강원': '강원특별자치도', '충북': '충청북도', '충남': '충청남도',
-      '전북': '전북특별자치도', '전남': '전라남도', '경북': '경상북도', '경남': '경상남도', '제주': '제주특별자치도' };
+      '전북': '전북특별자치도', '전남': '전라남도', '경북': '경상북도', '경남': '경상남도', '제주': '제주특별자치도',
+      // '전북'은 '전라북도'의 접두사가 아니라서(전북 vs 전라~) 아래 indexOf 유연매칭에
+      // 걸리지 않는다. 옛 정식명칭을 그대로 입력하는 사용자가 있으니 별도로 등록한다.
+      '전라북도': '전북특별자치도' };
     for (const k in A) { if (s === k || s === A[k] || s.indexOf(A[k]) === 0 || s.indexOf(k) === 0) return A[k]; }
     return s;
   }
 
-  // 정책 진단용 사용자 지역 목록 {province, city} - 귀농지역 1곳 + 인적사항 입력값
+  // 정책 자격 진단용 사용자 지역 - '정책·지원금' 폼에 직접 입력한 현재거주지/귀농예정지역을
+  // 최우선으로 쓴다. 지도에서 정한 '나의 귀농지역'은 이 두 필드를 아직 입력하지 않았을
+  // 때만 폴백으로 쓴다 - 그렇지 않으면 방금 입력한 지역과 무관한 지역(둘러보다 정해둔
+  // 다른 시/도)까지 매칭에 섞여, 엉뚱한 정책이 '해당 가능'으로 잘못 나온다.
   userRegions(pi) {
-    const regs = [];
-    const mr = (this.state.myFarm || {}).region;
-    if (mr && (mr.province || mr.sigungu)) regs.push({ province: mr.province || '', city: mr.sigungu || '' });
+    const explicit = [];
     [pi.targetRegion, pi.curResidence].forEach((t) => {
       const toks = (t || '').trim().split(/\s+/).filter(Boolean);
-      if (toks.length) regs.push({ province: toks[0], city: toks[1] || '' });
+      if (toks.length) explicit.push({ province: toks[0], city: toks[1] || '' });
     });
-    return regs.filter((r) => r.province);
+    if (explicit.length) return explicit.filter((r) => r.province);
+
+    const mr = (this.state.myFarm || {}).region;
+    if (mr && mr.province) return [{ province: mr.province, city: mr.sigungu || '' }];
+    return [];
   }
 
   // 정책 지역 vs 사용자 지역 → 'national' | 'match' | 'unknown' | 'mismatch'
@@ -2402,8 +2677,15 @@ class Component extends DCLogic {
     };
   }
 
-  openDetail(name) {
-    this.setState({ detailCrop: name, activeTab: 'detail', detailNews: [], detailNewsLoading: true });
+  // ctx(선택) - 홈의 추천 결과 카드에서 넘어올 때만 { regionName, ls(실측 라이브 점수) }가
+  // 채워진다. 작물 정보 탭에서 바로 열 때는 지역 맥락이 없으므로 비워둔다.
+  openDetail(name, ctx) {
+    this.setState({
+      detailCrop: name, activeTab: 'detail', detailNews: [], detailNewsLoading: true,
+      detailRegionName: (ctx && ctx.regionName) || null,
+      detailLiveScore: (ctx && ctx.ls) || null,
+      detailTipOpen: {}
+    });
     window.scrollTo(0, 0);
     const todayStr = fmtDate(getPlanToday());
     fetch('http://localhost:8001/api/news/' + encodeURIComponent(name))
@@ -2411,7 +2693,7 @@ class Component extends DCLogic {
       .then((items) => this.setState({ detailNews: filterRecentNews(items, todayStr), detailNewsLoading: false }))
       .catch(() => this.setState({ detailNews: [], detailNewsLoading: false }));
   }
-  closeDetail() { this.setState({ detailCrop: null, activeTab: 'crops' }); }
+  closeDetail() { this.setState({ detailCrop: null, activeTab: 'crops', detailRegionName: null, detailLiveScore: null }); }
 
   loadNews() {
     if (this.state.newsLoading) return;
@@ -2713,7 +2995,17 @@ class Component extends DCLogic {
               : hasSchedule
                 ? 'background:#2F5D42;color:#FBF7EF;border:none;cursor:pointer;'
                 : 'background:#F3EEE0;color:#B3A98F;border:1px dashed #D8CDB0;cursor:not-allowed;'),
-          pick: () => { if (hasSchedule && !isMine) this.setMyCrop(name); }
+          // 카드를 누르면 이 지역 실측값을 들고 작물 상세페이지로 이동한다 - 상세페이지의
+          // "이 지역 맞춤 정보" 섹션을 채우기 위함(hasLive가 아니면 정적 등급뿐이라 null).
+          openDetail: () => this.openDetail(name, {
+            regionName: (region.name + ' ' + (this.state.selectedDong || '')).trim(),
+            ls: hasLive ? ls : null
+          }),
+          // 카드 전체가 클릭 가능하므로, 버튼을 누를 때 상세페이지로 새어나가지 않게 막는다.
+          pick: (e) => {
+            if (e && e.stopPropagation) e.stopPropagation();
+            if (hasSchedule && !isMine) this.setMyCrop(name);
+          }
         };
       }).sort((a, b) => a.rank - b.rank)
         // 정렬 결과를 카드에 "1위/2위…"로 명시한다 - 2열 그리드라 순서만으로는
@@ -2763,7 +3055,40 @@ class Component extends DCLogic {
     if (dc) {
       const dsched = CROP_SCHEDULE[dc];
       const planExists = !!(this.state.farmPlans || {})[dc];
+      // 홈의 추천 결과 카드에서 넘어온 경우에만 채워지는 지역 실측 맞춤 정보.
+      const dls = this.state.detailLiveScore;
+      const hasRegionInfo = !!(this.state.detailRegionName && dls);
+      const regionGm = hasRegionInfo ? (GRADE_META[dls.grade] || GRADE_META.caution) : null;
+      const regionBreakdown = hasRegionInfo ? this.breakdownOf(dls) : [];
+      const DIFF_PALETTE = {
+        '쉬움': { color: '#2F6B3C', bg: '#EDF4E9', border: '#CFE2C6' },
+        '보통': { color: '#8A6B1E', bg: '#FBF3DE', border: '#EBDCB4' },
+        '어려움': { color: '#A8452F', bg: '#FBECE6', border: '#F0CFC2' }
+      };
+      const tipOpen = this.state.detailTipOpen || {};
+      const regionTips = (hasRegionInfo ? this.regionTipsFor(dls) : []).map((t, i) => {
+        const open = !!tipOpen[i];
+        const dp = DIFF_PALETTE[t.difficulty] || DIFF_PALETTE['보통'];
+        return {
+          ...t, open,
+          caret: { transition: 'transform .22s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' },
+          rows: { display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows .28s ease' },
+          diffColor: dp.color, diffBg: dp.bg, diffBorder: dp.border,
+          onToggle: () => this.toggleDetailTip(i)
+        };
+      });
       detail = {
+        hasRegionInfo,
+        regionName: this.state.detailRegionName || '',
+        regionScoreText: hasRegionInfo ? ('적합도 ' + Math.round(dls.score) + '점') : '',
+        regionBadgeStyle: regionGm ? { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: regionGm.bg, color: regionGm.color } : {},
+        regionGradeLabel: regionGm ? regionGm.label : '',
+        regionBreakdown,
+        hasRegionBreakdown: regionBreakdown.length > 0,
+        regionStationWarning: hasRegionInfo ? (dls.station_warning || '') : '',
+        hasRegionStationWarning: hasRegionInfo && !!dls.station_warning,
+        regionTips,
+        hasRegionTips: regionTips.length > 0,
         name: dc, emoji: CROP_EMOJI[dc] || '🌱',
         ready: !!dsched, notReady: !dsched,
         subtitle: dsched ? dsched.subtitle : '',
@@ -2848,8 +3173,17 @@ class Component extends DCLogic {
         hasMissing: (it.missing || []).length > 0
       };
     };
-    const eligibleCards = R ? R.eligible.map(mkCard) : [];
-    const checkCards = R ? R.check.map(mkCard) : [];
+    // R(진단 결과)이 그대로인데도(예: 인적사항 다른 항목 수정) 매 렌더마다 최대 80+40장의
+    // 카드를 새 배열로 다시 만들면, 그 재조정(reconciliation) 비용이 관련 없는 입력 하나
+    // 바꿀 때마다 반복돼 화면 전체가 버벅인다(생년월일 캘린더로 값 바꿀 때 스크롤이
+    // 느려지는 증상의 원인). R이 바뀌었을 때(=진단 버튼을 다시 눌렀을 때)만 다시 만든다.
+    if (this._piCardsForResult !== R) {
+      this._piCardsForResult = R;
+      this._piEligibleCards = R ? R.eligible.map(mkCard) : [];
+      this._piCheckCards = R ? R.check.map(mkCard) : [];
+    }
+    const eligibleCards = this._piEligibleCards;
+    const checkCards = this._piCheckCards;
     const eligibleCount = R ? R.eligibleCount : 0;
     const checkCount = R ? R.checkCount : 0;
     const hasEligible = R && R.eligible.length > 0;
