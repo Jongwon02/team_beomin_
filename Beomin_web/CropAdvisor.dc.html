@@ -298,6 +298,52 @@
       .plow-tractor, .plow-crop { animation: none; }
       .plow-crop { transform: none; opacity: 1; }
     }
+
+    /* ── 챗봇 플로팅 버튼 (우하단) + 호버 말풍선 ──────────────────────────
+       말풍선은 CSS :hover로만 뜬다 - 상태(setState)로 처리하면 마우스가 지나갈
+       때마다 컴포넌트 전체가 다시 그려진다. */
+    /* row-reverse: DOM은 [버튼][말풍선] 순서로 두되 화면에는 말풍선이 왼쪽에 온다.
+       키보드 포커스 시 인접 형제 선택자(+)로 말풍선을 띄우려면 이 순서가 필요하다. */
+    .anong-fab { position: fixed; right: 24px; bottom: 24px; z-index: 120;
+      display: flex; flex-direction: row-reverse; align-items: center; gap: 10px; }
+    .anong-fab-btn {
+      width: 74px; height: 74px; border-radius: 50%; border: 2px solid #E4DCC8;
+      background: #FBF7EF; padding: 0; cursor: pointer; overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.22);
+      display: flex; align-items: flex-end; justify-content: center;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+    .anong-fab-btn img {
+      /* 캐릭터가 세로로 길어서, 원 안에서 아래쪽(발끝)을 살짝 잘라 얼굴이 크게 보이게 한다 */
+      width: 100%; height: 118%; object-fit: contain; object-position: center top;
+      display: block; pointer-events: none;
+    }
+    .anong-fab:hover .anong-fab-btn,
+    .anong-fab-btn:focus-visible { transform: translateY(-2px) scale(1.05); box-shadow: 0 10px 24px rgba(0,0,0,0.26); }
+
+    .anong-fab-bubble {
+      position: relative; background: #FFFFFF; color: #2B2620; border: 1px solid #E4DCC8;
+      border-radius: 14px; padding: 10px 14px; font-size: 14px; font-weight: 700;
+      white-space: nowrap; box-shadow: 0 4px 14px rgba(60,48,20,.18);
+      opacity: 0; transform: translateX(6px); pointer-events: none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    /* 말풍선 꼬리 - 오른쪽(버튼 쪽)을 향한 삼각형 */
+    .anong-fab-bubble::after {
+      content: ''; position: absolute; right: -7px; top: 50%; transform: translateY(-50%);
+      border-top: 7px solid transparent; border-bottom: 7px solid transparent;
+      border-left: 7px solid #FFFFFF;
+    }
+    .anong-fab-bubble::before {
+      content: ''; position: absolute; right: -9px; top: 50%; transform: translateY(-50%);
+      border-top: 8px solid transparent; border-bottom: 8px solid transparent;
+      border-left: 8px solid #E4DCC8;
+    }
+    .anong-fab:hover .anong-fab-bubble,
+    .anong-fab-btn:focus-visible + .anong-fab-bubble { opacity: 1; transform: translateX(0); }
+    @media (prefers-reduced-motion: reduce) {
+      .anong-fab-btn, .anong-fab-bubble { transition: none; }
+    }
   </style>
 </helmet>
 
@@ -345,8 +391,43 @@
     <!-- 지역 선택 지도 + 작물 추천 (구 '지역별 추천' 탭 기능을 홈으로 통합).
          지도는 히어로(1180px)보다 넓은 1600px 컨테이너에 전체폭으로 크게 띄운다. -->
     <section style="max-width:1600px;margin:0 auto;padding:0 24px 80px;">
-      <div style="border-radius:20px;overflow:hidden;border:2px solid #D9C9AE;height:calc(100vh - 190px);min-height:680px;">
+      <div style="position:relative;border-radius:20px;overflow:hidden;border:2px solid #D9C9AE;height:calc(100vh - 190px);min-height:680px;">
         <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
+
+        <!-- 내가 찾아본 지역 기록. 지도 자체의 '지역 선택' 패널이 좌측 상단(iframe 안
+             left:16/top:16)을 쓰고 있어 겹치므로 우측 상단에 둔다. 지도 확대/축소 버튼도
+             우측 상단(TOP_RIGHT)에 있어서 그 아래로 내려 배치한다. -->
+        <sc-if value="{{ hasRegionLog }}">
+        <div style="position:absolute;right:16px;top:70px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;">
+          <sc-if value="{{ regionLogOpen }}">
+            <div style="width:250px;box-sizing:border-box;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:14px;box-shadow:0 4px 14px rgba(60,48,20,.18);display:flex;flex-direction:column;overflow:hidden;">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px 12px;border-bottom:1px solid #EFE7D5;">
+                <span style="font-size:14px;font-weight:700;color:#2B2620;">🔎 내가 찾아본 지역</span>
+                <button type="button" onClick="{{ toggleRegionLog }}" title="접기"
+                  style="border:none;background:transparent;font-size:13px;color:#8A7F65;cursor:pointer;padding:2px 4px;">▲</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;max-height:320px;overflow-y:auto;">
+                <sc-for list="{{ regionLogItems }}" as="g" hint-placeholder-count="4">
+                  <div onClick="{{ g.revisit }}" title="{{ g.dong }} 추천작물 다시 보기"
+                    style="display:flex;flex-direction:column;gap:1px;border:1px solid #EFE7D5;background:#FFFFFF;border-radius:10px;padding:8px 10px;cursor:pointer;">
+                    <span style="font-size:13px;font-weight:700;color:#2B2620;">{{ g.dong }}</span>
+                    <span style="font-size:11px;color:#8A7F65;">{{ g.sub }}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <button type="button" onClick="{{ clearRegionLog }}"
+                style="border:none;border-top:1px solid #EFE7D5;background:transparent;font-size:12px;color:#8A7F65;cursor:pointer;padding:9px 12px;">기록 지우기</button>
+            </div>
+          </sc-if>
+          <sc-if value="{{ regionLogClosed }}">
+            <button type="button" onClick="{{ toggleRegionLog }}" title="내가 찾아본 지역 보기"
+              style="display:flex;align-items:center;gap:6px;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:999px;box-shadow:0 3px 10px rgba(60,48,20,.16);font-size:13px;font-weight:700;color:#2B2620;padding:8px 13px;cursor:pointer;">
+              🔎 내가 찾아본 지역
+              <span style="min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#2F5D42;color:#FBF7EF;font-size:11px;display:flex;align-items:center;justify-content:center;">{{ regionLogCount }}</span>
+            </button>
+          </sc-if>
+        </div>
+        </sc-if>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
         <span style="width:10px;height:10px;border-radius:50%;background:#2F5D42;display:inline-block;"></span> 선택 가능 지역
@@ -417,7 +498,7 @@
         <p style="font-size:14px;color:#6B6250;margin:0 0 24px;">적합도가 높은 순으로 정렬했어요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</p>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
           <sc-for list="{{ results }}" as="r" hint-placeholder-count="5">
-            <div onClick="{{ r.openDetail }}" title="{{ r.name }} 상세정보 보기" style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;cursor:pointer;">
+            <div style="background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
                 <div style="display:flex;align-items:center;gap:10px;">
                   <span style="{{ r.rankStyle }}">{{ r.rankLabel }}</span>
@@ -459,7 +540,11 @@
                 <div><strong style="color:#2B2620;">예상 소득</strong> — {{ r.income }}</div>
                 <div><strong style="color:#2B2620;">주의사항</strong> — {{ r.caution }}</div>
               </div>
-              <button type="button" style="{{ r.pickStyle }}" onClick="{{ r.pick }}">{{ r.pickLabel }}</button>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button type="button" style="{{ r.pickStyle }}" onClick="{{ r.pick }}">{{ r.pickLabel }}</button>
+                <button type="button" onClick="{{ r.openDetail }}" title="{{ r.name }} 재배 정보와 이 지역 맞춤 정보 보기"
+                  style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+              </div>
             </div>
           </sc-for>
         </div>
@@ -1217,8 +1302,12 @@
   <!-- ── 안농 도우미 챗봇 ─────────────────────────────────────────────────
        기존 탭 구조는 건드리지 않고 화면 위에 얹는다. 챗봇 서버(8003)가 꺼져
        있어도 나머지 기능은 그대로 동작한다. -->
-  <button type="button" onClick="{{ chatToggle }}" title="안농 도우미에게 물어보기"
-    style="position:fixed;right:24px;bottom:24px;z-index:120;width:62px;height:62px;border-radius:50%;border:none;background:#2F5D42;color:#FBF7EF;font-size:26px;line-height:1;cursor:pointer;box-shadow:0 6px 18px rgba(0,0,0,0.22);">💬</button>
+  <div class="anong-fab">
+    <button type="button" class="anong-fab-btn" onClick="{{ chatToggle }}" aria-label="안농 도우미에게 물어보기">
+      <img src="uploads/chatbot_img.png" alt="안농 도우미" />
+    </button>
+    <span class="anong-fab-bubble" aria-hidden="true">무엇을 도와드릴까요?</span>
+  </div>
 
   <sc-if value="{{ chatOpen }}">
   <div style="position:fixed;right:24px;bottom:98px;z-index:121;width:390px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 150px);display:flex;flex-direction:column;background:#FBF7EF;border:1px solid #D9C9AE;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,0.24);overflow:hidden;">
@@ -1830,6 +1919,10 @@ const CROP_SCHEDULE = {
 const MYFARM_KEY = 'beomin_my_farm';
 // 체크리스트 진행 상태 { "작물|YYYY-MM-DD|항목키": "doing"|"done" }
 const CHECK_KEY = 'beomin_checklist_status';
+// 지도에서 둘러본 지역 기록(최근 것부터). 여러 지역을 비교하다 보면 방금 본 곳을 다시
+// 찾기 어려워서, 지도를 다시 파고들지 않고 바로 되돌아갈 수 있게 남긴다.
+const REGION_LOG_KEY = 'beomin_region_log';
+const REGION_LOG_MAX = 8;
 // 지역 여러 곳 저장 / 작물 즐겨찾기 여러 개는 폐지됐다. 예전 데이터는 첫 실행 때 지운다.
 const LEGACY_KEYS = ['gwinong_favorites', 'beomin_saved_regions', 'beomin_farm_plans'];
 // 초보 귀농인이 처음 보는 농사 용어를 마우스로 가리키면 바로 뜻을 알 수 있게 하기 위한
@@ -2201,7 +2294,8 @@ const EVENT_COLORS = ['#4285F4', '#33B679', '#F4511E', '#8E24AA', '#F6BF26'];
 
 class Component extends DCLogic {
   state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, detailRegionName: null, detailLiveScore: null, detailTipOpen: {}, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {},
-    chatOpen: false, chatMessages: [], chatStreaming: false };
+    chatOpen: false, chatMessages: [], chatStreaming: false,
+    regionLog: [], regionLogOpen: false };
 
   componentDidMount() {
     // 다중 저장(지역 목록·즐겨찾기·작물별 계획) 시절 데이터는 더 이상 쓰지 않는다.
@@ -2209,6 +2303,10 @@ class Component extends DCLogic {
     try {
       const cs = window.localStorage.getItem(CHECK_KEY);
       if (cs) this.setState({ planChecklistStatus: JSON.parse(cs) });
+    } catch (e) {}
+    try {
+      const rl = window.localStorage.getItem(REGION_LOG_KEY);
+      if (rl) this.setState({ regionLog: JSON.parse(rl) || [] });
     } catch (e) {}
     this.loadMyFarm();
     // 챗봇: 세션 ID 1개 발급(서버 턴 상한이 이 값 기준) + 엔터로 전송.
@@ -2238,8 +2336,45 @@ class Component extends DCLogic {
         () => this.scrollToRecommend());
       // fetchScores는 state 대신 dong을 직접 받는다 - setState 반영 타이밍에 의존하지 않도록.
       this.fetchScores(region, dong);
+      this.pushRegionLog(region, dong);
     };
     window.addEventListener('message', this._onMsg);
+  }
+
+  // ── 내가 찾아본 지역 기록 ───────────────────────────────────────────────
+  // 같은 지역(법정동코드+읍면동)은 하나로 합치고 맨 앞으로 끌어올린다.
+  pushRegionLog(region, dong) {
+    if (!region) return;
+    const code = region.code || region.id || '';
+    const key = code + '|' + (dong || '');
+    const entry = {
+      key: key, code: code, dong: dong || '', name: region.name || '',
+      province: region.province || '', sigungu: region.sigungu || '',
+      zone: region.zone || null, dongs: region.dongs || []
+    };
+    const rest = (this.state.regionLog || []).filter((r) => r.key !== key);
+    const list = [entry].concat(rest).slice(0, REGION_LOG_MAX);
+    try { window.localStorage.setItem(REGION_LOG_KEY, JSON.stringify(list)); } catch (e) {}
+    this.setState({ regionLog: list });
+  }
+
+  // 기록에서 지역을 다시 고른다. 지도를 다시 파고들 필요 없이 적합도를 바로 계산한다.
+  revisitRegion(item) {
+    const region = {
+      id: item.code, code: item.code, name: item.name, province: item.province,
+      sigungu: item.sigungu || '', zone: item.zone || null, dongs: item.dongs || []
+    };
+    this.setState({
+      selectedRegion: region, selectedDong: item.dong, showResults: true,
+      activeTab: 'home', regionLogOpen: false
+    }, () => this.scrollToRecommend());
+    this.fetchScores(region, item.dong);
+    this.pushRegionLog(region, item.dong);
+  }
+
+  clearRegionLog() {
+    try { window.localStorage.removeItem(REGION_LOG_KEY); } catch (e) {}
+    this.setState({ regionLog: [], regionLogOpen: false });
   }
 
   // ── 나의 귀농지역 1곳 + 나의 작물 1개 ──────────────────────────────────
@@ -2925,11 +3060,11 @@ class Component extends DCLogic {
     return Object.keys(b).map(function (k) {
       const v = b[k] || {};
       const sc = (typeof v.score === 'number') ? Math.round(v.score) : null;
-      const w = (typeof v.weight === 'number') ? Math.round(v.weight) : null;
       const sourceKey = soilVars[k] ? '토양' : k;
       return {
         label: LABELS[k] || k,
-        scoreLabel: (sc === null ? '결측' : sc + '점') + (w !== null ? ' · ' + w + '%' : ''),
+        // 가중치 %는 초보자에게 의미가 잘 전달되지 않아 표시하지 않는다(점수만 보여준다).
+        scoreLabel: (sc === null ? '결측' : sc + '점'),
         reasonTitle: sc === null ? ('결측 사유: ' + (sources[sourceKey] || '정보 없음')) : '',
         barStyle: { height: '100%', width: (sc === null ? 0 : sc) + '%',
           background: sc === null ? '#D8CDB0' : color(sc), borderRadius: '999px' }
@@ -2989,7 +3124,7 @@ class Component extends DCLogic {
           // 나의 작물 선택 버튼. 재배 일정이 없는 작물(오이·상추)은 계획을 만들 수 없어 비활성.
           canPick: hasSchedule,
           pickLabel: isMine ? '✅ 나의 작물' : (hasSchedule ? '🌱 나의 작물로 선택' : '재배 일정 준비 중'),
-          pickStyle: 'width:100%;margin-top:12px;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;'
+          pickStyle: 'flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;'
             + (isMine
               ? 'background:#EAF3EC;color:#2F5D42;border:1px solid #2F5D42;cursor:default;'
               : hasSchedule
@@ -3001,11 +3136,7 @@ class Component extends DCLogic {
             regionName: (region.name + ' ' + (this.state.selectedDong || '')).trim(),
             ls: hasLive ? ls : null
           }),
-          // 카드 전체가 클릭 가능하므로, 버튼을 누를 때 상세페이지로 새어나가지 않게 막는다.
-          pick: (e) => {
-            if (e && e.stopPropagation) e.stopPropagation();
-            if (hasSchedule && !isMine) this.setMyCrop(name);
-          }
+          pick: () => { if (hasSchedule && !isMine) this.setMyCrop(name); }
         };
       }).sort((a, b) => a.rank - b.rank)
         // 정렬 결과를 카드에 "1위/2위…"로 명시한다 - 2열 그리드라 순서만으로는
@@ -3427,7 +3558,22 @@ class Component extends DCLogic {
       chatSubtitle: region
         ? (region.name + ' ' + (this.state.selectedDong || '')).trim() + ' 기준'
         : '지도에서 지역을 고르면 더 정확해요',
-      chatPlaceholder: this.state.chatStreaming ? '답변을 받는 중이에요…' : '궁금한 걸 물어보세요'
+      chatPlaceholder: this.state.chatStreaming ? '답변을 받는 중이에요…' : '궁금한 걸 물어보세요',
+
+      // ── 내가 찾아본 지역 기록 (지도 좌측 상단) ──
+      regionLogOpen: this.state.regionLogOpen,
+      regionLogClosed: !this.state.regionLogOpen,
+      hasRegionLog: (this.state.regionLog || []).length > 0,
+      regionLogCount: (this.state.regionLog || []).length,
+      toggleRegionLog: () => this.setState({ regionLogOpen: !this.state.regionLogOpen }),
+      clearRegionLog: () => this.clearRegionLog(),
+      regionLogItems: (this.state.regionLog || []).map((it) => ({
+        dong: it.dong || it.sigungu || it.name,
+        sub: it.name || [it.province, it.sigungu].filter(Boolean).join(' '),
+        isCurrent: !!region && (region.code || region.id) === it.code
+          && (this.state.selectedDong || '') === it.dong,
+        revisit: () => this.revisitRegion(it)
+      }))
     };
   }
 }
