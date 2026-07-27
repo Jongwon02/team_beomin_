@@ -1149,7 +1149,7 @@
 
     <sc-if value="{{ hasFarmPlan }}">
       <sc-for list="{{ farmPlanCards }}" as="plan" hint-placeholder-count="1">
-        <div style="width:1106px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;margin-bottom:24px;">
+        <div style="width:1342px;box-sizing:border-box;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:24px;margin-bottom:24px;">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:nowrap;margin-bottom:16px;height:40px;">
             <div style="display:flex;align-items:center;gap:14px;flex-wrap:nowrap;flex:1;min-width:0;">
               <button type="button" onClick="{{ plan.goToday }}" style="flex:0 0 auto;background:#fff;border:1px solid #DADCE0;border-radius:8px;padding:9px 16px;font-size:14px;font-weight:600;color:#3C4043;cursor:pointer;">오늘</button>
@@ -1167,7 +1167,8 @@
 
           <p style="font-size:12px;color:#8A7F65;margin:0 0 14px;height:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">📍 {{ plan.regionLine }}</p>
 
-          <div style="width:1058px;box-sizing:border-box;border:1px solid #DADCE0;border-radius:10px;overflow:hidden;">
+          <div style="display:flex;align-items:flex-start;gap:16px;flex-wrap:nowrap;">
+          <div style="flex:0 0 auto;width:1058px;box-sizing:border-box;border:1px solid #DADCE0;border-radius:10px;overflow:hidden;">
             <div style="display:grid;grid-template-columns:repeat(7,150px);background:#DADCE0;gap:1px;">
               <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">일</div>
               <div style="background:#F8F6EF;text-align:center;padding:10px 0;font-size:14px;font-weight:600;color:#9A9080;">월</div>
@@ -1183,11 +1184,11 @@
                   <sc-if value="{{ cell.day }}">
                     <div style="{{ cell.dayNumStyle }}">{{ cell.day }}</div>
                     <sc-if value="{{ cell.bar }}">
-                      <div style="{{ cell.bar.barStyle }}">{{ cell.bar.label }}</div>
+                      <div style="{{ cell.bar.barStyle }}">{{ cell.bar.icon }} {{ cell.bar.label }}</div>
                       <sc-if value="{{ cell.hasDots }}">
-                        <div style="display:flex;flex-wrap:wrap;gap:3px;margin:4px 0 0 4px;">
+                        <div style="display:flex;flex-wrap:wrap;gap:2px;margin:4px 0 0 4px;">
                           <sc-for list="{{ cell.dots }}" as="dot" hint-placeholder-count="3">
-                            <div style="{{ dot.style }}"></div>
+                            <div style="{{ dot.style }}" title="{{ dot.title }}">{{ dot.icon }}<span style="{{ dot.badgeStyle }}">{{ dot.badgeText }}</span></div>
                           </sc-for>
                         </div>
                       </sc-if>
@@ -1195,6 +1196,32 @@
                   </sc-if>
                 </div>
               </sc-for>
+            </div>
+          </div>
+
+            <!-- 최근 7일 실측 강수로 본 식물 수분 상태 (캘린더 오른쪽, 캘린더 크기·위치는 그대로) -->
+            <div style="{{ plan.hydration.cardStyle }}">
+              <sc-if value="{{ plan.hydration.hasHeadline }}">
+                <p style="{{ plan.hydration.headlineStyle }}">{{ plan.hydration.headline }}</p>
+              </sc-if>
+              <span style="{{ plan.hydration.iconStyle }}">{{ plan.hydration.icon }}</span>
+              <p style="{{ plan.hydration.titleStyle }}">{{ plan.hydration.title }}</p>
+              <sc-if value="{{ plan.hydration.hasAction }}">
+                <p style="{{ plan.hydration.actionStyle }}">{{ plan.hydration.action }}</p>
+              </sc-if>
+              <sc-if value="{{ plan.hydration.hasDayMarks }}">
+                <div style="display:flex;gap:1px;margin:0 0 4px;">
+                  <sc-for list="{{ plan.hydration.dayMarks }}" as="dm" hint-placeholder-count="7">
+                    <span style="{{ dm.style }}" title="{{ dm.title }}">{{ dm.mark }}</span>
+                  </sc-for>
+                </div>
+                <div style="display:flex;gap:1px;margin:0 0 8px;">
+                  <sc-for list="{{ plan.hydration.dayMarks }}" as="dm" hint-placeholder-count="7">
+                    <span style="flex:1 1 0;min-width:0;text-align:center;font-size:9px;color:#B3A98F;">{{ dm.label }}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <p style="font-size:10.5px;color:#9A9080;margin:0;line-height:1.5;">{{ plan.hydration.note }}</p>
             </div>
           </div>
 
@@ -1221,18 +1248,30 @@
                   <div style="display:flex;flex-direction:column;gap:8px;">
                     <sc-for list="{{ plan.selectedDetail.checklist }}" as="item" hint-placeholder-count="3">
                       <div style="{{ item.rowStyle }}" onClick="{{ item.toggle }}">
-                        <sc-if value="{{ item.notStarted }}">
-                          <span style="font-size:16px;line-height:1.4;">🔴</span>
-                        </sc-if>
-                        <sc-if value="{{ item.isDoing }}">
-                          <span style="font-size:16px;line-height:1.4;">🟡</span>
-                        </sc-if>
-                        <sc-if value="{{ item.isDone }}">
-                          <span style="font-size:16px;line-height:1.4;">🟢</span>
-                        </sc-if>
-                        <div>
+                        <!-- 작업 대표 아이콘 위에 진행 표시(✕ / ing / ○)를 겹쳐 보여준다 -->
+                        <span style="{{ item.iconBoxStyle }}">
+                          <span style="{{ item.iconStyle }}">{{ item.icon }}</span>
+                          <span style="{{ item.badgeStyle }}">{{ item.badgeText }}</span>
+                        </span>
+                        <div style="flex:1;min-width:0;">
                           <p style="{{ item.textStyle }}">{{ item.text }}</p>
                           <p style="font-size:10px;color:#9A9080;margin:2px 0 0;">{{ item.statusLabel }}</p>
+                          <sc-if value="{{ item.hasHow }}">
+                            <button type="button" onClick="{{ item.howToggle }}" style="margin-top:6px;background:#fff;border:1px solid #CFE3D2;border-radius:8px;padding:4px 9px;font-size:11px;font-weight:600;color:#2F5D42;cursor:pointer;">{{ item.howBtnLabel }}</button>
+                            <sc-if value="{{ item.howOpen }}">
+                              <div style="margin-top:8px;background:#FBF7EF;border:1px solid #E4DCC8;border-radius:10px;padding:10px 12px;">
+                                <sc-for list="{{ item.howSteps }}" as="st" hint-placeholder-count="3">
+                                  <p style="font-size:12.5px;color:#2B2620;margin:0 0 6px;line-height:1.65;"><span style="color:#2F5D42;font-weight:700;">{{ st.no }}</span> {{ st.text }}</p>
+                                </sc-for>
+                                <sc-if value="{{ item.hasCropLines }}">
+                                  <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:8px 0 4px;">📐 {{ item.cropLinesLabel }}</p>
+                                  <sc-for list="{{ item.cropLines }}" as="cl" hint-placeholder-count="2">
+                                    <p style="font-size:12px;color:#5C5545;margin:0 0 4px;line-height:1.6;">· {{ cl.text }}</p>
+                                  </sc-for>
+                                </sc-if>
+                              </div>
+                            </sc-if>
+                          </sc-if>
                         </div>
                       </div>
                     </sc-for>
@@ -1243,6 +1282,20 @@
               <div style="margin-top:12px;padding-top:12px;border-top:1px dashed #E4DCC8;">
                 <p style="font-size:12px;font-weight:700;color:#8A7F65;margin:0 0 6px;">🔴 실시간 반영 정보</p>
                 <p style="font-size:12px;color:#9A9080;margin:0 0 10px;line-height:1.6;">{{ plan.selectedDetail.weatherLine }}</p>
+                <sc-if value="{{ plan.selectedDetail.hasForecast }}">
+                  <!-- 7칸을 한 줄에 균등 분할(flex:1 1 0 + min-width:0)해 좌우 여백 없이 꽉 채운다. -->
+                  <div style="display:flex;gap:4px;padding:2px 0 10px;align-items:stretch;">
+                    <sc-for list="{{ plan.selectedDetail.forecastStrip }}" as="fc" hint-placeholder-count="7">
+                      <div title="{{ fc.weather }}" style="flex:1 1 0;min-width:0;overflow:hidden;background:#fff;border:1px solid #E4DCC8;border-radius:10px;padding:7px 2px;text-align:center;">
+                        <p style="font-size:10px;font-weight:700;color:#8A7F65;margin:0 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">{{ fc.dayLabel }}</p>
+                        <p style="font-size:15px;margin:0 0 3px;line-height:1.1;white-space:nowrap;">{{ fc.icon }}</p>
+                        <p style="font-size:10px;color:#2B2620;margin:0;white-space:nowrap;"><span style="color:#C86B5A;">{{ fc.tempHigh }}</span> <span style="color:#9A9080;">{{ fc.tempLow }}</span></p>
+                        <p style="font-size:9px;color:#7BA6D6;margin:2px 0 0;white-space:nowrap;">💧{{ fc.rain }}</p>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <p style="font-size:11px;color:#B3A98F;margin:0 0 10px;">{{ plan.selectedDetail.forecastNote }}</p>
+                </sc-if>
                 <sc-if value="{{ plan.selectedDetail.hasLiveInsights }}">
                   <p style="font-size:11px;color:#B3A98F;margin:0 0 8px;">{{ plan.selectedDetail.newsFocusLabel }}</p>
                   <div style="display:flex;flex-direction:column;gap:8px;">
@@ -2012,6 +2065,70 @@ function summarizeWeather(days) {
   const totalRn = valid.reduce((s, d) => s + (d.sumRn || 0), 0);
   return { avgTaMean, maxTa, minTa, totalRn, stnName: valid[0].stnName, from: valid[0].date, to: valid[valid.length - 1].date };
 }
+// ── 최근 7일 강수로 본 '식물 수분 상태' ─────────────────────────────────────
+// 예보(앞으로 7일)가 아니라 **이미 내린 비**(기상청 ASOS 실측)를 센다. 비가 안 왔으면
+// 물을 더 줘야 하고, 두 번 이상 왔으면 굳이 더 주지 않아도 된다는 판단이다.
+// 기상청 강수일수 기준은 0.1mm 이상이지만, 0.1~1mm는 흙 표면만 적시고 뿌리까지
+// 닿지 않아 관수 판단에는 쓸 수 없다. 그래서 1mm 이상 내린 날만 '비가 온 날'로 센다.
+const RAIN_DAY_MM = 1.0;
+const HYDRATION_WINDOW = 7;
+const HYDRATION_LEVELS = {
+  dry:   { icon: '🥀', title: '식물이 목 말라해요!',
+           action: '물이 뿌리까지 닿게 평소보다 20%~30% 정도 더 주세요!',
+           bg: '#FDECEA', border: '#F0B7AE', color: '#B23A2C' },
+  watch: { icon: '🌿', title: '수분이 조금 부족해요',
+           action: '흙을 손가락 한 마디(3~5cm)쯤 파서 만져보고 말라 있으면 물을 주세요.',
+           bg: '#FFF8E8', border: '#E8CE8A', color: '#8A6A16' },
+  good:  { icon: '🌳', title: '수분 보충 완료!',
+           action: '식물은 건강해요!',
+           bg: '#EFF6EF', border: '#CFE3D2', color: '#2F5D42' },
+  none:  { icon: '🌱', title: '수분 상태 확인 중',
+           action: '', bg: '#F8F6EF', border: '#D8CDB0', color: '#9A9080' }
+};
+// 카드 맨 위에 '비가 며칠 왔는지'를 먼저 알려준다. 0회도 '1회 이하'에 해당하므로
+// dry와 watch가 같은 문구를 쓴다(0회는 아래 제목에서 '목 말라해요'로 더 구분됨).
+const HYDRATION_HEADLINE = {
+  dry: '일주일간 비가 1회 이하로 왔어요!',
+  watch: '일주일간 비가 1회 이하로 왔어요!',
+  good: '비가 2회 이상 왔어요!'
+};
+
+// days: /api/weather/<도> 응답(오름차순, 어제까지). 항상 객체를 돌려준다(카드 자리가 흔들리지 않도록).
+function hydrationStatus(days, hasRegion) {
+  const recent = (days || []).slice(-HYDRATION_WINDOW);
+  if (!recent.length) {
+    const L = HYDRATION_LEVELS.none;
+    return {
+      ...L, level: 'none', rainDays: 0, dayMarks: [], headline: '',
+      note: hasRegion ? '기상청 실측 강수량을 불러오는 중이에요…' : '귀농 지역을 저장하면 알려드릴 수 있어요.'
+    };
+  }
+  const rainy = recent.filter((d) => (d.sumRn || 0) >= RAIN_DAY_MM);
+  const totalRn = recent.reduce((s, d) => s + (d.sumRn || 0), 0);
+  const level = rainy.length === 0 ? 'dry' : (rainy.length === 1 ? 'watch' : 'good');
+  const L = HYDRATION_LEVELS[level];
+  const md = (s) => (s || '').slice(5).replace('-', '/');
+  return {
+    ...L, level: level, rainDays: rainy.length,
+    headline: HYDRATION_HEADLINE[level] || '',
+    // 7일 각각을 작게 보여준다 — 며칠에 비가 왔는지가 판단 근거이므로
+    dayMarks: recent.map((d) => {
+      const wet = (d.sumRn || 0) >= RAIN_DAY_MM;
+      return {
+        mark: wet ? '💧' : '·', label: md(d.date),
+        title: md(d.date) + ' 강수 ' + (d.sumRn || 0).toFixed(1) + 'mm',
+        style: {
+          flex: '1 1 0', minWidth: 0, textAlign: 'center', fontSize: 12, lineHeight: 1.2,
+          color: wet ? '#3D7DC4' : '#C4BBA5'
+        }
+      };
+    }),
+    note: (recent[0].stnName || '') + ' 관측소 최근 ' + recent.length + '일('
+      + md(recent[0].date) + '~' + md(recent[recent.length - 1].date) + ') · 비 온 날 '
+      + rainy.length + '일 · 누적 ' + totalRn.toFixed(1) + 'mm'
+  };
+}
+
 // 최근 14일 실측 기상이 계절상 발생 가능한 기상재해 기준을 넘는지 확인 (초보자가 바로 알아볼 수 있도록 경고로 변환)
 function weatherWarnings(summary, seasonWord, disasters) {
   if (!summary || !disasters) return [];
@@ -2036,6 +2153,137 @@ function weatherWarnings(summary, seasonWord, disasters) {
   }
   return warns;
 }
+// ── 앞으로 7일 예보(단기+중기) 기반 대비 정보 ─────────────────────────────
+// 위의 weatherWarnings()는 '이미 지난 14일 실측'을 보고 경고한다. 이건 반대로 '앞으로
+// 올 7일'을 보고 미리 대비할 것을 알려준다. 작물별 임계값과 그 작물의 disasters 문구,
+// 그리고 그 시기에 실제로 예정된 작업(stage)까지 함께 본다.
+//
+// 작물별 임계값 근거는 CROP_SCHEDULE의 재배적 특성/기상재해 항목에서 가져왔다.
+//   사과: 31℃ 이상 일소 / 배: 개화기 -1.7~-2.8℃ 언피해 / 감자: 침수 24h면 부패 시작
+//   상추: 고온기 추대·무름병 / 오이: 야간 12℃ 이상 보온
+const CROP_FCST_RULES = {
+  '사과': { heat: 31, cold: 0, wetDays: 3, dryProb: 20,
+    heatTag: '일소', coldTag: '서리', wetTag: '장마', dryTag: '가뭄' },
+  '배':   { heat: 33, cold: 0, wetDays: 3, dryProb: 20,
+    heatTag: '고온', coldTag: '서리', wetTag: '장마', dryTag: '가뭄' },
+  '감자': { heat: 33, cold: 2, wetDays: 2, dryProb: 20,
+    heatTag: '고온', coldTag: '저온', wetTag: '장마', dryTag: '가뭄' },
+  '상추': { heat: 30, cold: 2, wetDays: 3, dryProb: 20,
+    heatTag: '고온', coldTag: '저온', wetTag: '호우', dryTag: '봄가뭄' },
+  '오이': { heat: 33, cold: 12, wetDays: 3, dryProb: 20,
+    heatTag: '고온', coldTag: '순멎이', wetTag: '호우', dryTag: '가뭄' }
+};
+const HIGH_RAIN_PROB = 60;      // 이 확률 이상이면 '비 오는 날'로 센다
+
+// 예보 카드는 7칸을 한 줄에 균등 분할하므로 칸이 좁다. '흐리고 소나기'처럼 긴 문구는
+// 넘치므로 아이콘으로 대신 보여주고, 원래 문구는 title 툴팁으로 남긴다.
+// 기상청 어휘가 '흐리고 비'처럼 조합되므로 강수 표현을 먼저 검사한다.
+const WEATHER_ICON = [
+  ['소나기', '🌦️'], ['비/눈', '🌨️'], ['눈', '❄️'], ['비', '🌧️'],
+  ['흐림', '☁️'], ['구름많', '⛅'], ['맑음', '☀️']
+];
+function weatherIcon(label) {
+  if (!label) return '·';
+  for (let i = 0; i < WEATHER_ICON.length; i++) {
+    if (label.indexOf(WEATHER_ICON[i][0]) >= 0) return WEATHER_ICON[i][1];
+  }
+  return '·';
+}
+
+// 예보 7일 중 특정 날짜 구간에 예정된 작업(stage)을 찾는다 - 작업 성격에 맞는 조언을 붙이기 위함
+function tasksInForecast(events, days) {
+  const out = {};
+  (events || []).forEach((ev) => {
+    days.forEach((d) => {
+      if (ev.start <= d.date && d.date <= ev.end) {
+        (out[ev.task] = out[ev.task] || []).push(d.date);
+      }
+    });
+  });
+  return out;
+}
+
+// days: /api/weekly 응답의 days. crop/planSched로 작물 특성을, zoneLabel로 지역 특성을 반영한다.
+function forecastInsights(days, crop, planSched, events, zoneLabel) {
+  if (!days || !days.length) return [];
+  const R = CROP_FCST_RULES[crop];
+  if (!R) return [];
+  const disasters = (planSched && planSched.disasters) || [];
+  const findD = (kw) => disasters.find((x) => x.tag.indexOf(kw) >= 0);
+  const fmt = (s) => { const p = s.split('-'); return parseInt(p[1], 10) + '월 ' + parseInt(p[2], 10) + '일'; };
+  const tips = [];
+  const push = (icon, tag, text, reason) => tips.push({ icon: icon, tag: tag, text: text, reason: reason });
+
+  // 1) 고온 - 작물별 기준치를 넘는 날
+  const hot = days.filter((d) => d.taMax != null && d.taMax >= R.heat);
+  if (hot.length) {
+    const d = findD(R.heatTag) || findD('고온') || findD('일소');
+    const peak = hot.reduce((a, b) => (b.taMax > a.taMax ? b : a));
+    push('🌡️', d ? d.tag : '고온 주의',
+      d ? d.action || d.symptom : '한낮 고온이 이어질 예보예요. 물주기와 그늘 확보를 미리 준비해주세요.',
+      '앞으로 ' + days.length + '일 중 ' + R.heat + '℃ 이상인 날 ' + hot.length + '일 · 최고 ' + peak.taMax + '℃(' + fmt(peak.date) + ')');
+  }
+
+  // 2) 저온·서리 - 작물별 하한
+  const cold = days.filter((d) => d.taMin != null && d.taMin <= R.cold);
+  if (cold.length) {
+    const d = findD(R.coldTag) || findD('저온') || findD('서리') || findD('냉해');
+    const low = cold.reduce((a, b) => (b.taMin < a.taMin ? b : a));
+    push('❄️', d ? d.tag : '저온 주의',
+      d ? d.action || d.symptom : '기온이 크게 떨어질 예보예요. 보온 준비를 해주세요.',
+      fmt(low.date) + ' 최저 ' + low.taMin + '℃ · ' + crop + '는 ' + R.cold + '℃ 이하부터 주의');
+  }
+
+  // 3) 비 - 강수확률이 높은 날이 여러 날
+  const wet = days.filter((d) => Math.max(d.amRainProb || 0, d.pmRainProb || 0) >= HIGH_RAIN_PROB);
+  if (wet.length >= R.wetDays) {
+    const d = findD(R.wetTag) || findD('장마') || findD('호우') || findD('습해');
+    push('🌧️', d ? d.tag : '많은 비 주의',
+      d ? d.action || d.symptom : '비가 잦을 예보예요. 배수로를 미리 점검해주세요.',
+      '앞으로 ' + days.length + '일 중 강수확률 ' + HIGH_RAIN_PROB + '% 이상인 날 ' + wet.length + '일 (' + wet.map((x) => fmt(x.date)).join(', ') + ')');
+  }
+
+  // 4) 가뭄 - 7일 내내 비 소식이 거의 없음
+  const maxProb = Math.max.apply(null, days.map((d) => Math.max(d.amRainProb || 0, d.pmRainProb || 0)));
+  if (maxProb <= R.dryProb) {
+    const d = findD(R.dryTag) || findD('가뭄');
+    push('☀️', d ? d.tag : '건조 주의',
+      d ? d.action || d.symptom : '비 소식이 거의 없어요. 물주기 계획을 세워주세요.',
+      '앞으로 ' + days.length + '일 최고 강수확률이 ' + maxProb + '%에 불과' + (zoneLabel ? ' (' + zoneLabel.split('—')[0].trim() + ')' : ''));
+  }
+
+  // 5) 예정 작업과 예보를 맞춰본 조언 - 작물·시기 특성이 가장 잘 드러나는 부분
+  const tasks = tasksInForecast(events, days);
+  // 과수는 '물주기 & 병해충 방제 & 초생 관리 & …'처럼 작업명이 길어서, 근거 문구에는 앞머리만 쓴다.
+  const shortTask = (t) => (t.indexOf(' & ') >= 0 ? t.split(' & ')[0] + ' 등' : t);
+  Object.keys(tasks).forEach((task) => {
+    const cat = taskCategory(task);
+    const rainyOnTask = tasks[task].filter((dt) => {
+      const d = days.find((x) => x.date === dt);
+      return d && Math.max(d.amRainProb || 0, d.pmRainProb || 0) >= HIGH_RAIN_PROB;
+    });
+    if (cat === 'harvest' && rainyOnTask.length) {
+      push('🧺', '수확 시기 조정',
+        '수확 예정일에 비 예보가 있어요. 익은 것부터 비 오기 전에 먼저 거두는 것이 좋아요.',
+        shortTask(task) + ' 기간 중 ' + rainyOnTask.map(fmt).join(', ') + ' 비 예보');
+    }
+    if ((cat === 'planting') && cold.length) {
+      push('🌱', '파종·심기 시기 조정',
+        '심는 시기에 기온이 낮아질 예보예요. 며칠 미루거나 덮어주기를 준비해주세요.',
+        shortTask(task) + ' 기간과 저온 예보가 겹쳐요');
+    }
+    if (cat === 'pest' && rainyOnTask.length) {
+      push('🐛', '병해충 방제 앞당기기',
+        '비가 잦으면 약효가 씻겨 내려가요. 비 예보 전에 방제를 마치는 것이 좋아요.',
+        shortTask(task) + ' 기간 중 ' + rainyOnTask.map(fmt).join(', ') + ' 비 예보');
+    }
+  });
+
+  // 같은 문구가 겹치면 하나만 남긴다
+  const seen = {};
+  return tips.filter((t) => (seen[t.tag + t.text] ? false : (seen[t.tag + t.text] = true)));
+}
+
 // 선택한 날짜의 추천 작업이 어떤 성격인지 분류 — 이 분류에 맞는 뉴스만 우선적으로 골라 보여주기 위함
 const TASK_CATEGORY_LABEL = { pest: '병해충 방제', harvest: '수확·출하', storage: '저장 관리', planting: '파종·씨감자 준비', general: '병해충·기상재해 전반' };
 function taskCategory(task) {
@@ -2111,6 +2359,246 @@ function nextChecklistStatus(status) {
   if (idx === -1) return CHECKLIST_STATUS_ORDER[0];      // 시작 전 -> 하는 중
   if (idx === CHECKLIST_STATUS_ORDER.length - 1) return null; // 완료 -> 시작 전(기록 삭제)
   return CHECKLIST_STATUS_ORDER[idx + 1];                 // 하는 중 -> 완료
+}
+
+// 체크리스트 항목마다 그 작업을 대표하는 아이콘을 붙인다. 항목 문구는 짧은 작업명
+// ('물주기')부터 긴 안내문('흙을 손가락 한 마디 정도 파서 …')까지 섞여 있어, 문구에
+// 포함된 키워드로 고른다. **순서가 규칙**이다 — 위쪽이 먼저 이기므로 좁은 뜻을 위에 둔다.
+// (예: '저온저장고'는 '저온'❄️이 아니라 '저장'📦으로 가야 해서 저장 묶음을 먼저 둔다)
+const TASK_ICON = [
+  [['병해충', '방제'], '🐛'],
+  [['점적관수', '물주기', '물을 충분히', '물을 주', '물을 한 번에', '많은 비나 물을'], '💧'],
+  [['배수', '물길', '물이 고여', '물 빠지는'], '🌊'],
+  [['환기', '저장', '창고'], '📦'],
+  [['출하', '포장', '규격'], '🚚'],
+  [['배토', '북주기'], '⛏️'],
+  [['제초', '초생'], '🌿'],
+  [['밑거름', '웃거름', '비료', '시비', '칼슘', '고두병'], '🧪'],
+  [['멀칭', 'PE 필름'], '🟫'],
+  [['부직포', '서리', '언피해', '저온', '보온', '아침 기온'], '❄️'],
+  [['일소', '고온', '한낮', '폭염'], '🌡️'],
+  [['태풍'], '🌪️'],
+  [['수확'], '🧺'],
+  [['열매솎기', '솎기'], '🍏'],
+  [['유인', '가지 눕히기'], '🪢'],
+  [['전정'], '✂️'],
+  [['인공수분', '수분수'], '🐝'],
+  [['접목'], '🪡'],
+  [['모기르기', '육묘'], '🪴'],
+  [['싹틔우기', '싹 틔운', '싹을 틔워', '싹이 올라'], '🍃'],
+  [['씨감자 선별', '절단', '자를 땐', '자른 씨감자'], '🔪'],
+  // '심기 전에 그 품종의 휴면기간을 확인' 처럼 심기가 언급될 뿐인 안내문이 있어 🌱보다 앞에 둔다
+  [['품종', '휴면'], '📖'],
+  [['파종', '씨뿌림', '아주심기', '심어주세요', '심을 때', '묘목', '심기'], '🌱'],
+  [['밭 준비', '토양개량', '밭 작업'], '🚜'],
+  [['간격', '깊이'], '📏'],
+  [['점검', '판정', '확인', '살펴보', '만져보', '골라내'], '🔎'],
+  [['℃', '습도'], '🌡️']
+];
+const TASK_ICON_DEFAULT = '📋';
+// 캘린더 막대의 작업명은 '밭 준비 & 멀칭 & 파종 & 밑거름 시비'처럼 여러 작업이 붙어 있다.
+// 문구 전체로 찾으면 뒤쪽 작업('시비'🧪)이 먼저 걸려 대표성이 없으므로, 맨 앞 작업만 본다.
+function primaryTaskIcon(task) {
+  return taskIcon((task || '').split(' & ')[0]);
+}
+function taskIcon(text) {
+  const t = text || '';
+  for (let i = 0; i < TASK_ICON.length; i++) {
+    const kws = TASK_ICON[i][0];
+    for (let j = 0; j < kws.length; j++) {
+      if (t.indexOf(kws[j]) >= 0) return TASK_ICON[i][1];
+    }
+  }
+  return TASK_ICON_DEFAULT;
+}
+
+// ── 작업 수행 방법(초보자용) ────────────────────────────────────────────────
+// 체크리스트에는 '멀칭', '아주심기', '물주기'처럼 작업 이름만 뜬다. 농사를 처음 하는
+// 사람은 그 이름만 보고는 무엇을 어떻게 해야 하는지 알 수 없다. 그래서 항목마다
+// 두 가지를 붙인다.
+//   steps : 작물과 무관하게 통하는 '하는 순서' (여기 표에 적어둔 일반 안내)
+//   find  : 그 작물 cultivationGuide에서 이 작업에 해당하는 줄을 뽑는 검색어
+//           (품종·간격·온도 같은 실제 수치는 작물 데이터에만 있으므로 그대로 가져온다)
+// match 순서가 규칙이다 — 좁은 뜻을 위에 둔다(예: '초생 관리'가 '제초'보다 먼저).
+const TASK_HOWTO = [
+  { match: ['토양개량'], find: ['토양개량', '토양산도', '유효토심', '토심이'], steps: [
+    '심을 자리를 깊이 갈아 딱딱한 층을 부숴주세요. 뿌리가 깊이 뻗을 수 있게 하는 작업이에요.',
+    '퇴비와 석회를 뿌리고 흙과 잘 섞어주세요. 석회는 흙의 산도를 올려줘요.',
+    '가까운 농업기술센터에 흙을 맡기면 무료로 토양검정을 해줘요. 결과에 맞춰 넣는 게 가장 정확해요.'] },
+  { match: ['밭 준비'], find: ['밭 준비'], steps: [
+    '밭을 갈아 흙을 부드럽게 만들고, 돌과 뿌리를 골라내주세요.',
+    '물이 잘 빠지도록 이랑(흙을 길게 두둑하게 쌓은 줄)을 만들고, 이랑 사이에 고랑을 파주세요.',
+    '이랑 방향은 물이 흘러 내려가는 쪽으로 잡으면 장마 때 물이 잘 빠져요.'] },
+  { match: ['멀칭'], find: ['멀칭'], steps: [
+    '이랑 위에 비닐을 팽팽하게 덮고, 가장자리는 흙으로 눌러 바람에 날리지 않게 해주세요.',
+    '심을 자리마다 구멍을 뚫고 그 구멍에 심어요. 비닐은 흙 온도를 지키고 풀을 막아줘요.',
+    '이른 봄엔 투명 비닐(따뜻하게), 여름엔 검은 비닐(풀 막기)을 씁니다.'] },
+  { match: ['밑거름', '웃거름', '시비', '거름'], find: ['비료 주기', '시비량', '거름 주기', '밑거름', '웃거름'], steps: [
+    '밑거름은 심기 2~3주 전에 뿌리고 흙과 섞어주세요. 바로 심으면 뿌리가 상할 수 있어요.',
+    '웃거름은 자라는 중간에 포기 옆 10~15cm 떨어진 곳에 주고 흙을 살짝 덮어주세요.',
+    '한 번에 많이 주면 오히려 해로워요. 정해진 양을 나눠서 주는 게 좋아요.'] },
+  { match: ['씨감자 선별'], find: ['골라내고'], steps: [
+    '싹이 날 눈이 여러 개 붙어 있고, 상처·썩음·병 자국이 없는 것만 고르세요.',
+    '너무 작거나 너무 큰 것은 빼두세요. 크기가 고르면 싹도 고르게 올라와요.',
+    '씨감자는 반드시 검정된 씨감자를 쓰세요. 먹는 감자를 심으면 병이 따라와요.'] },
+  { match: ['절단'], find: ['자를 땐', '자른 씨감자'], steps: [
+    '눈이 2개 이상 들어가게 위에서 아래 방향으로 쪼개주세요.',
+    '자른 칼은 자를 때마다 소독(끓인 물이나 알코올)해야 병이 안 옮아요.',
+    '자른 면은 하루 정도 그늘에서 말려 굳힌 뒤 심으면 썩지 않아요.'] },
+  { match: ['싹틔우기'], find: ['싹을 틔워', '싹 틔운', '휴면기간'], steps: [
+    '심기 전에 따뜻하고 습한 곳에 두어 싹을 미리 내는 작업이에요. 그래야 심은 뒤 고르게 자라요.',
+    '햇빛을 살짝만 쬐어주면 싹이 짧고 굵게 나와요. 어둡게 두면 가늘고 길게 자라 부러져요.',
+    '싹이 3~5mm쯤 나오면 심을 때가 된 거예요.'] },
+  { match: ['파종', '씨뿌림'], find: ['파종깊이', '심는거리', '씨뿌림', '씨앗량'], steps: [
+    '씨앗은 자기 크기의 2~3배 깊이로 심어주세요. 너무 깊으면 못 올라와요.',
+    '심은 뒤 흙을 살짝 덮고 물을 부드럽게 주세요. 세게 주면 씨앗이 쓸려 나가요.',
+    '싹이 날 때까지 흙 표면이 마르지 않게 유지해주세요.'] },
+  { match: ['모기르기', '육묘'], find: ['모기르기', '육묘', '플러그트레이', '모를 길러'], steps: [
+    '플러그트레이(작은 칸이 여러 개 뚫린 모판)에 씨를 뿌려 모를 따로 길러요.',
+    '햇빛이 잘 드는 곳에 두고, 흙이 마르면 물을 주세요. 웃자라면 밤 온도를 조금 낮춰주세요.',
+    '본잎(떡잎 다음에 나오는 진짜 잎)이 3~4매가 되면 밭에 옮길 때가 됐어요.'] },
+  { match: ['접목'], find: ['접목', '대목', '흡비력'], steps: [
+    '병에 강한 뿌리(대목)에 기르려는 품종(수) 줄기를 붙여 하나로 키우는 작업이에요.',
+    '자른 면을 딱 맞춰 클립으로 고정하고, 2~3일은 습하고 그늘진 곳에 두어 붙게 해주세요.',
+    '처음이면 접목한 모를 사서 심는 게 훨씬 안전해요.'] },
+  { match: ['묘목 심기'], find: ['묘목', '재식', '수분수를 20%'], steps: [
+    '심을 구덩이는 뿌리가 굽지 않을 만큼 넉넉히 파고, 퇴비는 구덩이 아래쪽에 흙과 섞어 넣어주세요.',
+    '접목 부위(줄기에 이어붙인 자리)가 흙에 묻히지 않게, 땅 위로 나오도록 심어주세요.',
+    '심은 뒤 지지대를 세워 묶고 물을 충분히 주세요. 첫해에는 바람에 흔들리면 뿌리가 못 붙어요.'] },
+  { match: ['아주심기'], find: ['아주심기'], steps: [
+    '모를 밭에 옮겨 마지막 자리에 심는 작업이에요. 여기서 수확까지 자랍니다.',
+    '심기 전 모에 물을 충분히 주고, 흐린 날이나 해 질 무렵에 심으면 덜 시들어요.',
+    '심은 깊이는 모판에 있던 흙 높이와 같게 맞추고, 바로 물을 충분히 주세요.'] },
+  { match: ['점적관수'], find: ['점적관수'], steps: [
+    '가는 관에 구멍을 내어 뿌리 쪽에만 물이 똑똑 떨어지게 하는 방식이에요. 물이 훨씬 적게 들어요.',
+    '관은 포기 줄을 따라 깔고, 구멍이 포기 가까이 오게 놓아주세요.',
+    '한 번 줄 때 흙 20~30cm 깊이까지 젖도록 충분히 주세요. 조금씩 자주 주면 뿌리가 얕아져요.'] },
+  { match: ['물주기'], find: ['물주기', '물은 점적관수'], steps: [
+    '흙을 손가락 한 마디(3~5cm) 파서 만져보고 말라 있을 때 주세요. 정해진 날짜보다 흙 상태가 우선이에요.',
+    '한 번에 뿌리까지 닿도록 충분히 주세요. 표면만 적시면 뿌리가 위로만 자라 가뭄에 약해져요.',
+    '이른 아침에 주는 게 가장 좋아요. 한낮에는 물이 날아가고, 저녁에 잎이 젖으면 병이 잘 생겨요.'] },
+  { match: ['배수 관리'], find: ['배수로', '물빠짐'], steps: [
+    '고랑(이랑 사이 골)에 흙이나 풀이 막고 있지 않은지 살펴보세요.',
+    '물이 고인 곳은 삽으로 밭 밖까지 물길을 터서 바로 빼주세요.',
+    '비 오기 전에 미리 점검하는 게 핵심이에요. 물이 하루 넘게 고이면 뿌리가 썩기 시작해요.'] },
+  { match: ['배토', '북주기'], find: ['배토', '북주기'], steps: [
+    '포기 옆 흙을 끌어올려 뿌리 쪽을 덮어주는 작업이에요.',
+    '감자는 덩이줄기가 햇빛을 보면 초록으로 변해 못 먹게 되니, 흙으로 확실히 덮어주세요.',
+    '흙이 촉촉할 때 하면 잘 올라와요. 포기가 넘어지지 않게 조심해서 해주세요.'] },
+  { match: ['초생 관리'], find: ['초생'], steps: [
+    '과수원 바닥에 풀을 일부러 기르는 방식이에요. 흙이 비에 씻겨 내려가는 걸 막아줘요.',
+    '풀이 무릎 높이쯤 자라면 베어 그 자리에 그대로 깔아두세요. 그게 거름이 돼요.',
+    '나무 밑동 주변은 풀을 짧게 유지해 병해충이 숨지 않게 해주세요.'] },
+  { match: ['제초'], find: ['제초'], steps: [
+    '풀이 작을 때 뽑는 게 훨씬 쉬워요. 크면 뿌리가 깊어져 작물 뿌리까지 다칩니다.',
+    '비 온 뒤 흙이 부드러울 때 뽑으면 뿌리까지 잘 빠져요.',
+    '뽑은 풀은 밭 밖으로 빼거나 이랑 위에 덮어 다시 뿌리내리지 않게 해주세요.'] },
+  { match: ['병해충 방제'], find: ['병해충', '농약안전사용', '페로몬'], steps: [
+    '잎 뒷면과 새로 난 순을 먼저 살펴보세요. 벌레와 병은 거기서 시작해요.',
+    '약은 잎 뒷면까지 골고루 묻게 뿌리고, 비 오기 전날은 피하세요. 씻겨 내려가요.',
+    '농약 봉지에 적힌 희석배수와 수확 전 사용가능일(안전사용기준)을 반드시 지켜주세요.'] },
+  { match: ['보온 관리'], find: ['보온', '지온을'], steps: [
+    '해가 지기 전에 덮고, 아침에 해가 들면 걷어 환기해주세요.',
+    '부직포·비닐을 이중으로 덮으면 밤 온도를 더 지킬 수 있어요.',
+    '낮에 덮어둔 채로 두면 안이 너무 더워져 오히려 상해요. 꼭 환기해주세요.'] },
+  { match: ['유인', '가지 눕히기'], find: ['유인', '가지 눕히기', '받침대'], steps: [
+    '줄기나 가지를 원하는 방향으로 잡아 묶거나 눕히는 작업이에요. 햇빛이 골고루 들게 해줍니다.',
+    '끈은 8자 모양으로 느슨하게 묶어주세요. 꽉 조이면 자라면서 줄기가 파여요.',
+    '한 번에 많이 꺾지 말고 며칠에 걸쳐 조금씩 눕혀야 부러지지 않아요.'] },
+  { match: ['전정'], find: ['전정', '열매가지', '갱신 필요'], steps: [
+    '겹치거나 안쪽으로 자란 가지, 위로 곧게 솟은 가지(웃자람)를 먼저 잘라내세요.',
+    '가지 밑동에 붙여 매끈하게 자르고, 굵은 자리는 도포제를 발라주세요.',
+    '겨울(잎이 없을 때) 하면 가지 모양이 잘 보여요. 처음이면 조금만 자르는 편이 안전해요.'] },
+  { match: ['열매솎기'], find: ['열매솎기'], steps: [
+    '열매를 일부러 따내 개수를 줄이는 작업이에요. 남은 열매가 크고 맛있어집니다.',
+    '작거나 모양이 비뚤어진 것, 상처 난 것부터 따내세요.',
+    '아깝게 느껴져도 꼭 해야 해요. 다 남기면 전부 작아지고 나무도 약해져요.'] },
+  { match: ['인공수분', '수분수'], find: ['수분수', '꽃가루'], steps: [
+    '꽃가루를 붓이나 면봉에 묻혀 암꽃 가운데에 살짝 발라주는 작업이에요.',
+    '꽃이 핀 날부터 2~3일 안, 맑은 날 오전 9시~오후 3시에 하는 게 가장 잘 붙어요.',
+    '수분수는 꽃가루를 주는 다른 품종 나무예요. 없으면 열매가 잘 안 달려요.'] },
+  { match: ['발아기 점검'], find: ['발아'], steps: [
+    '눈(싹이 될 자리)이 부풀어 터지는지 살펴보세요. 여기서 그해 농사 시기가 정해져요.',
+    '눈이 안 트거나 말라 죽은 가지는 표시해두고 나중에 잘라내세요.',
+    '이 시기에 서리가 오면 큰 피해가 나니 일기예보를 꼭 확인해주세요.'] },
+  { match: ['서리', '언피해'], find: ['언피해', '늦서리 피해', '서리 피해'], steps: [
+    '서리 예보가 있으면 밭에 부직포나 비닐을 덮어주세요. 새벽 기온이 가장 위험해요.',
+    '물을 뿌려주는 방법(미세살수)도 있어요. 물이 얼면서 나오는 열이 꽃을 지켜줍니다.',
+    '찬 공기는 낮은 곳에 고여요. 오목한 자리일수록 더 신경 써주세요.'] },
+  { match: ['일소'], find: ['일소', '30℃ 이상이면'], steps: [
+    '햇볕에 열매가 데어 하얗게 타는 현상이에요. 한낮 31℃ 이상일 때 잘 생겨요.',
+    '물을 충분히 주고, 열매가 잎에 가려지도록 가지를 정리해주세요.',
+    '탄산칼슘·카올린 같은 흰색 약제를 뿌리면 햇빛을 반사해 막아줘요.'] },
+  { match: ['고두병'], find: ['고두병'], steps: [
+    '열매 껍질 아래에 갈색 점이 생기는 증상이에요. 칼슘이 부족할 때 나타나요.',
+    '열매가 커지는 시기에 칼슘제를 잎에 여러 번 나눠 뿌려주세요.',
+    '질소 거름을 많이 주거나 물을 몰아서 주면 더 심해져요.'] },
+  { match: ['수확적기 판정'], find: ['수확적기', '요오드'], steps: [
+    '언제 따야 가장 맛있는지 확인하는 작업이에요. 너무 일찍 따면 싱겁고, 늦으면 무릅니다.',
+    '껍질 색과 씨 색을 보고, 몇 개 미리 따서 먹어보는 게 가장 확실해요.',
+    '오래 저장할 것은 조금 일찍, 바로 팔 것은 완전히 익혀서 따요.'] },
+  { match: ['수확'], find: ['수확과 저장', '수확 후 관리', '황엽', '수확해주세요'], steps: [
+    '비 온 직후는 피하고, 맑은 날 이른 아침에 거두면 오래 신선해요.',
+    '상처가 나면 그 자리부터 썩어요. 던지지 말고 하나씩 조심해서 담아주세요.',
+    '거둔 것은 바로 그늘로 옮기세요. 햇볕에 두면 금방 시들거나 변색돼요.'] },
+  { match: ['예비저장', '본저장', '저장 관리'], find: ['예비저장', '본 저장 시', '장기간 저장할 때', '저온저장고'], steps: [
+    '거둔 뒤 바로 넣지 말고, 서늘한 곳에 얇게 펴서 겉면을 먼저 말려주세요(예비저장).',
+    '저장고는 정해진 온도·습도를 지키고, 주기적으로 문을 열어 환기해주세요.',
+    '썩은 것 하나가 주변을 다 썩게 해요. 들어갈 때 골라내고 중간중간 살펴보세요.'] },
+  { match: ['출하'], find: ['출하 시기', '출하규격', '성출하'], steps: [
+    '크기와 모양을 비슷한 것끼리 나눠 담으세요(선별). 값이 달라져요.',
+    '표준출하규격에 맞는 상자에 담고, 눌리지 않게 채워주세요.',
+    '가까운 농협이나 공판장에 미리 물어보면 그때그때 시세와 규격을 알려줘요.'] }
+];
+
+// 작물 cultivationGuide에서 이 작업과 관련된 줄만 뽑는다.
+// 블록 제목이 걸리면 그 블록 전체를, 아니면 검색어가 든 줄만 가져온다.
+function guideLinesFor(planSched, terms) {
+  const g = planSched && planSched.cultivationGuide;
+  if (!g || !terms || !terms.length) return [];
+  const blocks = [g.seedPrep, g.spacing, g.mulching, g.fertilizer, g.harvestStorage]
+    .concat(g.blocks || []).filter(Boolean);
+  const hit = (s) => terms.some((t) => (s || '').indexOf(t) >= 0);
+  const out = [];
+  blocks.forEach((b) => {
+    const lines = b.directives || b.items || [];
+    const whole = hit(b.title);
+    lines.forEach((ln) => { if (whole || hit(ln)) out.push(ln); });
+  });
+  // 같은 줄이 여러 블록에 걸릴 수 있어 중복을 지운다
+  const seen = {};
+  return out.filter((s) => (seen[s] ? false : (seen[s] = true))).slice(0, 4);
+}
+
+// 체크리스트의 작업 항목 하나에 붙일 '수행 방법'.
+// steps(일반 순서) + cropLines(이 작물의 실제 수치)로 나눠 돌려준다.
+function taskHowTo(part, planSched) {
+  const name = (part || '').replace('🔄️ ', '');
+  const entry = TASK_HOWTO.find((e) => e.match.some((m) => name.indexOf(m) >= 0));
+  if (!entry) return null;
+  const cropLines = guideLinesFor(planSched, entry.find);
+  return { steps: entry.steps.slice(0, 3), cropLines: cropLines };
+}
+
+// 아이콘 위에 겹쳐 붙일 진행 표시: 시작 전 ✕(빨강) · 하는 중 ing(주황) · 완료 ○(초록).
+// 'ing'는 글자라서 아이콘을 가리지 않게 오른쪽 아래에 둔다.
+// compact=true는 캘린더 셀 안의 작은 동그라미용 — 표시가 동그라미 밖으로 삐져나가
+// 옆 동그라미를 덮지 않도록, 음수 좌표 대신 동그라미 안쪽(right:0)에 붙인다.
+const CHECKLIST_BADGE_COLOR = { done: '#2E8B57', doing: '#B4801A', todo: '#D6483B' };
+function checklistBadge(isDone, isDoing, compact) {
+  const base = {
+    position: 'absolute', fontWeight: 900, background: '#fff',
+    borderRadius: 8, padding: compact ? '0 1px' : '0 2px', lineHeight: 1.2, pointerEvents: 'none'
+  };
+  const text = isDone ? '○' : (isDoing ? 'ing' : '✕');
+  const color = CHECKLIST_BADGE_COLOR[isDone ? 'done' : (isDoing ? 'doing' : 'todo')];
+  if (compact) {
+    // 작은 동그라미에서는 세 상태 모두 오른쪽 아래 한 자리에 모아 위치를 통일한다.
+    return { text, style: { ...base, right: 0, bottom: '-2px', fontSize: isDoing ? 9 : 11, color } };
+  }
+  // 음수 좌표는 단위를 직접 붙여 넘긴다(숫자 -> px 변환에 의존하지 않도록)
+  if (isDoing) return { text, style: { ...base, right: '-7px', bottom: '-4px', fontSize: 9, color } };
+  return { text, style: { ...base, right: '-5px', top: '-4px', fontSize: 13, color } };
 }
 
 // 이벤트 막대 색(hex)을 흰색과 섞어 옅게 만든다 — 체크리스트 진행도 점(dot)을 막대와 같은 계열의 연한 색으로 표시하기 위함
@@ -2294,6 +2782,7 @@ const EVENT_COLORS = ['#4285F4', '#33B679', '#F4511E', '#8E24AA', '#F6BF26'];
 
 class Component extends DCLogic {
   state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, detailRegionName: null, detailLiveScore: null, detailTipOpen: {}, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {},
+    weeklyByRegion: {}, weeklyLoadingSet: {}, planHowOpen: {},
     chatOpen: false, chatMessages: [], chatStreaming: false,
     regionLog: [], regionLogOpen: false };
 
@@ -2426,6 +2915,15 @@ class Component extends DCLogic {
 
   // 체크리스트 상태 변경의 유일한 통로. 카드 클릭과 챗봇 액션이 모두 여기로 들어온다.
   // status가 null이면 '시작 전'(기록 삭제).
+  // 체크리스트 항목의 '어떻게 하나요?'를 펼치거나 접는다. 완료 상태와 달리 저장하지 않는다
+  // (지금 보고 있는 화면에서만 의미가 있으므로).
+  toggleHow(k) {
+    const cur = this.state.planHowOpen || {};
+    const next = { ...cur };
+    if (next[k]) delete next[k]; else next[k] = true;
+    this.setState({ planHowOpen: next });
+  }
+
   applyChecklistStatus(doneKey, status) {
     const all = { ...(this.state.planChecklistStatus || {}) };
     if (status) all[doneKey] = status; else delete all[doneKey];
@@ -2752,7 +3250,36 @@ class Component extends DCLogic {
   refreshLiveDataForPlans(plans) {
     this.loadNews();
     const list = plans || this.state.farmPlans || {};
-    Object.keys(list).forEach(k => { if (list[k].province) this.loadWeather(list[k].province); });
+    Object.keys(list).forEach(k => {
+      if (list[k].province) this.loadWeather(list[k].province);
+      if (list[k].regionLabel) this.loadWeekly(list[k].regionLabel);
+    });
+  }
+
+  // 앞으로 7일 예보(단기+중기). 지역 전체 이름(예 '충청북도 충주시 주덕읍') 단위로 캐시한다.
+  // 중기예보는 하루 두 번(06/18시)만 발표되므로 서버와 같은 3시간 캐시로 충분하다.
+  loadWeekly(regionName) {
+    if (!regionName) return;
+    const cached = (this.state.weeklyByRegion || {})[regionName];
+    if (cached && (Date.now() - cached.loadedAt) < 3 * 60 * 60 * 1000) return;
+    if ((this.state.weeklyLoadingSet || {})[regionName]) return;
+    this.setState({ weeklyLoadingSet: { ...(this.state.weeklyLoadingSet || {}), [regionName]: true } });
+    fetch('http://localhost:8001/api/weekly/' + encodeURIComponent(regionName))
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const all = { ...(this.state.weeklyByRegion || {}) };
+        all[regionName] = {
+          days: (data && Array.isArray(data.days)) ? data.days : [],
+          taVia: (data && data.taVia) || '', taKm: (data && data.taKm) || null,
+          error: (data && data.error) || '', loadedAt: Date.now()
+        };
+        const ls = { ...(this.state.weeklyLoadingSet || {}) }; delete ls[regionName];
+        this.setState({ weeklyByRegion: all, weeklyLoadingSet: ls });
+      })
+      .catch(() => {
+        const ls = { ...(this.state.weeklyLoadingSet || {}) }; delete ls[regionName];
+        this.setState({ weeklyLoadingSet: ls });
+      });
   }
 
   loadWeather(province) {
@@ -3355,10 +3882,57 @@ class Component extends DCLogic {
       const cropNews = filterRecentNews(allCropNews, newsRefDate);
       const wInfo = p.province ? (this.state.weatherByProvince || {})[p.province] : null;
       const wSummary = wInfo ? summarizeWeather(wInfo.days) : null;
+      // 캘린더 오른쪽 '식물 수분 상태' 카드 — 최근 7일 실측 강수 기준
+      const hyd = hydrationStatus(wInfo ? wInfo.days : null, !!p.province);
+      const hydration = {
+        icon: hyd.icon, title: hyd.title, action: hyd.action, hasAction: !!hyd.action,
+        headline: hyd.headline, hasHeadline: !!hyd.headline,
+        headlineStyle: {
+          fontSize: 12.5, fontWeight: 700, color: hyd.color, margin: '0 0 10px',
+          textAlign: 'center', lineHeight: 1.45, paddingBottom: 8,
+          borderBottom: '1px dashed ' + hyd.border
+        },
+        note: hyd.note, dayMarks: hyd.dayMarks, hasDayMarks: hyd.dayMarks.length > 0,
+        cardStyle: {
+          flex: '0 0 210px', width: 210, boxSizing: 'border-box', alignSelf: 'flex-start',
+          background: hyd.bg, border: '1px solid ' + hyd.border, borderRadius: 12, padding: '18px 16px'
+        },
+        iconStyle: { fontSize: 52, lineHeight: 1.1, display: 'block', textAlign: 'center', margin: '0 0 10px' },
+        titleStyle: { fontSize: 15, fontWeight: 700, color: hyd.color, margin: '0 0 8px', textAlign: 'center', lineHeight: 1.4 },
+        actionStyle: { fontSize: 12.5, color: '#2B2620', margin: '0 0 12px', lineHeight: 1.6 }
+      };
+
       const seasonWordNow = monthToSeasonWord(parseInt(todayStrForPlan.slice(5, 7), 10));
       const wWarns = weatherWarnings(wSummary, seasonWordNow, planSched.disasters || []);
       const nHits = newsInsights(cropNews, planSched.pests || [], planSched.disasters || [], selectedCategory);
+      // 앞으로 7일 예보(기상청 단기+중기) — 지난 14일 실측이 알려주지 못하는 '다가올 날씨'를
+      // 이 작물의 재해 특성과 예정 작업에 비추어 미리 알려준다.
+      const fInfo = p.regionLabel ? (this.state.weeklyByRegion || {})[p.regionLabel] : null;
+      const fDays = (fInfo && fInfo.days) || [];
+      const fWarns = forecastInsights(fDays, p.crop, planSched, events, p.zoneLabel);
+      const forecastStrip = fDays.map(d => ({
+        dayLabel: (d.dayOffset === 0 ? '오늘' : (d.dayOffset === 1 ? '내일' : parseInt(d.date.slice(8, 10), 10) + '일')),
+        // 오늘은 이미 지난 시간대가 빠져 오전/오후 한쪽만 오는 경우가 있어, 있는 쪽만 보여준다.
+        weather: (!d.amWeather || !d.pmWeather || d.amWeather === d.pmWeather)
+          ? (d.amWeather || d.pmWeather || '-')
+          : d.amWeather + '/' + d.pmWeather,
+        // 좁은 칸에는 아이콘만 보여주고(오전·오후가 다르면 두 개), 글자는 툴팁으로 넘긴다.
+        icon: (!d.amWeather || !d.pmWeather || d.amWeather === d.pmWeather)
+          ? weatherIcon(d.amWeather || d.pmWeather)
+          : weatherIcon(d.amWeather) + weatherIcon(d.pmWeather),
+        tempLow: d.taMin != null ? d.taMin + '°' : '-',
+        tempHigh: d.taMax != null ? d.taMax + '°' : '-',
+        rain: Math.max(d.amRainProb || 0, d.pmRainProb || 0) + '%'
+      }));
+      const forecastNote = fDays.length
+        ? ('기상청 예보 ' + fDays.length + '일치 · 숫자는 최고/최저기온, 💧는 강수확률'
+           + (fInfo.taVia ? ' · 기온은 ' + fInfo.taVia + ' 기준' + (fInfo.taKm ? '(' + fInfo.taKm + 'km)' : '') : '')
+           // zoneLabel은 설명문까지 붙은 긴 문장이라, 기후대 이름만 잘라 쓴다.
+           + (p.zoneLabel ? ' · ' + p.zoneLabel.split('—')[0].trim() : ''))
+        : '';
+
       const liveInsights = [
+        ...fWarns.map(f => ({ icon: f.icon, text: f.tag + ' — ' + f.text, reason: f.reason, link: '', date: '', hasLink: false, noLink: true })),
         ...wWarns.map(w => ({ icon: '⚠️', text: w.tag + ' 주의 — ' + w.text, reason: w.reason, link: '', date: '', hasLink: false, noLink: true })),
         ...nHits.map(h => ({ icon: '📰', text: h.title, reason: '', link: h.link, date: h.date, hasLink: true, noLink: false }))
       ];
@@ -3386,7 +3960,7 @@ class Component extends DCLogic {
       const daysInMonth = new Date(yy, mm, 0).getDate();
       const leadBlanks = new Date(yy, mm - 1, 1).getDay();
 
-      const blankCellStyle = { width: 150, height: 132, boxSizing: 'border-box', background: '#fff', padding: '8px 0 0', overflow: 'hidden' };
+      const blankCellStyle = { width: 150, height: 156, boxSizing: 'border-box', background: '#fff', padding: '8px 0 0', overflow: 'hidden' };
       const blankCell = { day: null, isToday: false, bar: null, wrapStyle: blankCellStyle, onSelect: () => {} };
       const cells = [];
       for (let i = 0; i < leadBlanks; i++) cells.push(blankCell);
@@ -3400,7 +3974,7 @@ class Component extends DCLogic {
           const roundLeft = ev.isEventStart || col === 0;
           const roundRight = ev.isEventEnd || col === 6;
           bar = {
-            label: ev.task,
+            label: ev.task, icon: primaryTaskIcon(ev.task),
             barStyle: {
               background: ev.color, color: '#fff', fontSize: 13, fontWeight: 600, marginTop: 6,
               height: 26, lineHeight: '26px', paddingLeft: roundLeft ? 8 : 3, paddingRight: roundRight ? 8 : 3,
@@ -3423,7 +3997,23 @@ class Component extends DCLogic {
             const doneKey = key + '|' + dateStr + '|' + it.key;
             const status = (this.state.planChecklistStatus || {})[doneKey];
             const bg = status === 'done' ? CHECKLIST_DOT_DONE_COLOR : (status === 'doing' ? doingColor : ev.color);
-            return { style: { width: 15, height: 15, borderRadius: '50%', background: bg, flex: '0 0 auto' } };
+            const isDone = status === 'done', isDoing = status === 'doing';
+            const badge = checklistBadge(isDone, isDoing, true);
+            // 동그라미 배경색은 그대로 진행 상태(선명한 색 -> 연한 색 -> 회색)를 나타내고,
+            // 그 안에 작업 아이콘 + 체크리스트와 같은 진행 표시(✕/ing/○)를 얹는다. 문구는 툴팁으로.
+            return {
+              icon: taskIcon(it.text),
+              title: it.text + ' — ' + (isDone ? '완료' : (isDoing ? '하는 중' : '시작 전')),
+              badgeText: badge.text, badgeStyle: badge.style,
+              // 26px + gap 2px면 한 줄에 5개 x 3줄 = 15개까지 셀 안에 들어간다
+              // (가장 항목이 많은 감자 파종일이 14개). 더 키우면 한 줄에 4개로 줄어
+              // 4줄이 필요해지고, 셀 높이를 190px까지 늘려야 한다.
+              style: {
+                position: 'relative', width: 26, height: 26, borderRadius: '50%', background: bg,
+                flex: '0 0 auto', display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 15, lineHeight: 1, opacity: isDone ? 0.75 : 1
+              }
+            };
           });
         }
         const isToday = dateStr === todayStrForPlan;
@@ -3436,7 +4026,7 @@ class Component extends DCLogic {
             background: isToday ? '#2F5D42' : 'transparent', color: isToday ? '#fff' : '#2B2620'
           },
           wrapStyle: {
-            width: 150, height: 132, boxSizing: 'border-box', padding: '8px 0 0', overflow: 'hidden',
+            width: 150, height: 156, boxSizing: 'border-box', padding: '8px 0 0', overflow: 'hidden',
             cursor: 'pointer', background: isSelected ? '#FDF3D9' : '#fff',
             boxShadow: isSelected ? 'inset 0 0 0 2px #E8B84B' : 'none'
           },
@@ -3457,8 +4047,34 @@ class Component extends DCLogic {
           const status = (this.state.planChecklistStatus || {})[doneKey];
           const isDone = status === 'done', isDoing = status === 'doing', notStarted = !status;
           const statusLabel = isDone ? '완료' : (isDoing ? '하는 중' : '시작 전');
+          const badge = checklistBadge(isDone, isDoing);
+          // 작업 이름 항목('물주기','아주심기' 등)만 수행 방법을 붙인다. note/guide/weather/news
+          // 항목은 그 자체가 이미 설명문이라 덧붙이면 중복된다.
+          const how = (it.key.indexOf('task:') === 0) ? taskHowTo(it.text, planSched) : null;
+          const howKey = key + '|' + selectedDateStr + '|how|' + it.key;
+          const howOpen = !!(this.state.planHowOpen || {})[howKey];
           return {
             text: it.text, isDone, isDoing, notStarted, statusLabel,
+            hasHow: !!how, howOpen: howOpen, howClosed: !howOpen,
+            howBtnLabel: howOpen ? '▲ 접기' : '❓ 어떻게 하나요?',
+            howSteps: how ? how.steps.map((t, i) => ({ no: (i + 1) + '.', text: t })) : [],
+            hasCropLines: !!(how && how.cropLines.length),
+            cropLinesLabel: p.crop + ' 기준 세부 수치',
+            cropLines: how ? how.cropLines.map((t) => ({ text: t })) : [],
+            // 행 전체가 상태 토글이므로, 이 버튼 클릭이 위로 전달되지 않게 막는다.
+            howToggle: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.toggleHow(howKey); },
+            icon: taskIcon(it.text), badgeText: badge.text, badgeStyle: badge.style,
+            // 아이콘 + 진행 표시를 한 덩어리로 겹쳐 놓기 위한 고정 크기 상자
+            iconBoxStyle: {
+              position: 'relative', display: 'inline-block', flex: '0 0 30px',
+              width: 30, height: 26, textAlign: 'center'
+            },
+            // 시작 전에는 아직 손대지 않은 느낌이 나도록 아이콘을 흐리게 둔다
+            iconStyle: {
+              fontSize: 19, lineHeight: 1.35,
+              opacity: notStarted ? 0.45 : 1,
+              filter: notStarted ? 'grayscale(0.7)' : 'none'
+            },
             rowStyle: {
               display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 12px',
               background: isDoing ? '#FFF8E8' : '#fff',
@@ -3474,6 +4090,7 @@ class Component extends DCLogic {
           hasTask: !!sel, noTask: !sel,
           task: sel ? sel.task : '', note: sel ? sel.note : '', period: sel ? sel.period : '',
           weatherLine, hasLiveInsights: liveInsights.length > 0, liveInsights, newsFocusLabel,
+          forecastStrip, hasForecast: forecastStrip.length > 0, forecastNote,
           checklist, hasChecklist: checklist.length > 0
         };
       }
@@ -3488,6 +4105,7 @@ class Component extends DCLogic {
         monthLabel: yy + '년 ' + mm + '월',
         regionLine: p.regionLabel ? (p.regionLabel + ' · ' + p.zoneLabel) : '귀농 지역 미저장 · 오늘 날짜 기준으로 계획을 짰어요',
         cells,
+        hydration,
         selectedDetail, hasSelectedDetail: !!selectedDetail, noSelectedDetail: !selectedDetail,
         prevArrowStyle: arrowStyle(hasPrevMonth), nextArrowStyle: arrowStyle(hasNextMonth),
         prevMonth: () => { if (monthIdx > 0) this.setState({ planViewMonth: monthKeys[monthIdx - 1] }); },

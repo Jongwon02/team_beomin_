@@ -6,10 +6,16 @@
 - 호출:  GET http://localhost:8001/api/news/감자
 - 키:    같은 폴더의 .env 에서 NAVER_NEWS_CLIENT_ID / _SECRET 읽음
 """
-import os, re, json, time, ssl, html, datetime, urllib.parse, urllib.request
+import os, re, sys, json, time, ssl, html, datetime, urllib.parse, urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(BASE_DIR)
+# 백엔드는 하위 폴더 간 bare import를 쓰므로 경로를 등록한다(crop_score_server.py와 같은 방식).
+for _sub in ("api", "scoring", "services", "utils"):
+    _p = os.path.join(PROJECT_DIR, "backend", _sub)
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 PORT = 8001
 CACHE_TTL = 1200  # 20분
 
@@ -116,6 +122,44 @@ def fetch_weather(province):
     _weather_cache[province] = (now, days)
     return days
 
+# ---- 주간(단기+중기) 예보: GET /api/weekly/<지역 전체 이름> ----------------
+# 프로필의 '실시간 반영 정보'가 앞으로 7일을 보려면 단기예보(+0~+3일)와
+# 중기예보(+4일~)를 이어 붙여야 한다. 두 API를 프런트에서 직접 부르면 인증키가
+# 브라우저에 노출되므로 여기서 중계한다.
+WEEKLY_TTL = 3 * 3600            # 중기예보는 하루 2회(06/18시) 발표라 3시간 캐시로 충분
+WEEKLY_TTL_PARTIAL = 300         # 일부 날짜가 빈 결과는 3시간 붙잡아두면 안 되므로 5분만
+_weekly_cache = {}               # region_full_name -> (ts, payload)
+
+
+def fetch_weekly(region_name):
+    from region_mapper import find_nearest_station          # noqa: E402
+    from midfcst_regions import lookup_by_name              # noqa: E402
+    from weekly_fcst import get_weekly_forecast             # noqa: E402
+
+    now = time.time()
+    hit = _weekly_cache.get(region_name)
+    if hit:
+        # 단기예보 타임아웃 등으로 앞쪽 날짜가 빈 결과는 짧게만 재사용한다.
+        ttl = WEEKLY_TTL_PARTIAL if hit[1].get("missing") else WEEKLY_TTL
+        if now - hit[0] < ttl:
+            return hit[1]
+
+    codes = lookup_by_name(region_name)
+    if not codes:
+        return {"error": "예보구역을 찾지 못했어요: %s" % region_name}
+    m = find_nearest_station(region_name)
+    if m.get("status") != "matched":
+        return {"error": "지역을 찾지 못했어요: %s (%s)" % (region_name, m.get("status"))}
+    reg = m["matched_region"]
+
+    data = get_weekly_forecast(reg["lat"], reg["lon"], codes["land"], codes["ta"], days=7)
+    data["region"] = region_name
+    data["taVia"] = codes.get("taVia")        # 대표도시로 대체한 경우 어디 기준인지
+    data["taKm"] = codes.get("taKm")
+    _weekly_cache[region_name] = (now, data)
+    return data
+
+
 def clean(t):
     t = re.sub(r"<[^>]+>", "", t)          # 태그 제거
     return html.unescape(t).strip()
@@ -174,9 +218,16 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(200, fetch_weather(province))
             except Exception as e:
                 return self._send(502, {"error": str(e)})
+        k = re.match(r"^/api/weekly/(.+)$", path)
+        if k:
+            region = urllib.parse.unquote(k.group(1))
+            try:
+                return self._send(200, fetch_weekly(region))
+            except Exception as e:
+                return self._send(502, {"error": str(e)})
         m = re.match(r"^/api/news/(.+)$", path)
         if not m:
-            return self._send(404, {"error": "use /api/news/<crop> or /api/weather/<province>"})
+            return self._send(404, {"error": "use /api/news/<crop>, /api/weather/<province>, /api/weekly/<region>"})
         crop = urllib.parse.unquote(m.group(1))
         if not CID or not CSECRET:
             return self._send(500, {"error": "NAVER_NEWS keys missing in .env"})

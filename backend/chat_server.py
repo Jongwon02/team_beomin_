@@ -36,7 +36,12 @@ PROJECT_DIR = os.path.dirname(BASE_DIR)                   # .../0725_merge
 if BASE_DIR not in sys.path:
     sys.path.insert(0, BASE_DIR)
 
-from chat_schedule import get_crop_schedule                # noqa: E402
+from chat_schedule import CROP_CULTURE, CROP_SCHEDULE, get_crop_schedule   # noqa: E402
+
+# 도구 설명에 박아 넣던 작물 목록이 데이터와 어긋나 있었다(오이·상추 일정이 있는데도
+# "사과·배·감자만 있다"고 안내). 다시 어긋나지 않도록 데이터에서 만든다.
+SCHEDULE_CROPS_LABEL = "·".join(CROP_SCHEDULE.keys())
+CULTURE_CROPS_LABEL = "·".join(CROP_CULTURE.keys())
 
 PORT = 8003
 SCORE_API = "http://localhost:8002"
@@ -114,7 +119,8 @@ SYSTEM_PROMPT = """당신은 '안농'이라는 귀농 도우미 웹앱의 상담
 # 다루는 작물
 사과, 배, 오이, 감자, 상추 — 이 5종만 앱 데이터가 있습니다. 다른 작물을 물으면
 "안농은 아직 이 5가지만 다뤄요"라고 안내합니다.
-재배 일정(캘린더)은 사과·배·감자 3종만 있습니다.
+재배 일정(캘린더)은 5종 모두 있습니다. 오이·상추는 비료량(kg/10a)·생육온도·
+토양산도·생리 특성까지 있어서, 물·비료를 얼마나 주는지도 답할 수 있습니다.
 
 # 도구 사용
 - 지역·작물의 적합도나 점수를 물으면 get_crop_score
@@ -211,7 +217,8 @@ TOOLS = [
         "description": (
             "작물의 연간 재배 일정(단계별 시기·해야 할 작업·주의사항)입니다. "
             "'언제 심어요', '8월엔 뭐 해요', '수확 시기' 같은 질문에 씁니다. "
-            "사과·배·감자만 데이터가 있습니다."
+            "오이·상추는 비료량·생육온도·토양산도·생리 특성(재배정보)도 함께 돌려줍니다. "
+            f"데이터가 있는 작물: {SCHEDULE_CROPS_LABEL}."
         ),
         "strict": True,
         "input_schema": {
