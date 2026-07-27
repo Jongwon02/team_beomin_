@@ -198,8 +198,11 @@ EC_THRESHOLDS = {
 # ── 7. 유기물·유효인산 near값 (적정범위, 위험값 없음 — 이분법) ─────
 # 출처: 작물별_토양_화학성_적정범위.csv (7번 섹션에서 가중치 계산에만 쓰이고
 # near값 자체는 미확정 상태였음 → 이번에 같은 CSV의 적정범위를 그대로 near값으로 채택)
+# 사과는 이 CSV에 행이 없었으나, crop_standards_v2.json(농촌진흥청 농업기술길잡이
+# 6권 「사과」)에 동일 항목 적정범위가 있어 그 값으로 채웠다 — "Fruit" 카테고리인
+# 배와 같은 범위인 것은 원 출처 도서가 과수 공통 토양화학성 표를 쓰기 때문이다.
 ORGANIC_MATTER_THRESHOLDS = {  # g/kg
-    "사과": None,  # CSV에 사과 행 없음 — 미확정
+    "사과": {"min": 25, "max": 35},
     "배":   {"min": 25, "max": 35},
     "오이": {"min": 20, "max": 30},
     "감자": {"min": 20, "max": 30},
@@ -207,7 +210,7 @@ ORGANIC_MATTER_THRESHOLDS = {  # g/kg
 }
 
 AVAILABLE_PHOSPHATE_THRESHOLDS = {  # mg/kg
-    "사과": None,  # CSV에 사과 행 없음 — 미확정
+    "사과": {"min": 200, "max": 300},
     "배":   {"min": 200, "max": 300},
     "오이": {"min": 400, "max": 500},
     "감자": {"min": 250, "max": 350},

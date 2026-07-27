@@ -20,6 +20,7 @@ for sub in ("api", "scoring", "services", "utils"):
 os.chdir(PROJECT_DIR)
 
 from live_scoring import get_live_score  # noqa: E402
+from region_mapper import find_nearest_station  # noqa: E402
 
 PORT = 8002
 CROPS = {"사과", "배", "오이", "감자", "상추"}
@@ -49,6 +50,16 @@ def build(crop, region):
         result.setdefault("grade_label", gl)
         result.setdefault("crop", crop)
         result.setdefault("region", region)
+        # 6개 기후 클러스터(전국 89개 관측소 기준, region_cluster_map.json) 중 이 지역이
+        # 어디에 속하는지 붙여준다 - 프론트가 지역 설명·작물별 코멘트를 만드는 데 쓴다.
+        # 작물별 관측소가 아니라 일반 최근접 관측소 기준이라 크롭과 무관하게 지역 하나당 값이 같다.
+        try:
+            cluster = find_nearest_station(region)
+            if cluster.get("status") == "matched":
+                result["cluster_id"] = cluster["station"]["cluster_id"]
+                result["cluster_name"] = cluster["station"]["cluster_name"]
+        except Exception:
+            pass
     _cache[key] = (now, result)
     return result
 
