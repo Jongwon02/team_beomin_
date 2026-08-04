@@ -547,7 +547,7 @@
           <sc-if value="{{ hasClusterInfo }}">
             <span style="font-size:16px;line-height:1.6;color:#4A4432;">이 지역은 <b style="color:#22633C;font-size:19px;font-weight:800;">{{ clusterName }}</b>{{ clusterDesc }}</span>
           </sc-if>
-          <span style="font-size:14px;color:#6B6250;margin-top:8px;">*실측 기상·토양 데이터로 계산한 적합도 순이에요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</span>
+          <span style="font-size:14px;color:#6B6250;margin-top:8px;">*평년 기후 특성(기후 클러스터) 기준 적합도예요 - 접속 시점의 실시간 날씨와는 무관해요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</span>
           <sc-if value="{{ isLowFarmlandDistrict }}">
             <span style="font-size:13px;line-height:1.6;color:#8A5A22;background:#FBE8D6;border-radius:10px;padding:10px 14px;margin-top:4px;">🏙️ {{ lowFarmlandNotice }}</span>
           </sc-if>
@@ -594,7 +594,7 @@
                 <span style="width:38px;height:38px;flex:0 0 auto;border-radius:50%;background:#FFFDF7;border:1px solid #E4DCC8;display:flex;align-items:center;justify-content:center;font-size:19px;">{{ r.emoji }}</span>
                 <span style="font-size:18px;font-weight:700;color:#241F16;">{{ r.name }}</span>
                 <span style="margin-left:auto;text-align:right;">
-                  <sc-if value="{{ r.isLive }}">
+                  <sc-if value="{{ r.hasScore }}">
                     <span style="display:block;font-size:20px;font-weight:700;color:{{ r.accentColor }};line-height:1;">{{ r.scoreNum }}<span style="font-size:12px;font-weight:600;color:#8A7F65;">점</span></span>
                   </sc-if>
                   <span style="{{ r.badgeStyle }}">{{ r.levelLabel }}</span>
@@ -605,24 +605,16 @@
                 <sc-if value="{{ r.hasReliability }}">
                   <p style="font-size:12px;color:#9A8A63;background:#FBF4E3;border-radius:8px;padding:6px 10px;margin:0 0 12px;">ℹ️ {{ r.reliabilityText }}</p>
                 </sc-if>
-                <sc-if value="{{ r.hasReliabilityWarning }}">
-                  <p style="font-size:12px;color:#8A5A22;background:#FBE8D6;border-radius:8px;padding:6px 10px;margin:0 0 12px;line-height:1.55;">{{ r.reliabilityWarningText }}</p>
-                </sc-if>
                 <sc-if value="{{ r.hasBreakdown }}">
                   <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:18px;">
-                    <p style="font-size:11.5px;font-weight:700;color:#8A7F65;margin:0 0 2px;letter-spacing:.01em;">항목별 점수 (작물별 가중치 반영)</p>
+                    <p style="font-size:11.5px;font-weight:700;color:#8A7F65;margin:0 0 2px;letter-spacing:.01em;">항목별 점수 (평년 통계 기준, 작물별 가중치 반영)</p>
                     <sc-for list="{{ r.breakdownItems }}" as="b" hint-placeholder-count="5">
-                      <div style="display:flex;align-items:center;gap:10px;" title="{{ b.reasonTitle }}">
-                        <span onMouseEnter="{{ b.onEnter }}" onMouseLeave="{{ b.onLeave }}" style="position:relative;width:66px;flex:0 0 auto;font-size:12px;color:#5A5245;border-bottom:1px dotted #B9B09A;cursor:help;">
-                          {{ b.label }}
-                          <sc-if value="{{ b.tipShown }}">
-                            <span style="position:absolute;left:0;bottom:calc(100% + 8px);z-index:5;width:240px;background:#2A2419;color:#F8F4EA;font-size:12px;line-height:1.6;font-weight:500;border-radius:10px;padding:10px 12px;box-shadow:0 6px 18px rgba(42,36,25,.24);pointer-events:none;white-space:normal;">{{ b.tip }}</span>
-                          </sc-if>
-                        </span>
+                      <div style="display:flex;align-items:center;gap:10px;">
+                        <span style="width:66px;flex:0 0 auto;font-size:12px;color:#5A5245;{{ b.labelStyle }}" title="{{ b.note }}">{{ b.label }}</span>
                         <div style="flex:1;height:8px;border-radius:4px;background:#E9E0CC;overflow:hidden;">
                           <div style="{{ b.barStyle }}"></div>
                         </div>
-                        <span style="width:58px;flex:0 0 auto;text-align:right;font-size:12px;font-weight:700;color:#8A7F65;">{{ b.scoreLabel }}</span>
+                        <span style="width:48px;flex:0 0 auto;text-align:right;font-size:12px;font-weight:700;color:#8A7F65;">{{ b.scoreLabel }}</span>
                       </div>
                     </sc-for>
                   </div>
@@ -918,97 +910,33 @@
       </div>
     </div>
 
-    <!-- 홈의 추천 결과 카드에서 넘어왔을 때만 나오는, 선택 지역 실측 기상·토양 기반 맞춤 정보 -->
+    <!-- 홈의 추천 결과 카드에서 넘어왔을 때만 나오는, 선택 지역의 기후 클러스터(평년 기후
+         특성) 기준 맞춤 정보 - 접속 시점의 실시간 날씨와 무관하게 항상 같은 값을 보여준다. -->
     <sc-if value="{{ detail.hasRegionInfo }}">
       <div style="margin-top:22px;background:#FFFFFF;border:1px solid #E4DCC8;border-radius:16px;padding:22px;">
         <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:4px;">
           <h2 style="font-size:18px;font-weight:700;color:#2B2620;margin:0;">📍 {{ detail.regionName }} 맞춤 정보</h2>
           <div style="display:flex;align-items:center;gap:10px;">
-            <span style="font-size:13px;font-weight:700;color:#2F5D42;">{{ detail.regionScoreText }}</span>
+            <sc-if value="{{ detail.hasRegionScore }}">
+              <span style="font-size:16px;font-weight:700;color:#2F5D42;">{{ detail.regionScoreNum }}점</span>
+            </sc-if>
             <span style="{{ detail.regionBadgeStyle }}">{{ detail.regionGradeLabel }}</span>
           </div>
         </div>
-        <p style="font-size:13px;color:#6B6250;margin:6px 0 14px;">실측 기상·토양 데이터로 계산한 이 지역의 {{ detail.name }} 적합도예요.</p>
-
-        <sc-if value="{{ detail.hasRegionStationWarning }}">
-          <p style="font-size:12px;color:#9A8A63;background:#FBF4E3;border-radius:8px;padding:6px 10px;margin:0 0 12px;">ℹ️ {{ detail.regionStationWarning }}</p>
-        </sc-if>
-
+        <p style="font-size:13px;color:#6B6250;margin:6px 0 14px;">평년 기후·토양 통계 기준 이 지역의 {{ detail.name }} 적합도예요.</p>
+        <p style="font-size:14px;line-height:1.7;color:#3C3527;margin:0 0 14px;">{{ detail.regionReason }}</p>
         <sc-if value="{{ detail.hasRegionBreakdown }}">
-          <div style="display:grid;gap:6px;margin:0 0 16px;">
-            <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 실측 점수 (작물별 가중치 반영)</p>
+          <div style="display:grid;gap:6px;">
+            <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (평년 통계 기준, 작물별 가중치 반영)</p>
             <sc-for list="{{ detail.regionBreakdown }}" as="b" hint-placeholder-count="5">
-              <div style="display:flex;align-items:center;gap:8px;" title="{{ b.reasonTitle }}">
-                <span onMouseEnter="{{ b.onEnter }}" onMouseLeave="{{ b.onLeave }}" style="position:relative;width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">
-                  {{ b.label }}
-                  <sc-if value="{{ b.tipShown }}">
-                    <span style="position:absolute;left:0;bottom:calc(100% + 8px);z-index:5;width:240px;background:#2A2419;color:#F8F4EA;font-size:12px;line-height:1.6;font-weight:500;border-radius:10px;padding:10px 12px;box-shadow:0 6px 18px rgba(42,36,25,.24);pointer-events:none;white-space:normal;">{{ b.tip }}</span>
-                  </sc-if>
-                </span>
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;{{ b.labelStyle }}" title="{{ b.note }}">{{ b.label }}</span>
                 <div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;">
                   <div style="{{ b.barStyle }}"></div>
                 </div>
-                <span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">{{ b.scoreLabel }}</span>
+                <span style="width:48px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">{{ b.scoreLabel }}</span>
               </div>
             </sc-for>
-          </div>
-        </sc-if>
-
-        <sc-if value="{{ detail.hasRegionTips }}">
-          <div style="display:flex;flex-direction:column;gap:12px;">
-            <p style="font-size:14px;font-weight:700;color:#8A7B55;margin:0;">이 지역에서 특히 신경 쓸 점</p>
-            <div style="display:flex;flex-direction:column;gap:12px;">
-              <sc-for list="{{ detail.regionTips }}" as="t" hint-placeholder-count="3">
-                <div style="background:#FCFAF2;border:1px solid #EFE8D6;border-radius:14px;overflow:hidden;">
-                  <button type="button" onClick="{{ t.onToggle }}" style="width:100%;font:inherit;text-align:left;background:none;border:none;cursor:pointer;display:flex;align-items:flex-start;gap:14px;padding:16px 18px;">
-                    <span style="font-size:17px;line-height:1.4;flex:none;">{{ t.icon }}</span>
-                    <p style="margin:0;flex:1;font-size:14px;line-height:1.5;color:#3C3527;">
-                      <strong style="font-weight:700;">{{ t.title }}</strong> —
-                      <sc-for list="{{ t.bodySegments }}" as="seg" hint-placeholder-count="4">
-                        <sc-if value="{{ seg.isTerm }}"><span title="{{ seg.def }}" style="border-bottom:1px dotted #8A8069;cursor:help;">{{ seg.text }}</span></sc-if>
-                        <sc-if value="{{ seg.plain }}">{{ seg.text }}</sc-if>
-                      </sc-for>
-                    </p>
-                    <span style="flex:none;font-size:11px;color:#8A8069;line-height:1.9;{{ t.caret }}">▼</span>
-                  </button>
-                  <div style="{{ t.rows }}">
-                    <div style="overflow:hidden;">
-                      <div style="padding:0 18px 18px 49px;display:flex;flex-direction:column;gap:14px;">
-                        <div style="height:1px;background:#EFE8D6;"></div>
-                        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                          <span style="font-size:13px;color:#8A8069;font-weight:600;">대응 난이도</span>
-                          <span style="font-size:13px;font-weight:700;color:{{ t.diffColor }};background:{{ t.diffBg }};border:1px solid {{ t.diffBorder }};border-radius:999px;padding:4px 12px;">{{ t.difficulty }}</span>
-                          <span style="font-size:13px;color:#8A8069;">{{ t.cost }}</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:5px;">
-                          <span style="font-size:13px;font-weight:700;color:#8A7B55;">언제 문제가 되나요</span>
-                          <p style="margin:0;font-size:14px;line-height:1.6;color:#4A4334;">
-                            <sc-for list="{{ t.whenSegments }}" as="seg" hint-placeholder-count="4">
-                              <sc-if value="{{ seg.isTerm }}"><span title="{{ seg.def }}" style="border-bottom:1px dotted #8A8069;cursor:help;">{{ seg.text }}</span></sc-if>
-                              <sc-if value="{{ seg.plain }}">{{ seg.text }}</sc-if>
-                            </sc-for>
-                          </p>
-                        </div>
-                        <div style="display:flex;flex-direction:column;gap:7px;">
-                          <span style="font-size:13px;font-weight:700;color:#8A7B55;">구체적인 대책</span>
-                          <sc-for list="{{ t.actions }}" as="a" hint-placeholder-count="3">
-                            <div style="display:flex;align-items:flex-start;gap:10px;">
-                              <span style="flex:none;width:6px;height:6px;border-radius:999px;background:#7A9E5E;margin-top:8px;"></span>
-                              <p style="margin:0;font-size:14px;line-height:1.6;color:#4A4334;">
-                                <sc-for list="{{ a.segments }}" as="seg" hint-placeholder-count="4">
-                                  <sc-if value="{{ seg.isTerm }}"><span title="{{ seg.def }}" style="border-bottom:1px dotted #8A8069;cursor:help;">{{ seg.text }}</span></sc-if>
-                                  <sc-if value="{{ seg.plain }}">{{ seg.text }}</sc-if>
-                                </sc-for>
-                              </p>
-                            </div>
-                          </sc-for>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </sc-for>
-            </div>
           </div>
         </sc-if>
       </div>
@@ -1708,6 +1636,43 @@ const LEVEL_META = {
   caution: { label: '주의 필요', bg: '#F3E2DC', color: '#B5482F' }
 };
 
+// /api/crop-score-normal(climate_normal_score.py) 총점 등급 - 백엔드 grade_of()와
+// 같은 경계(80/60/40)를 프론트에서도 씀(총점만 오고 등급 문자열은 안 내려주므로).
+const NORMAL_GRADE_META = {
+  good:    { label: '우수', bg: '#E7F0E4', color: '#2F5D42' },
+  normal:  { label: '양호', bg: '#E4F1E6', color: '#2F7A44' },
+  caution: { label: '주의', bg: '#FBE8D6', color: '#8A5A22' },
+  bad:     { label: '위험', bg: '#F3E2DC', color: '#B5482F' },
+};
+function normalGradeOf(score) {
+  if (score >= 80) return 'good';
+  if (score >= 60) return 'normal';
+  if (score >= 40) return 'caution';
+  return 'bad';
+}
+// climate_normal_score.py의 breakdown({변수:{score,weight,source}})을 카드 막대용
+// 배열로 바꾼다. VAR_ORDER로 항상 같은 순서(온도→강수→일조→토양)로 보여준다.
+const NORMAL_VAR_ORDER = ['온도', '강수', '일조', 'pH', '유기물', '유효인산', 'EC'];
+function normalBreakdownOf(breakdown) {
+  const colorFor = (s) => s >= 80 ? '#2F7A44' : (s >= 60 ? '#6FA361' : (s >= 40 ? '#C98A3A' : '#C15B3A'));
+  return NORMAL_VAR_ORDER.filter((v) => breakdown && breakdown[v]).map((v) => {
+    const entry = breakdown[v];
+    const sc = Math.round(entry.score);
+    const substituted = !!entry.note;
+    return {
+      label: LABELS[v] || v,
+      scoreLabel: sc + '점',
+      barStyle: { height: '100%', width: sc + '%', background: colorFor(sc), borderRadius: '999px' },
+      // 다른 지목 값으로 대체된 항목만 note가 채워짐 - 늘 보이면 산만하니 항목명에
+      // 점선 밑줄만 살짝 넣어두고, 실제 설명은 title 네이티브 툴팁(마우스오버 시만)로.
+      note: entry.note || '',
+      labelStyle: substituted
+        ? 'border-bottom:1px dotted #B9B09A;cursor:help;'
+        : '',
+    };
+  });
+}
+
 // ── 전국 89개 기상관측소 기후 클러스터링(data/scripts/clustering.py, K=6) 결과 ──
 // PROVINCE_ZONE(도 단위 9개 시도만 커버하는 예전 방식)과 달리, 이 cluster_id는
 // 백엔드가 어떤 지역을 넣어도 가장 가까운 관측소로 매핑해 전국 어디서나 값이 나온다
@@ -1727,48 +1692,54 @@ const CLUSTER_DESC = {
 // 클러스터(지역) × 작물 코멘트. CROP_ZONE(예전 5권역 방식, 실시간 점수가 없을 때만 쓰는
 // 정적 폴백)과 달리, 이건 실시간 점수가 있을 때도 카드에 "이 지역+이 작물" 맥락을
 // 보여주기 위한 것이라 hasLive 여부와 무관하게 항상 쓰인다.
+// ⚠️ level/reason은 /api/crop-score-normal(climate_normal_score.py) 실시간 점수가 없을 때의
+// 3단계 폴백 배지(good/ok/caution)용과, 있을 때의 코멘트 문장 어투 기준이다 - 2026-08-04
+// 실측(대표 지역 기준 조회) 결과에 맞춰 다시 매겼다. 사과·배는 어느 지역이든 저온요구량
+// 부족(온도 점수 10~29점) 탓에 총점이 60~69점(양호)을 못 넘는 게 전국 공통이라 "주산지"류
+// 문구는 뺐고, 오이·상추는 시설재배 기준으로 채점되다 보니 노지 한파 지역에서도 오히려
+// 점수가 높게 나오는 경우가 있어 그에 맞춰 어투를 바꿨다.
 const CLUSTER_CROP_COMMENT = {
   0: { // 중산간내륙형
-    '사과': { level: 'good', reason: '일교차가 크고 서늘한 산간 기후라 착색과 당도는 잘 오르지만, 일조가 다소 부족한 편이라 가지치기로 햇빛을 충분히 들여줘야 해요.' },
+    '사과': { level: 'ok', reason: '일교차가 커서 착색·당도에는 유리하지만, 저지대보다 일조가 다소 부족한 편이라 가지치기로 햇빛을 충분히 들여주는 관리가 필요해요.' },
     '배': { level: 'ok', reason: '일교차는 좋은 편이지만 산간 지형이라 봄 늦서리에 취약해, 개화기에는 꽃이 얼지 않도록 각별히 신경 써야 해요.' },
-    '오이': { level: 'ok', reason: '기온이 서늘한 산간이라 여름철 노지 생육은 다소 더딜 수 있어, 하우스(시설재배)로 온도를 관리해주는 편이 안정적이에요.' },
+    '오이': { level: 'good', reason: '여름에도 서늘한 산간 기후 덕분에 하우스 안 온도 관리가 수월해, 오이를 안정적으로 키우기 좋은 지역이에요.' },
     '감자': { level: 'good', reason: '서늘하고 일교차가 큰 기후가 감자 알이 굵어지는 데 유리해, 초보자도 무난하게 도전해볼 수 있는 지역이에요.' },
     '상추': { level: 'good', reason: '여름에도 서늘한 기후라 무름병·추대 걱정 없이 오래 수확할 수 있어, 강원 고랭지 채소로도 잘 알려져 있어요.' }
   },
   1: { // 중남부저지대형
     '사과': { level: 'ok', reason: '재배 자체는 가능하지만 저지대라 일교차가 크지 않아, 산간지역 사과만큼 착색과 당도를 끌어올리긴 다소 아쉬울 수 있어요.' },
-    '배': { level: 'good', reason: '온화한 기후에 배수 좋은 저지대가 많아 배나무 뿌리내림이 좋고, 늦서리 피해도 비교적 적은 편이에요.' },
-    '오이': { level: 'good', reason: '기온·강수 조건이 고르게 안정적이라 오이의 생육적온(20~28℃)과 잘 맞아, 하우스에서 무난하게 키울 수 있어요.' },
-    '감자': { level: 'good', reason: '배수가 양호하고 사계절이 뚜렷해 봄·가을 두 번 감자 농사가 가능해, 초보자가 시작하기에 부담이 적어요.' },
+    '배': { level: 'ok', reason: '온화한 기후에 배수 좋은 저지대가 많아 뿌리내림은 좋은 편이지만, 산간지역만큼 일교차가 크지 않아 당도를 끌어올리는 데는 다소 아쉬울 수 있어요.' },
+    '오이': { level: 'ok', reason: '기온·강수 조건이 고르게 안정적이라 오이의 생육적온(20~28℃)과 잘 맞아, 하우스에서 무난하게 키울 수 있어요.' },
+    '감자': { level: 'good', reason: '배수가 양호하고 사계절이 뚜렷해 봄·가을 두 번 감자 농사가 가능한, 여러모로 안정적인 지역이에요.' },
     '상추': { level: 'good', reason: '온화한 저지대 기후라 사계절 시설재배가 두루 가능해, 여러 지역 중에서도 무난하게 도전해볼 수 있어요.' }
   },
   2: { // 고랭지형
-    '사과': { level: 'caution', reason: '겨울 추위가 전국에서 가장 강해 나무가 얼어 갈라지는 동해 위험이 크고, 개화도 늦어져 초보자에게는 권하기 어려운 지역이에요.' },
-    '배': { level: 'caution', reason: '혹한기 저온과 짧은 무상기간 탓에 꽃이 얼거나 결실이 부실해지기 쉬워, 이 지역에서는 배 재배를 권하지 않아요.' },
-    '오이': { level: 'caution', reason: '한여름에도 서늘해 노지에서는 생육이 눈에 띄게 더뎌, 하우스 보온 없이는 사실상 재배가 어려운 지역이에요.' },
+    '사과': { level: 'ok', reason: '겨울 추위가 강해 나무가 어는 동해(凍害) 위험은 여전히 있지만, 강수·일조 조건은 좋은 편이라 보온·방풍 등 저온 관리만 잘하면 재배할 수 있는 지역이에요.' },
+    '배': { level: 'ok', reason: '혹한기 저온에 꽃이 얼 위험은 있지만, 강수·일조 조건은 좋은 편이라 개화기 서리 관리에 신경 쓰면 재배할 수 있는 지역이에요.' },
+    '오이': { level: 'good', reason: '노지에서는 서늘해 생육이 더딜 수 있지만, 오이는 원래 하우스(시설재배)로 많이 키우는 작물이라 온도만 관리해주면 오히려 병해 걱정 없이 잘 자라는 지역이에요.' },
     '감자': { level: 'good', reason: '전국에서 가장 서늘한 고랭지라 감자가 병 없이 튼실하게 자라, 평창·태백처럼 국내 최대 산지로 꼽히는 지역이에요.' },
     '상추': { level: 'good', reason: '한여름에도 서늘해 무름병·추대 걱정이 적어, 고랭지 여름 상추 산지로 잘 알려진 지역이에요.' }
   },
   3: { // 중부내륙형
-    '사과': { level: 'good', reason: '비가 적고 볕이 오래 드는 내륙 기후라 당도와 착색이 잘 오르는, 대구·포항 등 사과 주산지로 유명한 지역이에요.' },
-    '배': { level: 'good', reason: '일조량이 풍부하고 배수가 잘 되는 내륙이라 배나무가 튼튼히 자라고 당도도 잘 오르는 편이에요.' },
-    '오이': { level: 'good', reason: '볕이 좋고 강수가 적어 하우스 습도 관리가 수월해, 오이 시설재배 생산성이 높은 편이에요.' },
-    '감자': { level: 'ok', reason: '일조는 넉넉하지만 강수가 적은 편이라, 생육기에 물 관리만 조금 신경 쓰면 무난하게 키울 수 있어요.' },
+    '사과': { level: 'ok', reason: '비가 적고 볕이 오래 드는 내륙 기후라 예로부터 사과 주산지로 꼽혔지만, 최근엔 겨울 저온을 충분히 겪는 기간이 줄어드는 추세라 예전만큼의 확실한 강점은 아니에요.' },
+    '배': { level: 'ok', reason: '일조량이 풍부하고 배수가 잘 되는 내륙이지만, 겨울 저온을 채우는 기간이 넉넉하진 않아 어느 정도 관리가 필요한 지역이에요.' },
+    '오이': { level: 'caution', reason: '볕이 좋고 강수가 적어 하우스 습도 관리는 수월하지만, 기온 조건이 오이의 생육적온과는 잘 맞지 않는 편이라 온도 관리에 특히 신경 써야 해요.' },
+    '감자': { level: 'good', reason: '일조가 넉넉해 감자가 튼실하게 자라는 지역이에요. 다만 강수가 적은 편이라 생육기 물 관리는 잊지 말아야 해요.' },
     '상추': { level: 'good', reason: '일조량이 풍부해 잎이 빨리 자라, 한 해 여러 차례 수확하기에 유리한 지역이에요.' }
   },
   4: { // 남부해안형
-    '사과': { level: 'caution', reason: '겨울이 온화해 나무가 겨울잠(휴면)에 필요한 저온을 채우기 어렵고 장마철 습해 우려도 있어, 초보자에게는 권하기 어려운 지역이에요.' },
-    '배': { level: 'good', reason: '온화한 남해안 기후에 배수 좋은 구릉지가 많아, 배 과수원을 새로 꾸리기에 유리한 지역이에요.' },
-    '오이': { level: 'ok', reason: '기온은 넉넉한 편이라 하우스에서 잘 자라지만, 장마철 강수가 많은 만큼 노균병 등 병해 관리에 신경 써야 해요.' },
-    '감자': { level: 'ok', reason: '가을감자 재배는 무난하지만, 봄감자는 저온을 겪는 기간이 짧아 시기 조절에 조금 더 신경 써야 해요.' },
+    '사과': { level: 'caution', reason: '겨울이 온화해 나무가 겨울잠(휴면)에 필요한 저온을 채우기 어려운 편이라, 저온 요구량이 적은 품종을 고르는 등 특히 신경 써서 접근해야 하는 지역이에요.' },
+    '배': { level: 'caution', reason: '온화한 남해안 기후에 배수 좋은 구릉지가 많지만, 겨울 저온을 채우는 기간이 부족한 편이라 꽃눈이 트는 시기까지 꾸준히 관리해야 하는 지역이에요.' },
+    '오이': { level: 'caution', reason: '기온은 넉넉한 편이라 하우스에서 잘 자라지만, 장마철 강수가 많은 만큼 노균병 등 병해 관리에 신경 써야 해요.' },
+    '감자': { level: 'good', reason: '가을감자는 물론 봄감자까지 무난하게 키울 수 있는 지역이에요. 다만 봄감자는 저온을 겪는 기간이 짧은 편이니 파종 시기는 조금 더 신경 써서 정해주세요.' },
     '상추': { level: 'good', reason: '겨울에도 크게 춥지 않아 시설재배로 거의 연중 수확이 가능한, 여러모로 유리한 지역이에요.' }
   },
   5: { // 도서형
-    '사과': { level: 'caution', reason: '겨울이 따뜻해 사과나무가 필요로 하는 저온기간을 채우기 어려워, 이 지역에서는 재배를 권하지 않아요.' },
-    '배': { level: 'caution', reason: '겨울 저온요구량 부족으로 꽃눈이 제대로 트지 않을 수 있어, 배 재배에는 불리한 지역이에요.' },
-    '오이': { level: 'ok', reason: '겨울에도 재배가 가능할 만큼 따뜻하지만 일조량이 가장 적은 편이라, 생육 속도는 다소 느릴 수 있어요.' },
+    '사과': { level: 'caution', reason: '겨울이 따뜻해 사과나무가 필요로 하는 저온기간을 채우기 특히 어려운 지역이라, 저온 요구량이 적은 품종을 고르는 등 신중하게 접근해야 해요.' },
+    '배': { level: 'caution', reason: '겨울 저온요구량을 채우기 어려워 꽃눈이 제대로 트지 않을 수 있는 지역이라, 저온 요구량이 적은 품종을 고르는 등 신경 써서 접근해야 해요.' },
+    '오이': { level: 'caution', reason: '겨울에도 재배가 가능할 만큼 따뜻하지만, 일조량이 가장 적은 편이라 생육 속도는 다소 느릴 수 있어 하우스 보온·조명 관리에 신경 쓰면 좋아요.' },
     '감자': { level: 'good', reason: '겨울이 온화해 노지에서 그대로 겨울을 나며 키울 수 있는, 제주처럼 월동재배 대표 산지로 꼽히는 지역이에요.' },
-    '상추': { level: 'ok', reason: '겨울 재배에는 유리한 기후지만 일조량이 적은 편이라, 자라는 속도가 다른 지역보다 느릴 수 있어요.' }
+    '상추': { level: 'good', reason: '겨울에도 노지에서 재배가 가능할 만큼 온화한 기후라 거의 연중 수확을 노려볼 수 있는 지역이에요. 일조량은 전국에서 가장 적은 편이지만, 상추는 원래 광 요구량이 크지 않은 작물이라 큰 영향은 없어요.' }
   }
 };
 
@@ -1801,40 +1772,7 @@ const LOW_FARMLAND_DISTRICTS = new Set([
 ]);
 const LOW_FARMLAND_NOTICE = '이 지역은 도시 밀집지역이라 농경지 토양검정 데이터가 없을 수 있어요.';
 
-// breakdownReason()이 자연스러운 문장을 조립할 때 쓰는 부품들.
-// FACTOR_*_PHRASE: 항목(온도/강수/일조/pH/유기물/유효인산/EC)이 부족하거나 충분할 때의
-// 명사구 - "A와 B 때문에 ~" 형태로 이어붙이므로 조사(와/과) 없이 "·"로 연결한다.
-const FACTOR_NEG_PHRASE = {
-  '온도': '이 작물과 맞지 않는 기온', '강수': '기준을 벗어난 강수량', '일조': '부족한 일조량',
-  'pH': '적정범위를 벗어난 토양 산도', '유기물': '부족한 토양 유기물', '유효인산': '부족한 유효인산',
-  'EC': '토양에 쌓인 염류'
-};
-const FACTOR_POS_PHRASE = {
-  '온도': '이 작물에 잘 맞는 기온', '강수': '적당한 강수량', '일조': '풍부한 일조량',
-  'pH': '적정범위에 든 토양 산도', '유기물': '풍부한 토양 유기물', '유효인산': '충분한 유효인산',
-  'EC': '낮은 토양 염류 농도'
-};
-// CROP_EFFECT_*: 그 원인 때문에(덕분에) 작물에 실제로 생기는 일 - 작물마다 생김새·약점이
-// 달라(과수는 꽃·열매, 근채류는 알, 엽채류는 잎·병해) 크롭별로 자연스러운 표현을 따로 둔다.
-const CROP_EFFECT_NEG = {
-  '사과': '꽃눈이 상하거나 병해가 생기기 쉬워', '배': '꽃과 열매가 상하기 쉬워',
-  '오이': '병해가 생기거나 생육이 더뎌지기 쉬워', '감자': '알이 잘 굵어지지 않거나 무름병에 걸리기 쉬워',
-  '상추': '무름병이 생기거나 웃자라기 쉬워'
-};
-const CROP_EFFECT_POS = {
-  '사과': '착색과 당도가 잘 올라', '배': '나무가 튼튼히 자라고 결실도 순조로워',
-  '오이': '생육이 활발하고 병 걱정이 적어', '감자': '알이 튼실하게 굵어져',
-  '상추': '잎이 빠르게 자라 여러 번 수확하기 좋아'
-};
-
 const RANK = { good: 0, ok: 1, caution: 2 };
-// 백엔드 라이브 점수 등급(good/normal/caution/bad) → 표시 메타
-const GRADE_META = {
-  good:    { label: '우수', bg: '#E7F0E4', color: '#2F5D42' },
-  normal:  { label: '양호', bg: '#E4F1E6', color: '#2F7A44' },
-  caution: { label: '주의', bg: '#FBE8D6', color: '#8A5A22' },
-  bad:     { label: '위험', bg: '#F3E2DC', color: '#B5482F' }
-};
 // 초보 귀농자용 친화 라벨 (EC=염류농도 등 낯선 항목 풀어쓰기) - 항목별 점수 막대와
 // 신뢰도 경고 문구("pH·유기물·EC 데이터가 없어요") 양쪽에서 같이 쓴다.
 const LABELS = { 'EC': 'EC(염류)', 'pH': 'pH(산도)' };
@@ -2328,37 +2266,6 @@ const REGION_LOG_KEY = 'beomin_region_log';
 const REGION_LOG_MAX = 8;
 // 지역 여러 곳 저장 / 작물 즐겨찾기 여러 개는 폐지됐다. 예전 데이터는 첫 실행 때 지운다.
 const LEGACY_KEYS = ['gwinong_favorites', 'beomin_saved_regions', 'beomin_farm_plans'];
-// 초보 귀농인이 처음 보는 농사 용어를 마우스로 가리키면 바로 뜻을 알 수 있게 하기 위한
-// 사전. splitGlossary()가 문장 안에서 이 키들을 찾아 그 부분만 밑줄 span(title 툴팁)으로
-// 감싼다. 긴 용어부터 매칭되도록 GLOSSARY_RE를 만들 때 길이 내림차순으로 정렬해둔다.
-const GLOSSARY = {
-  '유효인산': '식물이 뿌리로 바로 빨아들일 수 있는 인 성분이에요. 뿌리와 꽃·열매가 자라는 데 필요해요.',
-  'pH': '흙이 산성인지 알칼리성인지 나타내는 수치예요. 7이면 중성, 낮으면 산성, 높으면 알칼리성이에요.',
-  'EC': '흙 속에 녹아있는 염류(소금기)가 얼마나 되는지 나타내는 수치예요. 너무 높으면 뿌리가 물을 잘 못 빨아들여요.',
-  '유기물': '흙 속 동식물 찌꺼기가 삭아서 생긴 성분으로, 흙을 기름지게 만들어줘요.',
-  '토양검정': '흙 상태(산도, 영양분 등)를 검사받는 거예요. 가까운 농업기술센터에서 무료로 받을 수 있어요.',
-  '배수로': '빗물이나 남는 물이 잘 빠져나가도록 만든 물길이에요.',
-  '점적관수': '가는 관을 따라 뿌리 근처에만 물을 조금씩 흘려주는 물주기 방법이에요.',
-  '소석회': '흙의 산성을 낮춰주는 석회 비료예요.',
-  '고토석회': '산성도 낮춰주고 마그네슘도 같이 보충해주는 석회 비료예요.',
-  '용성인비': '인 성분을 천천히 오래 공급해주는 비료예요.',
-  '심경': '평소보다 흙을 깊게 갈아엎는 작업이에요.',
-  '객토': '다른 곳의 좋은 흙을 가져와 섞어주는 거예요.',
-  '담수': '밭에 물을 채워두는 거예요.',
-  '방상팬': '서리가 내릴 만큼 추운 새벽에 큰 선풍기를 돌려 찬 공기를 흩어주는 장치예요.',
-  '미세살수': '아주 가는 물방울을 뿌려 온도를 낮추거나 서리를 막는 방법이에요.',
-  '차광망': '햇빛을 가려 그늘을 만들어주는 그물이에요.',
-  '전정': '가지치기예요. 필요 없는 가지를 잘라내는 작업이에요.',
-  '재식 거리': '식물을 심을 때 서로 얼마나 떨어뜨려 심는지, 그 간격이에요.',
-  '밑거름': '작물을 심기 전에 미리 흙에 넣어두는 비료예요.',
-  '녹비작물': '땅을 기름지게 하려고 심었다가 그대로 갈아엎어 비료 대신 쓰는 식물이에요.',
-  '열과': '열매가 물을 갑자기 많이 빨아들여 껍질이 터지는 현상이에요.'
-};
-const GLOSSARY_RE = new RegExp(
-  '(' + Object.keys(GLOSSARY).sort((a, b) => b.length - a.length)
-    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|') + ')',
-  'g'
-);
 
 const PI_KEY = 'beomin_personal_info';        // 정책 수혜용 인적사항
 const PI_DEFAULTS = {
@@ -3226,18 +3133,6 @@ function pickSeasonInstance(seasonsData, zone, today) {
 // 구글 캘린더 느낌의 이벤트 막대 색상 팔레트(재배 단계 순서대로 순환)
 const EVENT_COLORS = ['#4285F4', '#33B679', '#F4511E', '#8E24AA', '#F6BF26'];
 
-// 항목별 점수 막대에 마우스를 올리면 뜨는 초보자용 용어 설명(원본 변수명 기준 - LABELS
-// 표시용 별칭이 아니라 breakdownOf()의 원래 키로 찾는다).
-const METRIC_TIPS = {
-  '온도': '이 작물이 잘 자라는 기온대와 얼마나 맞는지예요. 너무 더우면 열매가 안 달리고, 너무 추우면 냉해를 입어요.',
-  '강수': '연간 비의 양이 알맞은지 봐요. 비가 적으면 물을 자주 줘야 하고, 너무 많으면 뿌리가 썩거나 병이 잘 생겨요.',
-  '일조': '해가 드는 시간이 충분한지예요. 햇빛이 부족하면 자라는 속도가 느려지고 당도와 색이 떨어져요.',
-  'pH': '흙이 산성인지 알칼리성인지예요. 대부분의 작물은 pH 6~7이 좋고, 너무 산성이면 석회를 뿌려 중화해요.',
-  '유기물': '흙 속 부엽토·거름 성분의 양이에요. 많으면 흙이 푹신하고 물·양분을 잘 붙잡아 뿌리가 잘 뻗어요.',
-  '유효인산': '뿌리 뻗음과 꽃·열매 맺힘에 쓰이는 인(P) 성분 중 뿌리가 바로 흡수할 수 있는 양이에요. 부족하면 퇴비나 인산 비료로 보충해요.',
-  'EC': '흙에 쌓인 비료 염분의 농도예요. 너무 높으면 비료를 많이 줘도 뿌리가 물을 못 빨아들여 시들어요.',
-};
-
 // ── Supabase: 사용자 데이터 서버 저장 + 로그인/회원가입 ────────────────────
 // 이 anon(publishable) 키는 브라우저에 노출되도록 설계된 공개 키다. 실제 방어선은
 // 테이블마다 걸어둔 RLS(auth.uid() = user_id)로, 남의 행은 조회조차 되지 않는다.
@@ -3273,13 +3168,13 @@ const PI_COLUMNS = {
 };
 
 class Component extends DCLogic {
-  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, detailRegionName: null, detailLiveScore: null, detailTipOpen: {}, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {}, prepStatus: {},
+  state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, normalScores: {}, scoresLoading: false, detailCrop: null, detailRegionName: null, detailClusterId: null, detailClusterName: null, detailNormalScore: null, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {}, prepStatus: {},
     weeklyByRegion: {}, weeklyLoadingSet: {}, planHowOpen: {},
     // 품종 추천(breed.md): '지역|작물' 키로 캐시한다. 서버가 ASOS 10년치를 디스크에
     // 캐시하므로 두 번째 조회부터는 빠르지만, 첫 조회는 수십 초가 걸릴 수 있다.
     cultivarByKey: {}, cultivarLoadingSet: {},
     chatOpen: false, chatMessages: [], chatStreaming: false,
-    regionLog: [], regionLogOpen: false, metricTipKey: null,
+    regionLog: [], regionLogOpen: false,
     // ── 로그인/회원가입 ──
     // authUser: Supabase 사용자(익명 포함). authIsAnon이면 '아직 계정을 안 만든 상태'다.
     authUser: null, authIsAnon: true, authReady: false,
@@ -3868,145 +3763,6 @@ class Component extends DCLogic {
     this.cloudDelete('my_farm', {});
   }
 
-  // ── 지역 맞춤 정보 (작물 상세페이지) ────────────────────────────────────
-  // 문장을 GLOSSARY(파일 상단 용어 사전) 기준으로 잘라 [{text, isTerm, def}, ...] 배열로
-  // 만든다. isTerm이 true인 조각만 템플릿에서 title 툴팁이 붙은 span으로 렌더링된다.
-  splitGlossary(text) {
-    if (!text) return [];
-    return text.split(GLOSSARY_RE).filter((s) => s !== '').map((s) => (
-      GLOSSARY[s] ? { text: s, isTerm: true, plain: false, def: GLOSSARY[s] }
-                  : { text: s, isTerm: false, plain: true, def: '' }
-    ));
-  }
-
-  // 지역 실측 breakdown 점수를 근거로 한 초보자용 대응 가이드. 점수가 낮으면(적정 범위를
-  // 벗어남) 변수별로 흔히 쓰이는 대응법을 안내한다 - 방향(너무 높음/낮음)이나 정확한
-  // 임계값은 백엔드가 내려주지 않아 프론트에서 알 수 없으므로, "며칠간 몇% 초과" 같은
-  // 구체 통계는 지어내지 않고 실측값 자체를 근거로 삼는다. 위험 신호(냉해·폭염 등)만
-  // risky_days가 실제로 있어 그 수치를 그대로 인용한다. 실측값은 소수점 첫째 자리까지만
-  // 보여준다(원본 그대로면 의미 없이 복잡해 보여서).
-  regionTipsFor(ls) {
-    const VARIABLE_GUIDE = {
-      '온도': { titleLabel: '온도',
-        body: '이 작물이 잘 자라는 온도 범위를 벗어나는 시기가 있어요. 추울 때는 덮어주고, 더울 때는 그늘을 만들어주세요.',
-        difficulty: '어려움', cost: '설치 비용이 좀 들고, 해마다 관리가 필요해요.', unit: '℃',
-        actions: [
-          '너무 추울 때는 부직포나 비닐로 덮어 온도를 지켜주세요. 필요하면 비닐하우스 재배도 고려해보세요.',
-          '너무 더울 때는 차광망을 씌우고, 한낮에는 미세살수로 온도를 낮춰주세요.',
-          '씨를 뿌리거나 모종을 심는 시기를 며칠 앞뒤로 옮기면 위험한 시기를 피할 수 있어요.'
-        ] },
-      '강수': { titleLabel: '강수(비의 양)',
-        body: '비가 오는 양이 이 작물에는 맞지 않는 편이에요. 물이 잘 빠지는 길을 만들거나, 물 줄 시설을 미리 준비해두세요.',
-        difficulty: '보통', cost: '만드는 데 비용이 좀 들지만, 한 번 갖춰두면 계속 쓸 수 있어요.', unit: 'mm',
-        actions: [
-          '비가 많이 올 때를 대비해 배수로를 미리 만들어두고, 낮은 땅에는 두둑을 높여 심으세요.',
-          '가물 때를 대비해 점적관수 같은 물주기 시설을 갖추고, 흙이 마르면 조금씩 자주 물을 주세요.',
-          '수확 직전에 갑자기 물을 많이 주면 열과가 생길 수 있으니 물 주는 양을 서서히 줄여주세요.'
-        ] },
-      '일조': { titleLabel: '일조(햇빛량)',
-        body: '햇빛을 받는 양이 부족하거나 너무 많을 수 있어요. 심는 간격을 넓히거나 가지치기로 햇빛이 잘 들게 해주세요.',
-        difficulty: '쉬움', cost: '추가로 드는 비용은 거의 없고, 손이 좀 가는 작업이에요.', unit: '시간',
-        actions: [
-          '겹치는 가지와 잎을 전정해서 안쪽까지 햇빛이 들어오게 하세요.',
-          '재식 거리를 넓히면 한 그루가 받는 햇빛의 양이 늘어나요.',
-          '색이나 당도가 중요한 작물은 반사필름을 깔아 햇빛 부족을 보완할 수 있어요.'
-        ] },
-      'pH': { titleLabel: 'pH(흙의 산도)',
-        body: '흙의 산도가 이 작물에 맞는 범위를 벗어났어요. 석회를 뿌리는 등의 방법으로 산도를 맞춰주세요.',
-        difficulty: '쉬움', cost: '300평(10a) 기준 5~15만 원 정도 들어요.', unit: '',
-        actions: [
-          '흙이 너무 산성이면 소석회나 고토석회를 뿌리고 깊이 갈아 섞어주세요.',
-          '흙이 너무 알칼리성이면 유황 처리 등으로 산도를 낮추는 방법을 알아보세요.',
-          '석회는 효과가 천천히 나타나니 한 번에 너무 많이 넣지 말고 나눠서 주세요.',
-          '조정한 뒤에는 토양검정을 다시 받아 산도가 잘 맞춰졌는지 확인하세요.'
-        ] },
-      '유기물': { titleLabel: '유기물(흙 속 영양 성분)',
-        body: '흙 속 유기물이 부족한 편이에요. 퇴비나 유기질 비료로 흙을 기름지게 만들어주세요.',
-        difficulty: '쉬움', cost: '300평(10a) 기준 10~20만 원 정도 들어요.', unit: 'g/kg',
-        actions: [
-          '잘 삭은 퇴비를 심기 전에 밑거름으로 충분히 넣어주세요.',
-          '녹비작물을 심었다가 갈아엎는 방법도 있어요.',
-          '유기물은 천천히 늘어나니 매년 꾸준히 넣어주는 게 중요해요.'
-        ] },
-      '유효인산': { titleLabel: '유효인산',
-        body: '흙 속 유효인산 수치가 적정 범위를 벗어났어요. 토양검정 결과에 맞춰 비료량을 조정하세요.',
-        difficulty: '쉬움', cost: '300평(10a) 기준 5~10만 원 정도 들어요.', unit: 'mg/kg',
-        actions: [
-          '농업기술센터에서 무료로 토양검정을 받고, 그 결과에 맞춰 비료량을 정하세요.',
-          '부족하면 용성인비 같은 비료를 밑거름으로 골고루 뿌려주세요.',
-          '너무 많으면 몇 년간 인 성분 비료를 줄이고 퇴비 위주로 관리하세요.'
-        ] },
-      'EC': { titleLabel: 'EC(흙 속 염류 농도)',
-        body: '흙 속 염류(EC) 수치가 높은 편이에요. 물을 채우거나 흙을 바꿔서 염류를 낮춰주세요.',
-        difficulty: '보통', cost: '물 채우기나 흙 교체 비용이 들어요.', unit: 'dS/m',
-        actions: [
-          '비닐하우스라면 여름철에 담수(물 채우기)로 흙 속 염류를 씻어낼 수 있어요.',
-          '심경(깊이갈이)이나 객토로 염류가 쌓인 겉흙을 뒤섞거나 바꿔주는 것도 방법이에요.',
-          '화학비료를 너무 많이 쓰지 말고 퇴비 위주로 관리하면 염류가 더 쌓이는 걸 막을 수 있어요.'
-        ] }
-    };
-    const RISK_GUIDE = {
-      '냉해': { icon: '⚠️', difficulty: '어려움', cost: '방상팬·미세살수 같은 설비에 투자가 필요해요.',
-        actions: [
-          '서리가 온다는 예보가 있으면 새벽에 미세살수를 하거나 방상팬을 돌려 온도를 지켜주세요.',
-          '꽃이 피거나 모종을 심는 시기를 늦추면 추위 위험을 피할 수 있어요.',
-          '위험한 시기에는 부직포나 비닐로 미리 덮어 보온해주세요.'
-        ] },
-      '폭염': { icon: '⚠️', difficulty: '어려움', cost: '차광망·관수 설비에 투자가 필요해요.',
-        actions: [
-          '더위가 시작되기 전에 차광망을 미리 설치해두세요.',
-          '한낮에는 미세살수로 잎과 열매의 온도를 낮춰주세요.',
-          '흙이 마르면 피해가 커지니, 더운 시기에는 물 주는 간격을 줄여주세요.'
-        ] },
-      '서리': { icon: '⚠️', difficulty: '어려움', cost: '방상팬·미세살수 같은 설비에 투자가 필요해요.',
-        actions: [
-          '서리 예보가 뜨면 새벽에 미세살수를 하거나 방상팬을 돌리세요.',
-          '불을 피워 온도를 지키는 전통적인 방법(연소 방상)도 있어요.'
-        ] }
-    };
-    const DEFAULT_RISK_GUIDE = { icon: 'ℹ️', difficulty: '보통', cost: '상황에 따라 달라요.',
-      actions: ['가까운 농업기술센터에 문의해 이 위험에 맞는 대응법을 확인해보세요.'] };
-
-    const b = ls.breakdown || {};
-    const raw = ls.raw_readings || {};
-    const tips = [];
-    Object.keys(b).forEach((k) => {
-      const g = VARIABLE_GUIDE[k];
-      const sc = (b[k] && typeof b[k].score === 'number') ? Math.round(b[k].score) : null;
-      if (!g || sc === null || sc >= 60) return;
-      const rawVal = raw[k];
-      const rawRounded = (typeof rawVal === 'number') ? Math.round(rawVal * 10) / 10 : null;
-      const when = (rawRounded !== null)
-        ? ('이 지역에서 실제로 잰 ' + k + ' 값은 ' + rawRounded + g.unit + '예요. 이 작물한테는 적합도 ' + sc + '점으로, 알맞은 범위를 벗어난 것으로 나왔어요.')
-        : ('이 지역은 ' + k + ' 항목에서 적합도 ' + sc + '점으로, 알맞은 범위를 벗어난 것으로 나왔어요.');
-      tips.push({
-        icon: '💡', title: g.titleLabel || k, difficulty: g.difficulty, cost: g.cost,
-        bodySegments: this.splitGlossary(g.body),
-        whenSegments: this.splitGlossary(when),
-        actions: g.actions.map((a) => ({ segments: this.splitGlossary(a) }))
-      });
-    });
-    Object.entries(ls.risk_signals || {}).forEach(([varName, risks]) => {
-      Object.entries(risks || {}).forEach(([riskName, info]) => {
-        if (!info || !(info.risk_grade === '주의' || info.risk_grade === '높음')) return;
-        const g = RISK_GUIDE[riskName] || DEFAULT_RISK_GUIDE;
-        const days = (typeof info.risky_days === 'number') ? info.risky_days : null;
-        const when = riskName + ' 위험이 \'' + info.risk_grade + '\' 수준으로 예상돼요' + (days !== null ? ' (예상 ' + days + '일).' : '.');
-        tips.push({
-          icon: g.icon, title: varName + ' · ' + riskName, difficulty: g.difficulty, cost: g.cost,
-          bodySegments: this.splitGlossary(when),
-          whenSegments: this.splitGlossary(when),
-          actions: g.actions.map((a) => ({ segments: this.splitGlossary(a) }))
-        });
-      });
-    });
-    return tips;
-  }
-
-  toggleDetailTip(i) {
-    this.setState((s) => ({ detailTipOpen: { ...s.detailTipOpen, [i]: !s.detailTipOpen[i] } }));
-  }
-
   // ── 인적사항(정책 수혜용) ──
   loadPersonalInfo() {
     try {
@@ -4313,14 +4069,18 @@ class Component extends DCLogic {
     };
   }
 
-  // ctx(선택) - 홈의 추천 결과 카드에서 넘어올 때만 { regionName, ls(실측 라이브 점수) }가
-  // 채워진다. 작물 정보 탭에서 바로 열 때는 지역 맥락이 없으므로 비워둔다.
+  // ctx(선택) - 홈의 추천 결과 카드에서 넘어올 때만 { regionName, clusterId, clusterName,
+  // normalScore }가 채워진다. normalScore는 홈 카드가 이미 받아둔 /api/crop-score-normal
+  // 응답(총점+항목별 breakdown, 평년 통계 기준)을 그대로 재사용한 것 - 상세페이지에서
+  // 또 조회할 필요 없이 같은 값을 보여준다. 작물 정보 탭에서 바로 열 때는 지역 맥락이
+  // 없으므로 전부 비워둔다.
   openDetail(name, ctx) {
     this.setState({
       detailCrop: name, activeTab: 'detail', detailNews: [], detailNewsLoading: true,
       detailRegionName: (ctx && ctx.regionName) || null,
-      detailLiveScore: (ctx && ctx.ls) || null,
-      detailTipOpen: {}
+      detailClusterId: (ctx && typeof ctx.clusterId === 'number') ? ctx.clusterId : null,
+      detailClusterName: (ctx && ctx.clusterName) || null,
+      detailNormalScore: (ctx && ctx.normalScore) || null
     });
     window.scrollTo(0, 0);
     const todayStr = fmtDate(getPlanToday());
@@ -4329,7 +4089,7 @@ class Component extends DCLogic {
       .then((items) => this.setState({ detailNews: filterRecentNews(items, todayStr), detailNewsLoading: false }))
       .catch(() => this.setState({ detailNews: [], detailNewsLoading: false }));
   }
-  closeDetail() { this.setState({ detailCrop: null, activeTab: 'crops', detailRegionName: null, detailLiveScore: null }); }
+  closeDetail() { this.setState({ detailCrop: null, activeTab: 'crops', detailRegionName: null, detailClusterId: null, detailClusterName: null, detailNormalScore: null }); }
 
   loadNews() {
     if (this.state.newsLoading) return;
@@ -4537,6 +4297,8 @@ class Component extends DCLogic {
   }
 
   // 지역별 라이브 작물 적합도 점수 (backend /api/crop-score) — 5작물 병렬 호출
+  // crop-score-normal: 실시간 예보/실측이 아니라 여러 해 평년 통계로 낸 안정적
+  // 적합도(climate_normal_score.py) - 접속 시점에 따라 등급이 안 바뀐다.
   fetchScores(region, dongOverride) {
     if (!region || !region.name) return;
     // region.name은 시군구 단위(도+시군구)까지만 담고 있어서, 실제 좌표 조회 정밀도를
@@ -4545,115 +4307,16 @@ class Component extends DCLogic {
     // 지도 선택 직후처럼 setState가 아직 렌더에 반영되기 전에 호출되는 경로 때문.
     const dong = (dongOverride === undefined || dongOverride === null) ? (this.state.selectedDong || '') : dongOverride;
     const regionName = (region.name + ' ' + dong).trim();
-    this.setState({ scoresLoading: true, liveScores: {} });
+    this.setState({ scoresLoading: true, normalScores: {} });
     Promise.all(CROPS.map(function (name) {
-      return fetch(CROP_SCORE_API + '/api/crop-score/' + encodeURIComponent(name) + '?region=' + encodeURIComponent(regionName))
+      return fetch(CROP_SCORE_API + '/api/crop-score-normal/' + encodeURIComponent(name) + '?region=' + encodeURIComponent(regionName))
         .then(function (r) { return r.ok ? r.json() : Promise.reject(); })
         .then(function (d) { return [name, d]; })
-        .catch(function () { return [name, null]; });   // 실패 → null(정적 등급 폴백)
+        .catch(function () { return [name, null]; });   // 실패 → null(클러스터 코멘트 폴백)
     })).then((pairs) => {
       const map = {};
       pairs.forEach(function (p) { map[p[0]] = p[1]; });
-      this.setState({ liveScores: map, scoresLoading: false });
-    });
-  }
-
-  liveReason(ls) {
-    return '실측 기상·토양 데이터 기반 적합도예요.';
-  }
-
-  // 클러스터×작물 코멘트는 "그 권역에서 보통 어떤지"를 말하는 정적 설명이라, 실측
-  // 점수가 클러스터 통념과 어긋나는 지점(예: 중부내륙형이라 사과가 대체로 좋다고
-  // 써놨는데 이번 조회는 강수량 실측치가 이상치로 튀어 '주의'가 나온 경우)에서는
-  // 코멘트가 등급과 모순되는 문제가 있었다(경북 경주시 동천동 배·사과 사례로 발견).
-  // 그래서 실측 등급과 클러스터 코멘트의 방향이 크게 어긋나면 정적 문구 대신
-  // breakdownReason()으로 "실제로 어떤 항목이 낮게 나왔는지"를 근거로 든다.
-  liveReasonWithCluster(ls, cropName) {
-    const entry = (typeof ls.cluster_id === 'number')
-      ? (CLUSTER_CROP_COMMENT[ls.cluster_id] || {})[cropName]
-      : null;
-    if (!entry) return this.liveReason(ls);
-    const GRADE_RANK = { good: 2, normal: 1, caution: 0, bad: -1 };
-    const CLUSTER_RANK = { good: 2, ok: 1, caution: 0 };
-    const gradeRank = GRADE_RANK[ls.grade];
-    const clusterRank = CLUSTER_RANK[entry.level];
-    const mismatched = (typeof gradeRank === 'number') && (typeof clusterRank === 'number')
-      && Math.abs(gradeRank - clusterRank) > 1;
-    if (!mismatched) return entry.reason;
-    return this.breakdownReason(ls, cropName) || this.liveReason(ls);
-  }
-
-  // 실측 breakdown에서 등급 방향에 맞는 항목 1~2개를 짚어 "왜 이 등급이 나왔는지"를
-  // 설명한다. 클러스터 코멘트가 실제와 어긋날 때(liveReasonWithCluster) 쓰는 대체 문구.
-  // 등급이 좋으면(good/normal) 잘 맞는 항목을, 나쁘면(caution/bad) 부족한 항목을 짚어야
-  // 한다 - 방향을 안 가리면 "실측을 보면 X가 부족해서 '우수' 등급이 나왔다" 같은
-  // 앞뒤가 안 맞는 문장이 나온다(강원 태백시 사과 사례로 발견 - 클러스터 코멘트는
-  // 고랭지라 caution이라 했지만 실측은 온도·강수가 좋아 실제로는 '우수'가 나왔다).
-  // 항목명을 "실측 데이터를 보면 X 조건이 기준에 못 미쳐, '주의' 등급이 나왔어요"처럼
-  // 딱딱하게 나열하지 않고, 원인(부족/충분한 항목) → 결과(작물에 생기는 문제) → 함의
-  // (권할 만한지) 순서로 자연스럽게 잇는다. 두 항목을 짚을 땐 "와/과" 조사 활용 오류를
-  // 피하려고 "·"로 이어붙인다.
-  breakdownReason(ls, cropName) {
-    const b = ls.breakdown || {};
-    const items = Object.keys(b)
-      .map((k) => ({ key: k, score: (typeof b[k].score === 'number') ? b[k].score : null }))
-      .filter((it) => it.score !== null);
-    const isGoodGrade = ls.grade === 'good' || ls.grade === 'normal';
-    const picked = isGoodGrade
-      ? items.filter((it) => it.score >= 80).sort((a, c) => c.score - a.score).slice(0, 2)
-      : items.filter((it) => it.score < 60).sort((a, c) => a.score - c.score).slice(0, 2);
-    if (!picked.length) return '';
-    const PHRASE = isGoodGrade ? FACTOR_POS_PHRASE : FACTOR_NEG_PHRASE;
-    const cause = picked.map((it) => PHRASE[it.key] || it.key).join('·');
-    const effect = (isGoodGrade ? CROP_EFFECT_POS : CROP_EFFECT_NEG)[cropName]
-      || (isGoodGrade ? '생육에 유리해' : '생육에 불리해');
-    const closing = ls.grade === 'bad' ? '이 지역에서는 초보자에게 권하기 어려운 작물이에요.'
-      : ls.grade === 'caution' ? '이 지역에서는 조금 더 세심한 관리가 필요한 작물이에요.'
-      : ls.grade === 'good' ? '이 지역에서 키우기 좋은 작물이에요.'
-      : '이 지역에서 무난하게 키울 수 있는 작물이에요.';
-    return cause + (isGoodGrade ? ' 덕분에 ' : ' 때문에 ') + effect + ', ' + closing;
-  }
-
-  // 백엔드 breakdown → 항목별 점수 막대 데이터 (작물별 가중치 반영)
-  // keyPrefix: 같은 화면에 여러 breakdown이 동시에 떠 있을 때(홈의 카드별 결과, 상세페이지)
-  // hover 상태 키가 서로 겹치지 않도록 구분하는 접두어.
-  breakdownOf(ls, keyPrefix) {
-    const b = ls.breakdown || {};
-    // 결측일 때 이유를 보여주기 위한 매핑 - data_sources는 pH/유기물/유효인산/EC를
-    // "토양" 하나로 묶어서 담아온다(흙토람 API 한 번 호출 결과라서).
-    const sources = ls.data_sources || {};
-    const soilVars = { 'pH': 1, '유기물': 1, '유효인산': 1, 'EC': 1 };
-    const color = (s) => s >= 80 ? '#2F7A44' : (s >= 60 ? '#6FA361' : (s >= 40 ? '#C98A3A' : '#C15B3A'));
-    const hoverState = this.state.metricTipKey;
-    // 이 지역에 실측값이 없어 "결측"으로 빠진 변수는 breakdown에서 통째로 빠진다(예: 서울
-    // 마포동 오이는 pH·유기물·유효인산·EC 실측이 없어 breakdown에 아예 안 담김) - breakdown의
-    // 키만 돌면 그 항목들이 카드에서 통째로 사라진다. raw_readings는 결측이어도 항상 전체
-    // 변수를 null로라도 담아 보내주므로, 이쪽을 기준으로 돌아야 모든 항목이 빠짐없이 보인다.
-    // 단, excluded_no_reference(이 작물엔 기준 자체가 없는 변수, 예: 사과·유기물)는 결측이
-    // 아니라 애초에 이 작물과 무관한 변수라 0점으로도 보여주면 안 되므로 걸러낸다.
-    const noRef = new Set(ls.excluded_no_reference || []);
-    const allKeys = Object.keys(ls.raw_readings || b).filter((k) => !noRef.has(k));
-    return allKeys.map((k) => {
-      const v = b[k] || {};
-      const sc = (typeof v.score === 'number') ? Math.round(v.score) : null;
-      const sourceKey = soilVars[k] ? '토양' : k;
-      const tipKey = (keyPrefix || '') + '/' + k;
-      return {
-        label: LABELS[k] || k,
-        // 가중치 %는 초보자에게 의미가 잘 전달되지 않아 표시하지 않는다(점수만 보여준다).
-        // 결측 항목은 "0점"이라고 쓰지 않는다 - 총점 계산에서 이 항목은 가중치가 통째로
-        // 빠지고 남은 항목들로 재분배되므로(0점으로 채점된 게 아님), "0점"이라고 쓰면
-        // "0점짜리가 있는데 총점은 왜 높지?" 식의 오해를 낳는다. 대신 항목은 그대로
-        // 보여주되 "데이터없음"으로 명확히 구분한다.
-        scoreLabel: sc === null ? '데이터없음' : sc + '점',
-        reasonTitle: sc === null ? ('결측 사유: ' + (sources[sourceKey] || '정보 없음')) : '',
-        barStyle: { height: '100%', width: (sc === null ? 0 : sc) + '%',
-          background: sc === null ? '#D8CDB0' : color(sc), borderRadius: '999px' },
-        tip: METRIC_TIPS[k] || '',
-        tipShown: hoverState === tipKey,
-        onEnter: () => this.setState({ metricTipKey: tipKey }),
-        onLeave: () => this.setState(s => (s.metricTipKey === tipKey ? { metricTipKey: null } : null)),
-      };
+      this.setState({ normalScores: map, scoresLoading: false });
     });
   }
 
@@ -4668,14 +4331,16 @@ class Component extends DCLogic {
 
     let results = [];
     // 카드마다 같은 지역의 cluster_id/cluster_name을 들고 있으므로(라이브 응답 아무 거나
-    // 하나) 그중 하나에서 뽑아 결과 헤더의 "이 지역은 <b>OO형</b>이라..." 문구에 쓴다.
-    let hasClusterInfo = false, clusterName = '', clusterDesc = '';
+    // 하나) 그중 하나에서 뽑아 결과 헤더의 "이 지역은 <b>OO형</b>이라..." 문구와, 아래
+    // 작물별 적합도(클러스터 기준) 판정에 함께 쓴다.
+    let hasClusterInfo = false, clusterName = '', clusterDesc = '', clusterId = null;
     const isLowFarmlandDistrict = !!(region && LOW_FARMLAND_DISTRICTS.has(region.name));
     if (region) {
-      const live = this.state.liveScores || {};
+      const live = this.state.normalScores || {};
       const anyLiveWithCluster = Object.keys(live).map(k => live[k]).find(v => v && typeof v.cluster_id === 'number');
       if (anyLiveWithCluster) {
         hasClusterInfo = true;
+        clusterId = anyLiveWithCluster.cluster_id;
         clusterName = anyLiveWithCluster.cluster_name || '';
         clusterDesc = CLUSTER_DESC[anyLiveWithCluster.cluster_id] || '';
       }
@@ -4685,38 +4350,41 @@ class Component extends DCLogic {
         // '나의 작물'은 지역까지 같아야 선택 상태다(다른 지역을 보는 중이면 다시 고를 수 있게)
         const isMine = myCropName === name && myRegionKey === viewRegionKey;
         const hasSchedule = !!CROP_SCHEDULE[name];
-        const ls = live[name];
-        const hasLive = ls && typeof ls.score === 'number';
-        let levelLabel, badgeStyle, reason, sortScore, isLive = false, scoreText = '', scoreNum = null, reliabilityText = '', hasReliability = false, breakdownItems = [], hasBreakdown = false;
-        let hasReliabilityWarning = false, reliabilityWarningText = '';
-        // 카드 헤더 색 띠 + 순위 동그라미 + 점수 숫자에 쓰는 등급 색(배경/포인트).
+        let levelLabel, badgeStyle, reason, sortScore, reliabilityText = '', hasReliability = false;
+        let hasScore = false, scoreNum = null, breakdownItems = [], hasBreakdown = false;
+        // 카드 헤더 색 띠 + 순위 동그라미에 쓰는 등급 색(배경/포인트).
         let headerBg = '#EFE7D5', accentColor = '#8A7F65';
 
-        if (hasLive) {
-          isLive = true;
-          const gm = GRADE_META[ls.grade] || GRADE_META.caution;
-          levelLabel = gm.label; badgeStyle = badge(gm);
-          headerBg = gm.bg; accentColor = gm.color;
-          scoreText = '적합도 ' + Math.round(ls.score) + '점';
-          scoreNum = Math.round(ls.score);
-          reason = this.liveReasonWithCluster(ls, name);
-          breakdownItems = this.breakdownOf(ls, 'home/' + name);
+        // 홈 화면 적합도는 "지금 이 순간의 실시간 기상"이 아니라 "이 지역·작물 조합이
+        // 전반적으로 얼마나 키우기 쉬운/어려운가"를 답해야 한다 - 사용자가 귀농 전인지
+        // 후인지, 언제 접속했는지 알 수 없기 때문이다. 그래서 접속 시점과 무관하게 고정된
+        // 값만 쓴다: 1순위 /api/crop-score-normal(여러 해 평년 통계 기반 총점+항목별
+        // breakdown, climate_normal_score.py), 2순위 기후 클러스터 코멘트(총점을 못 구했을
+        // 때의 문구용 폴백), 3순위 예전 5권역 표(CROP_ZONE, 클러스터 정보도 없을 때).
+        const ns = live[name];
+        if (ns && ns.status === 'matched' && typeof ns.total_score === 'number') {
+          const grade = normalGradeOf(ns.total_score);
+          const meta = NORMAL_GRADE_META[grade];
+          levelLabel = meta.label; badgeStyle = badge(meta);
+          headerBg = meta.bg; accentColor = meta.color;
+          hasScore = true; scoreNum = Math.round(ns.total_score);
+          reason = (hasClusterInfo && CLUSTER_CROP_COMMENT[clusterId] && CLUSTER_CROP_COMMENT[clusterId][name])
+            ? CLUSTER_CROP_COMMENT[clusterId][name].reason
+            : '평년 기후·토양 통계를 기준으로 계산한 적합도예요.';
+          breakdownItems = normalBreakdownOf(ns.breakdown);
           hasBreakdown = breakdownItems.length > 0;
-          sortScore = ls.score;
-          // 점수는 정상 계산됐어도(신뢰불가처럼 아예 막힌 게 아니라) 결측이 많아 남은
-          // 가중치 비율이 낮으면 백엔드가 reliability:'주의'를 내려준다 - 이걸 화면에
-          // 안 보여주면 "결측이 많을수록 점수가 후하게 나오는 것 아니냐"는 오해를 풀 길이
-          // 없어서, 카드에 그대로 경고 문구로 노출한다.
-          if (ls.reliability && ls.reliability !== '정상') {
-            hasReliabilityWarning = true;
-            const excludedMissing = (ls.excluded_variables || [])
-              .filter((e) => e['사유'] === '결측')
-              .map((e) => LABELS[e['변수']] || e['변수']);
-            const covMatch = /남은 가중치 비율: ([\d.]+)%/.exec(ls.reliability_reason || '');
-            const coveragePct = covMatch ? Math.round(parseFloat(covMatch[1])) : null;
-            reliabilityWarningText = '⚠️ 이 점수는 실측 데이터의 ' + (coveragePct != null ? coveragePct + '%' : '일부') + '만으로 계산됐어요. '
-              + (excludedMissing.length ? excludedMissing.join('·') + ' 데이터가 없어 정확도가 낮을 수 있어요.' : '일부 항목 데이터가 없어 정확도가 낮을 수 있어요.');
+          sortScore = ns.total_score;
+          if (ns.excluded_variables && ns.excluded_variables.length > 0) {
+            reliabilityText = '일부 항목(' + ns.excluded_variables.map(v => LABELS[v] || v).join('·') + ') 데이터가 없어 남은 항목만으로 계산됐어요.';
+            hasReliability = true;
           }
+        } else if (hasClusterInfo && CLUSTER_CROP_COMMENT[clusterId] && CLUSTER_CROP_COMMENT[clusterId][name]) {
+          const cc = CLUSTER_CROP_COMMENT[clusterId][name];
+          const meta = LEVEL_META[cc.level];
+          levelLabel = meta.label; badgeStyle = badge(meta);
+          headerBg = meta.bg; accentColor = meta.color;
+          reason = cc.reason;
+          sortScore = cc.level === 'good' ? 85 : (cc.level === 'ok' ? 65 : 45);
         } else if (region.zone && CROP_ZONE[name]) {
           const z = CROP_ZONE[name][region.zone];
           const meta = LEVEL_META[z.level];
@@ -4724,7 +4392,7 @@ class Component extends DCLogic {
           headerBg = meta.bg; accentColor = meta.color;
           reason = z.reason;
           sortScore = z.level === 'good' ? 85 : (z.level === 'ok' ? 65 : 45);
-          if (ls === null) { reliabilityText = '실시간 점수를 불러오지 못해 참고 등급을 표시했어요.'; hasReliability = true; }
+          reliabilityText = '기후 클러스터 정보를 불러오지 못해 참고 등급(권역 기준)을 표시했어요.'; hasReliability = true;
         } else {
           levelLabel = '정보 없음'; badgeStyle = badge({ bg: '#EFE7D5', color: '#8A7F65' });
           reason = '이 지역의 적합도 정보를 찾지 못했어요.'; sortScore = 0;
@@ -4732,9 +4400,8 @@ class Component extends DCLogic {
 
         return {
           name, reason, season: base.season, income: base.income, caution: base.caution,
-          levelLabel, badgeStyle, isLive, scoreText, scoreNum, reliabilityText, hasReliability,
-          hasReliabilityWarning, reliabilityWarningText,
-          breakdownItems, hasBreakdown, headerBg, accentColor,
+          levelLabel, badgeStyle, reliabilityText, hasReliability, headerBg, accentColor,
+          hasScore, scoreNum, breakdownItems, hasBreakdown,
           emoji: CROP_EMOJI[name] || '🌱',
           rank: -sortScore,
           // 나의 작물 선택 버튼. 재배 일정이 없는 작물(오이·상추)은 계획을 만들 수 없어 비활성.
@@ -4746,11 +4413,12 @@ class Component extends DCLogic {
               : hasSchedule
                 ? 'background:#2F5D42;color:#FBF7EF;border:none;cursor:pointer;'
                 : 'background:#F3EEE0;color:#B3A98F;border:1px dashed #D8CDB0;cursor:not-allowed;'),
-          // 카드를 누르면 이 지역 실측값을 들고 작물 상세페이지로 이동한다 - 상세페이지의
-          // "이 지역 맞춤 정보" 섹션을 채우기 위함(hasLive가 아니면 정적 등급뿐이라 null).
+          // 카드를 누르면 이 지역의 기후 클러스터 정보를 들고 작물 상세페이지로 이동한다 -
+          // 상세페이지의 "이 지역 맞춤 정보" 섹션을 채우기 위함(홈과 같은 클러스터 기준을 씀).
           openDetail: () => this.openDetail(name, {
             regionName: (region.name + ' ' + (this.state.selectedDong || '')).trim(),
-            ls: hasLive ? ls : null
+            clusterId, clusterName,
+            normalScore: (ns && ns.status === 'matched') ? ns : null
           }),
           pick: () => { if (hasSchedule && !isMine) this.setMyCrop(name); }
         };
@@ -4789,40 +4457,28 @@ class Component extends DCLogic {
     if (dc) {
       const dsched = CROP_SCHEDULE[dc];
       const planExists = !!(this.state.farmPlans || {})[dc];
-      // 홈의 추천 결과 카드에서 넘어온 경우에만 채워지는 지역 실측 맞춤 정보.
-      const dls = this.state.detailLiveScore;
-      const hasRegionInfo = !!(this.state.detailRegionName && dls);
-      const regionGm = hasRegionInfo ? (GRADE_META[dls.grade] || GRADE_META.caution) : null;
-      const regionBreakdown = hasRegionInfo ? this.breakdownOf(dls, 'detail') : [];
-      const DIFF_PALETTE = {
-        '쉬움': { color: '#2F6B3C', bg: '#EDF4E9', border: '#CFE2C6' },
-        '보통': { color: '#8A6B1E', bg: '#FBF3DE', border: '#EBDCB4' },
-        '어려움': { color: '#A8452F', bg: '#FBECE6', border: '#F0CFC2' }
-      };
-      const tipOpen = this.state.detailTipOpen || {};
-      const regionTips = (hasRegionInfo ? this.regionTipsFor(dls) : []).map((t, i) => {
-        const open = !!tipOpen[i];
-        const dp = DIFF_PALETTE[t.difficulty] || DIFF_PALETTE['보통'];
-        return {
-          ...t, open,
-          caret: { transition: 'transform .22s ease', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' },
-          rows: { display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows .28s ease' },
-          diffColor: dp.color, diffBg: dp.bg, diffBorder: dp.border,
-          onToggle: () => this.toggleDetailTip(i)
-        };
-      });
+      // 홈의 추천 결과 카드에서 넘어온 경우에만 채워지는 지역 맞춤 정보 - 홈 화면과 같은
+      // 이유로(접속 시점과 무관해야 함) 실시간 점수가 아니라 평년 통계(/api/crop-score-normal,
+      // 홈 카드가 이미 받아둔 값을 그대로 재사용) 기준을 쓰고, 그마저 없으면 기후 클러스터
+      // 코멘트로 폴백한다.
+      const ns2 = this.state.detailNormalScore;
+      const hasNormalScore2 = !!(ns2 && ns2.status === 'matched' && typeof ns2.total_score === 'number');
+      const detailClusterId = this.state.detailClusterId;
+      const regionCc = (this.state.detailRegionName && typeof detailClusterId === 'number'
+        && CLUSTER_CROP_COMMENT[detailClusterId] && CLUSTER_CROP_COMMENT[detailClusterId][dc])
+        ? CLUSTER_CROP_COMMENT[detailClusterId][dc] : null;
+      const hasRegionInfo = hasNormalScore2 || !!regionCc;
+      const regionGrade2 = hasNormalScore2 ? normalGradeOf(ns2.total_score) : null;
+      const regionMeta = hasNormalScore2 ? NORMAL_GRADE_META[regionGrade2] : (regionCc ? LEVEL_META[regionCc.level] : null);
+      const regionBreakdown2 = hasNormalScore2 ? normalBreakdownOf(ns2.breakdown) : [];
       detail = {
         hasRegionInfo,
         regionName: this.state.detailRegionName || '',
-        regionScoreText: hasRegionInfo ? ('적합도 ' + Math.round(dls.score) + '점') : '',
-        regionBadgeStyle: regionGm ? { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: regionGm.bg, color: regionGm.color } : {},
-        regionGradeLabel: regionGm ? regionGm.label : '',
-        regionBreakdown,
-        hasRegionBreakdown: regionBreakdown.length > 0,
-        regionStationWarning: hasRegionInfo ? (dls.station_warning || '') : '',
-        hasRegionStationWarning: hasRegionInfo && !!dls.station_warning,
-        regionTips,
-        hasRegionTips: regionTips.length > 0,
+        regionBadgeStyle: regionMeta ? { fontSize: 12, fontWeight: 700, padding: '4px 10px', borderRadius: 999, background: regionMeta.bg, color: regionMeta.color } : {},
+        regionGradeLabel: regionMeta ? regionMeta.label : '',
+        hasRegionScore: hasNormalScore2, regionScoreNum: hasNormalScore2 ? Math.round(ns2.total_score) : null,
+        regionBreakdown: regionBreakdown2, hasRegionBreakdown: regionBreakdown2.length > 0,
+        regionReason: hasNormalScore2 ? (regionCc ? regionCc.reason : '평년 기후·토양 통계를 기준으로 계산한 적합도예요.') : (regionCc ? regionCc.reason : ''),
         name: dc, emoji: CROP_EMOJI[dc] || '🌱',
         ready: !!dsched, notReady: !dsched,
         subtitle: dsched ? dsched.subtitle : '',

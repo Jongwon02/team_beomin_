@@ -1,0 +1,1928 @@
+{
+ "사과|거창|": {
+  "crop": "사과",
+  "station": "거창",
+  "cultivation_type": null,
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1062.5,
+    "일조_total": 1237.2,
+    "cold_extreme": 1.4,
+    "heat_extreme": 36.5,
+    "day_count": 214
+   },
+   "2017": {
+    "강수_score": 86.41137855579868,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 688.4,
+    "일조_total": 1393.0,
+    "cold_extreme": -3.1,
+    "heat_extreme": 36.2,
+    "day_count": 214
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1010.7,
+    "일조_total": 1284.3,
+    "cold_extreme": -3.9,
+    "heat_extreme": 37.1,
+    "day_count": 214
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1106.9,
+    "일조_total": 1226.9,
+    "cold_extreme": -3.3,
+    "heat_extreme": 34.6,
+    "day_count": 214
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1536.6,
+    "일조_total": 1366.6,
+    "cold_extreme": -3.2,
+    "heat_extreme": 36.2,
+    "day_count": 214
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 920.0,
+    "일조_total": 1322.0,
+    "cold_extreme": -2.0,
+    "heat_extreme": 35.4,
+    "day_count": 214
+   },
+   "2022": {
+    "강수_score": 46.236323851203494,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 504.8,
+    "일조_total": 1412.4,
+    "cold_extreme": -1.9,
+    "heat_extreme": 35.2,
+    "day_count": 214
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1391.4,
+    "일조_total": 1373.6,
+    "cold_extreme": -1.8,
+    "heat_extreme": 34.9,
+    "day_count": 214
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 946.0,
+    "일조_total": 1411.6,
+    "cold_extreme": 0.7,
+    "heat_extreme": 35.6,
+    "day_count": 214
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1241.4,
+    "일조_total": 1410.7,
+    "cold_extreme": -3.1,
+    "heat_extreme": 36.7,
+    "day_count": 214
+   }
+  }
+ },
+ "사과|안동|": {
+  "crop": "사과",
+  "station": "안동",
+  "cultivation_type": null,
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 784.2,
+    "일조_total": 1572.6,
+    "cold_extreme": 1.8,
+    "heat_extreme": 37.8,
+    "day_count": 214
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 872.7,
+    "일조_total": 1751.9,
+    "cold_extreme": -2.1,
+    "heat_extreme": 36.6,
+    "day_count": 214
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 901.7,
+    "일조_total": 1618.9,
+    "cold_extreme": 0.3,
+    "heat_extreme": 38.9,
+    "day_count": 214
+   },
+   "2019": {
+    "강수_score": 99.14660831509848,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 746.6,
+    "일조_total": 1514.5,
+    "cold_extreme": -2.8,
+    "heat_extreme": 36.9,
+    "day_count": 214
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1055.7,
+    "일조_total": 1449.8,
+    "cold_extreme": -2.3,
+    "heat_extreme": 35.7,
+    "day_count": 214
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 809.0,
+    "일조_total": 1361.0,
+    "cold_extreme": -0.9,
+    "heat_extreme": 36.0,
+    "day_count": 214
+   },
+   "2022": {
+    "강수_score": 53.10722100656456,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 536.2,
+    "일조_total": 1525.9,
+    "cold_extreme": -1.7,
+    "heat_extreme": 36.3,
+    "day_count": 214
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1355.8,
+    "일조_total": 1329.7,
+    "cold_extreme": 0.3,
+    "heat_extreme": 35.6,
+    "day_count": 214
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 914.2,
+    "일조_total": 1402.9,
+    "cold_extreme": 3.0,
+    "heat_extreme": 36.0,
+    "day_count": 214
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 826.7,
+    "일조_total": 1394.0,
+    "cold_extreme": -1.2,
+    "heat_extreme": 37.6,
+    "day_count": 214
+   }
+  }
+ },
+ "사과|문경|": {
+  "crop": "사과",
+  "station": "문경",
+  "cultivation_type": null,
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1012.1,
+    "일조_total": 1260.4,
+    "cold_extreme": 0.9,
+    "heat_extreme": 36.3,
+    "day_count": 214
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1196.2,
+    "일조_total": 1413.7,
+    "cold_extreme": -1.2,
+    "heat_extreme": 36.0,
+    "day_count": 214
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1104.4,
+    "일조_total": 1392.2,
+    "cold_extreme": -0.7,
+    "heat_extreme": 38.1,
+    "day_count": 214
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 937.1,
+    "일조_total": 1317.5,
+    "cold_extreme": -1.9,
+    "heat_extreme": 35.5,
+    "day_count": 214
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1504.1,
+    "일조_total": 1290.7,
+    "cold_extreme": -1.8,
+    "heat_extreme": 34.0,
+    "day_count": 214
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1197.1,
+    "일조_total": 1234.3,
+    "cold_extreme": -0.9,
+    "heat_extreme": 34.7,
+    "day_count": 214
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 861.4,
+    "일조_total": 1366.1,
+    "cold_extreme": 0.0,
+    "heat_extreme": 34.7,
+    "day_count": 214
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1728.1,
+    "일조_total": 1327.8,
+    "cold_extreme": 0.5,
+    "heat_extreme": 35.2,
+    "day_count": 214
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1166.6,
+    "일조_total": 1387.6,
+    "cold_extreme": 4.4,
+    "heat_extreme": 35.3,
+    "day_count": 214
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1106.9,
+    "일조_total": 1306.1,
+    "cold_extreme": -0.8,
+    "heat_extreme": 35.9,
+    "day_count": 214
+   }
+  }
+ },
+ "사과|영주|": {
+  "crop": "사과",
+  "station": "영주",
+  "cultivation_type": null,
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1078.3,
+    "일조_total": 1291.0,
+    "cold_extreme": 0.7,
+    "heat_extreme": 35.5,
+    "day_count": 214
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 973.2,
+    "일조_total": 1476.8,
+    "cold_extreme": -3.1,
+    "heat_extreme": 36.4,
+    "day_count": 214
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1358.5,
+    "일조_total": 1528.1,
+    "cold_extreme": 0.0,
+    "heat_extreme": 38.0,
+    "day_count": 214
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 828.6,
+    "일조_total": 1433.0,
+    "cold_extreme": -2.2,
+    "heat_extreme": 36.2,
+    "day_count": 214
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1308.2,
+    "일조_total": 1272.8,
+    "cold_extreme": -3.5,
+    "heat_extreme": 33.5,
+    "day_count": 214
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1132.6,
+    "일조_total": 1242.9,
+    "cold_extreme": -1.6,
+    "heat_extreme": 34.4,
+    "day_count": 214
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 888.2,
+    "일조_total": 1353.6,
+    "cold_extreme": -1.3,
+    "heat_extreme": 34.7,
+    "day_count": 214
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1972.9,
+    "일조_total": 1303.2,
+    "cold_extreme": -0.1,
+    "heat_extreme": 34.8,
+    "day_count": 214
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1199.9,
+    "일조_total": 1421.4,
+    "cold_extreme": 2.0,
+    "heat_extreme": 35.2,
+    "day_count": 214
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 993.7,
+    "일조_total": 1292.5,
+    "cold_extreme": -1.7,
+    "heat_extreme": 35.7,
+    "day_count": 214
+   }
+  }
+ },
+ "배|천안|": {
+  "crop": "배",
+  "station": "천안",
+  "cultivation_type": null,
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 858.9,
+    "일조_total": 1359.2,
+    "cold_extreme": -2.3,
+    "heat_extreme": 35.1,
+    "day_count": 214
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1209.8,
+    "일조_total": 1479.5,
+    "cold_extreme": -3.2,
+    "heat_extreme": 35.2,
+    "day_count": 214
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 981.5,
+    "일조_total": 1502.5,
+    "cold_extreme": -2.2,
+    "heat_extreme": 37.8,
+    "day_count": 214
+   },
+   "2019": {
+    "강수_score": 70.75734625870949,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 654.0,
+    "일조_total": 1395.3,
+    "cold_extreme": -4.7,
+    "heat_extreme": 34.3,
+    "day_count": 214
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1247.6,
+    "일조_total": 1289.7,
+    "cold_extreme": -2.5,
+    "heat_extreme": 34.1,
+    "day_count": 214
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 883.3,
+    "일조_total": 1281.9,
+    "cold_extreme": -1.2,
+    "heat_extreme": 34.6,
+    "day_count": 214
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 944.5,
+    "일조_total": 1384.6,
+    "cold_extreme": -2.0,
+    "heat_extreme": 34.1,
+    "day_count": 214
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1305.6,
+    "일조_total": 1342.1,
+    "cold_extreme": -1.5,
+    "heat_extreme": 35.0,
+    "day_count": 214
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1256.3,
+    "일조_total": 1405.1,
+    "cold_extreme": 1.3,
+    "heat_extreme": 35.1,
+    "day_count": 214
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1332.4,
+    "일조_total": 1276.1,
+    "cold_extreme": -1.4,
+    "heat_extreme": 35.4,
+    "day_count": 214
+   }
+  }
+ },
+ "배|광주|": {
+  "crop": "배",
+  "station": "광주",
+  "cultivation_type": null,
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1255.8,
+    "일조_total": 1266.8,
+    "cold_extreme": 5.9,
+    "heat_extreme": 37.2,
+    "day_count": 214
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 819.2,
+    "일조_total": 1427.2,
+    "cold_extreme": 3.4,
+    "heat_extreme": 37.3,
+    "day_count": 214
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1171.7,
+    "일조_total": 1460.4,
+    "cold_extreme": 1.1,
+    "heat_extreme": 38.5,
+    "day_count": 214
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 944.2,
+    "일조_total": 1344.3,
+    "cold_extreme": 0.9,
+    "heat_extreme": 34.8,
+    "day_count": 214
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1813.8,
+    "일조_total": 1306.4,
+    "cold_extreme": 1.6,
+    "heat_extreme": 34.4,
+    "day_count": 214
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1024.4,
+    "일조_total": 1304.1,
+    "cold_extreme": 3.6,
+    "heat_extreme": 35.1,
+    "day_count": 214
+   },
+   "2022": {
+    "강수_score": 55.998182368979094,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 584.4,
+    "일조_total": 1441.6,
+    "cold_extreme": 2.1,
+    "heat_extreme": 34.8,
+    "day_count": 214
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1887.6,
+    "일조_total": 1324.2,
+    "cold_extreme": 2.8,
+    "heat_extreme": 35.7,
+    "day_count": 214
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 992.8,
+    "일조_total": 1392.0,
+    "cold_extreme": 7.1,
+    "heat_extreme": 37.2,
+    "day_count": 214
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": null,
+    "강수_total": 1831.9,
+    "일조_total": 1398.7,
+    "cold_extreme": 2.5,
+    "heat_extreme": 36.7,
+    "day_count": 214
+   }
+  }
+ },
+ "오이|진주|촉성재배": {
+  "crop": "오이",
+  "station": "진주",
+  "cultivation_type": "촉성재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 51.66979362101313,
+    "온도_score": 10.197368421052552,
+    "강수_total": 291.1,
+    "일조_total": 485.8,
+    "cold_extreme": -8.8,
+    "heat_extreme": 28.4,
+    "day_count": 92
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 119.7,
+    "일조_total": 617.3,
+    "cold_extreme": -12.0,
+    "heat_extreme": 29.2,
+    "day_count": 92
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 10.197368421052552,
+    "강수_total": 280.6,
+    "일조_total": 586.5,
+    "cold_extreme": -8.8,
+    "heat_extreme": 27.0,
+    "day_count": 92
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 240.4,
+    "일조_total": 625.1,
+    "cold_extreme": -9.7,
+    "heat_extreme": 28.0,
+    "day_count": 92
+   },
+   "2020": {
+    "강수_score": 90.05412719891746,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 63.4,
+    "일조_total": 660.0,
+    "cold_extreme": -9.8,
+    "heat_extreme": 26.3,
+    "day_count": 92
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 92.4,
+    "일조_total": 669.8,
+    "cold_extreme": -10.9,
+    "heat_extreme": 29.4,
+    "day_count": 92
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 116.7,
+    "일조_total": 649.1,
+    "cold_extreme": -11.0,
+    "heat_extreme": 30.2,
+    "day_count": 92
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 170.9,
+    "일조_total": 629.0,
+    "cold_extreme": -10.7,
+    "heat_extreme": 27.8,
+    "day_count": 92
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 74.6710526315789,
+    "강수_total": 236.4,
+    "일조_total": 585.6,
+    "cold_extreme": -7.4,
+    "heat_extreme": 28.7,
+    "day_count": 92
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 5.592105263157837,
+    "강수_total": 207.1,
+    "일조_total": 577.3,
+    "cold_extreme": -8.9,
+    "heat_extreme": 27.6,
+    "day_count": 92
+   }
+  }
+ },
+ "오이|순천|촉성재배": {
+  "crop": "오이",
+  "station": "순천",
+  "cultivation_type": "촉성재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 5.572232645403357,
+    "온도_score": 100,
+    "강수_total": 321.7,
+    "일조_total": 450.7,
+    "cold_extreme": -6.3,
+    "heat_extreme": 27.8,
+    "day_count": 92
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 154.9,
+    "일조_total": 560.3,
+    "cold_extreme": -10.2,
+    "heat_extreme": 28.0,
+    "day_count": 92
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 248.4,
+    "일조_total": 602.0,
+    "cold_extreme": -9.6,
+    "heat_extreme": 23.9,
+    "day_count": 92
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 266.6,
+    "일조_total": 561.7,
+    "cold_extreme": -6.6,
+    "heat_extreme": 26.6,
+    "day_count": 92
+   },
+   "2020": {
+    "강수_score": 77.83491204330176,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 50.5,
+    "일조_total": 585.4,
+    "cold_extreme": -9.3,
+    "heat_extreme": 26.3,
+    "day_count": 92
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 90.2,
+    "일조_total": 565.1,
+    "cold_extreme": -10.0,
+    "heat_extreme": 29.4,
+    "day_count": 92
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 91.6,
+    "일조_total": 590.4,
+    "cold_extreme": -10.9,
+    "heat_extreme": 29.2,
+    "day_count": 92
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 178.5,
+    "일조_total": 531.9,
+    "cold_extreme": -10.3,
+    "heat_extreme": 28.3,
+    "day_count": 92
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 56.3977485928705,
+    "온도_score": 100,
+    "강수_total": 222.8,
+    "일조_total": 489.4,
+    "cold_extreme": -6.2,
+    "heat_extreme": 25.3,
+    "day_count": 92
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 14.802631578947356,
+    "강수_total": 211.9,
+    "일조_total": 529.3,
+    "cold_extreme": -8.7,
+    "heat_extreme": 28.9,
+    "day_count": 92
+   }
+  }
+ },
+ "감자|서산|봄재배": {
+  "crop": "감자",
+  "station": "서산",
+  "cultivation_type": "봄재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 18.12865497076027,
+    "강수_total": 301.8,
+    "일조_total": 955.7,
+    "cold_extreme": -9.7,
+    "heat_extreme": 30.9,
+    "day_count": 122
+   },
+   "2017": {
+    "강수_score": 3.367609254498717,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 94.9,
+    "일조_total": 1089.8,
+    "cold_extreme": -6.4,
+    "heat_extreme": 31.8,
+    "day_count": 122
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 519.4,
+    "일조_total": 913.2,
+    "cold_extreme": -7.2,
+    "heat_extreme": 32.4,
+    "day_count": 122
+   },
+   "2019": {
+    "강수_score": 44.81576692373607,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 164.0,
+    "일조_total": 966.0,
+    "cold_extreme": -5.6,
+    "heat_extreme": 31.1,
+    "day_count": 122
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 289.0,
+    "일조_total": 987.4,
+    "cold_extreme": -5.5,
+    "heat_extreme": 33.7,
+    "day_count": 122
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 426.6,
+    "일조_total": 879.3,
+    "cold_extreme": -3.7,
+    "heat_extreme": 32.2,
+    "day_count": 122
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 479.6,
+    "일조_total": 872.8,
+    "cold_extreme": -6.4,
+    "heat_extreme": 30.2,
+    "day_count": 122
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 332.0,
+    "일조_total": 878.4,
+    "cold_extreme": -6.4,
+    "heat_extreme": 33.3,
+    "day_count": 122
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 75.43859649122805,
+    "강수_total": 348.9,
+    "일조_total": 970.5,
+    "cold_extreme": -8.3,
+    "heat_extreme": 35.2,
+    "day_count": 122
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 279.2,
+    "일조_total": 844.5,
+    "cold_extreme": -6.0,
+    "heat_extreme": 31.4,
+    "day_count": 122
+   }
+  }
+ },
+ "오이|부여|반촉성재배": {
+  "crop": "오이",
+  "station": "부여",
+  "cultivation_type": "반촉성재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 97.46743849493488,
+    "온도_score": 92.18274111675127,
+    "강수_total": 695.7,
+    "일조_total": 996.7,
+    "cold_extreme": -8.1,
+    "heat_extreme": 34.3,
+    "day_count": 153
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 501.1,
+    "일조_total": 1083.7,
+    "cold_extreme": -5.3,
+    "heat_extreme": 34.4,
+    "day_count": 153
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 71.90140845070424,
+    "강수_total": 757.8,
+    "일조_total": 1057.6,
+    "cold_extreme": -6.8,
+    "heat_extreme": 37.3,
+    "day_count": 153
+   },
+   "2019": {
+    "강수_score": 84.20314492137697,
+    "일조_score": 89.36324167872648,
+    "온도_score": 100,
+    "강수_total": 429.6,
+    "일조_total": 988.7,
+    "cold_extreme": -5.8,
+    "heat_extreme": 34.4,
+    "day_count": 153
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 58.87120115774239,
+    "온도_score": 100,
+    "강수_total": 826.5,
+    "일조_total": 958.6,
+    "cold_extreme": -5.8,
+    "heat_extreme": 34.1,
+    "day_count": 153
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 74.47178002894353,
+    "온도_score": 100,
+    "강수_total": 539.5,
+    "일조_total": 974.0,
+    "cold_extreme": -3.3,
+    "heat_extreme": 34.8,
+    "day_count": 153
+   },
+   "2022": {
+    "강수_score": 85.69060773480662,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 434.6,
+    "일조_total": 1063.1,
+    "cold_extreme": -6.6,
+    "heat_extreme": 35.0,
+    "day_count": 153
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 96.04920405209832,
+    "온도_score": 100,
+    "강수_total": 1324.4,
+    "일조_total": 995.3,
+    "cold_extreme": -6.9,
+    "heat_extreme": 34.6,
+    "day_count": 153
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 77.96954314720811,
+    "강수_total": 902.6,
+    "일조_total": 1036.4,
+    "cold_extreme": -8.5,
+    "heat_extreme": 35.8,
+    "day_count": 153
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 877.4,
+    "일조_total": 1103.2,
+    "cold_extreme": -4.9,
+    "heat_extreme": 36.3,
+    "day_count": 153
+   }
+  }
+ },
+ "오이|대전|반촉성재배": {
+  "crop": "오이",
+  "station": "대전",
+  "cultivation_type": "반촉성재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 710.7,
+    "일조_total": 1172.2,
+    "cold_extreme": -7.5,
+    "heat_extreme": 34.7,
+    "day_count": 153
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 588.4,
+    "일조_total": 1241.0,
+    "cold_extreme": -3.7,
+    "heat_extreme": 34.8,
+    "day_count": 153
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 71.90140845070424,
+    "강수_total": 702.3,
+    "일조_total": 1150.1,
+    "cold_extreme": -6.2,
+    "heat_extreme": 37.3,
+    "day_count": 153
+   },
+   "2019": {
+    "강수_score": 86.64258393540162,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 437.8,
+    "일조_total": 1127.3,
+    "cold_extreme": -2.6,
+    "heat_extreme": 35.1,
+    "day_count": 153
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 860.0,
+    "일조_total": 1104.8,
+    "cold_extreme": -3.6,
+    "heat_extreme": 34.3,
+    "day_count": 153
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 534.5,
+    "일조_total": 1090.1,
+    "cold_extreme": -1.8,
+    "heat_extreme": 36.1,
+    "day_count": 153
+   },
+   "2022": {
+    "강수_score": 94.55588610284744,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 464.4,
+    "일조_total": 1074.0,
+    "cold_extreme": -2.9,
+    "heat_extreme": 35.7,
+    "day_count": 153
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 1195.0,
+    "일조_total": 1059.6,
+    "cold_extreme": -4.1,
+    "heat_extreme": 35.0,
+    "day_count": 153
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 99.28934010152282,
+    "강수_total": 779.4,
+    "일조_total": 1101.3,
+    "cold_extreme": -7.9,
+    "heat_extreme": 36.6,
+    "day_count": 153
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 799.2,
+    "일조_total": 1083.7,
+    "cold_extreme": -2.1,
+    "heat_extreme": 36.7,
+    "day_count": 153
+   }
+  }
+ },
+ "오이|밀양|촉성재배": {
+  "crop": "오이",
+  "station": "밀양",
+  "cultivation_type": "촉성재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 0,
+    "온도_score": 83.8815789473684,
+    "강수_total": 244.8,
+    "일조_total": 434.6,
+    "cold_extreme": -7.2,
+    "heat_extreme": 30.0,
+    "day_count": 92
+   },
+   "2017": {
+    "강수_score": 97.063599458728,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 70.8,
+    "일조_total": 561.1,
+    "cold_extreme": -11.0,
+    "heat_extreme": 29.8,
+    "day_count": 92
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 205.0,
+    "일조_total": 546.7,
+    "cold_extreme": -9.9,
+    "heat_extreme": 26.6,
+    "day_count": 92
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 49.04315196998123,
+    "온도_score": 24.013157894736814,
+    "강수_total": 218.1,
+    "일조_total": 483.8,
+    "cold_extreme": -8.5,
+    "heat_extreme": 28.4,
+    "day_count": 92
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 86.7,
+    "일조_total": 619.5,
+    "cold_extreme": -9.3,
+    "heat_extreme": 26.6,
+    "day_count": 92
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 113.6,
+    "일조_total": 615.2,
+    "cold_extreme": -9.3,
+    "heat_extreme": 30.8,
+    "day_count": 92
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 75.8,
+    "일조_total": 617.8,
+    "cold_extreme": -10.1,
+    "heat_extreme": 30.2,
+    "day_count": 92
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 147.2,
+    "일조_total": 601.3,
+    "cold_extreme": -9.8,
+    "heat_extreme": 27.4,
+    "day_count": 92
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 202.7,
+    "일조_total": 536.0,
+    "cold_extreme": -6.2,
+    "heat_extreme": 29.2,
+    "day_count": 92
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 83.8815789473684,
+    "강수_total": 136.5,
+    "일조_total": 538.7,
+    "cold_extreme": -7.2,
+    "heat_extreme": 30.6,
+    "day_count": 92
+   }
+  }
+ },
+ "감자|밀양|봄재배": {
+  "crop": "감자",
+  "station": "밀양",
+  "cultivation_type": "봄재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 53.264094955489604,
+    "온도_score": 100,
+    "강수_total": 480.4,
+    "일조_total": 796.9,
+    "cold_extreme": -6.4,
+    "heat_extreme": 32.9,
+    "day_count": 122
+   },
+   "2017": {
+    "강수_score": 73.48757497857756,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 211.8,
+    "일조_total": 915.2,
+    "cold_extreme": -5.8,
+    "heat_extreme": 36.6,
+    "day_count": 122
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 98.85756676557861,
+    "온도_score": 100,
+    "강수_total": 462.6,
+    "일조_total": 840.8,
+    "cold_extreme": -3.1,
+    "heat_extreme": 35.8,
+    "day_count": 122
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 383.1,
+    "일조_total": 959.9,
+    "cold_extreme": -3.9,
+    "heat_extreme": 34.7,
+    "day_count": 122
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 335.5,
+    "일조_total": 963.5,
+    "cold_extreme": -4.2,
+    "heat_extreme": 35.1,
+    "day_count": 122
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 377.8,
+    "일조_total": 859.0,
+    "cold_extreme": -1.9,
+    "heat_extreme": 33.3,
+    "day_count": 122
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 354.4,
+    "일조_total": 925.8,
+    "cold_extreme": -3.2,
+    "heat_extreme": 35.1,
+    "day_count": 122
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 659.6,
+    "일조_total": 848.1,
+    "cold_extreme": -4.4,
+    "heat_extreme": 33.9,
+    "day_count": 122
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 440.8,
+    "일조_total": 862.0,
+    "cold_extreme": -5.6,
+    "heat_extreme": 35.8,
+    "day_count": 122
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 333.8,
+    "일조_total": 852.6,
+    "cold_extreme": -2.6,
+    "heat_extreme": 36.9,
+    "day_count": 122
+   }
+  }
+ },
+ "상추|대관령|고랭지재배": {
+  "crop": "상추",
+  "station": "대관령",
+  "cultivation_type": "고랭지재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 746.0,
+    "일조_total": 737.8,
+    "cold_extreme": 3.1,
+    "heat_extreme": 32.4,
+    "day_count": 92
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 721.7,
+    "일조_total": 664.5,
+    "cold_extreme": 2.4,
+    "heat_extreme": 31.1,
+    "day_count": 92
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 854.1,
+    "일조_total": 689.8,
+    "cold_extreme": 6.4,
+    "heat_extreme": 32.9,
+    "day_count": 92
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 558.1,
+    "일조_total": 635.4,
+    "cold_extreme": 4.3,
+    "heat_extreme": 30.2,
+    "day_count": 92
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 836.5,
+    "일조_total": 542.3,
+    "cold_extreme": 7.8,
+    "heat_extreme": 31.6,
+    "day_count": 92
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 420.6,
+    "일조_total": 564.9,
+    "cold_extreme": 8.0,
+    "heat_extreme": 30.6,
+    "day_count": 92
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 834.1,
+    "일조_total": 501.0,
+    "cold_extreme": 5.6,
+    "heat_extreme": 30.3,
+    "day_count": 92
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 680.0,
+    "일조_total": 502.9,
+    "cold_extreme": 7.4,
+    "heat_extreme": 31.8,
+    "day_count": 92
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 417.7,
+    "일조_total": 671.1,
+    "cold_extreme": 2.0,
+    "heat_extreme": 31.3,
+    "day_count": 92
+   },
+   "2025": {
+    "강수_score": 74.29019881409138,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 274.0,
+    "일조_total": 682.9,
+    "cold_extreme": 5.0,
+    "heat_extreme": 33.2,
+    "day_count": 92
+   }
+  }
+ },
+ "상추|태백|고랭지재배": {
+  "crop": "상추",
+  "station": "태백",
+  "cultivation_type": "고랭지재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 587.1,
+    "일조_total": 491.8,
+    "cold_extreme": 6.2,
+    "heat_extreme": 34.6,
+    "day_count": 92
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 689.9,
+    "일조_total": 462.4,
+    "cold_extreme": 5.3,
+    "heat_extreme": 33.1,
+    "day_count": 92
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 89.3415637860081,
+    "강수_total": 579.9,
+    "일조_total": 512.4,
+    "cold_extreme": 9.1,
+    "heat_extreme": 35.7,
+    "day_count": 92
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 545.2,
+    "일조_total": 524.4,
+    "cold_extreme": 7.3,
+    "heat_extreme": 33.0,
+    "day_count": 92
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 708.3,
+    "일조_total": 452.4,
+    "cold_extreme": 10.2,
+    "heat_extreme": 34.9,
+    "day_count": 92
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 559.1,
+    "일조_total": 371.8,
+    "cold_extreme": 9.7,
+    "heat_extreme": 32.5,
+    "day_count": 92
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 614.7,
+    "일조_total": 429.7,
+    "cold_extreme": 8.0,
+    "heat_extreme": 33.4,
+    "day_count": 92
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 879.1,
+    "일조_total": 541.2,
+    "cold_extreme": 10.1,
+    "heat_extreme": 33.3,
+    "day_count": 92
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 560.8,
+    "일조_total": 525.1,
+    "cold_extreme": 5.6,
+    "heat_extreme": 33.8,
+    "day_count": 92
+   },
+   "2025": {
+    "강수_score": 64.35298221137077,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 233.3,
+    "일조_total": 586.3,
+    "cold_extreme": 7.2,
+    "heat_extreme": 34.9,
+    "day_count": 92
+   }
+  }
+ },
+ "감자|대관령|고랭지재배": {
+  "crop": "감자",
+  "station": "대관령",
+  "cultivation_type": "고랭지재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 74.0251572327044,
+    "강수_total": 894.9,
+    "일조_total": 1219.1,
+    "cold_extreme": 0.3,
+    "heat_extreme": 32.4,
+    "day_count": 153
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 822.6,
+    "일조_total": 1230.5,
+    "cold_extreme": 1.5,
+    "heat_extreme": 31.1,
+    "day_count": 153
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 52.0125786163522,
+    "강수_total": 1252.5,
+    "일조_total": 1086.9,
+    "cold_extreme": 0.4,
+    "heat_extreme": 32.9,
+    "day_count": 153
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 815.2,
+    "일조_total": 1105.3,
+    "cold_extreme": -3.6,
+    "heat_extreme": 30.2,
+    "day_count": 153
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 1492.1,
+    "일조_total": 943.0,
+    "cold_extreme": 0.6,
+    "heat_extreme": 31.6,
+    "day_count": 153
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 728.5,
+    "일조_total": 944.3,
+    "cold_extreme": -0.7,
+    "heat_extreme": 30.6,
+    "day_count": 153
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 1049.9,
+    "일조_total": 1011.5,
+    "cold_extreme": -2.7,
+    "heat_extreme": 30.3,
+    "day_count": 153
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 962.7,
+    "일조_total": 865.8,
+    "cold_extreme": -2.3,
+    "heat_extreme": 31.8,
+    "day_count": 153
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 731.6,
+    "일조_total": 1083.1,
+    "cold_extreme": -1.3,
+    "heat_extreme": 31.3,
+    "day_count": 153
+   },
+   "2025": {
+    "강수_score": 93.93849938499385,
+    "일조_score": 100,
+    "온도_score": 38.805031446540696,
+    "강수_total": 616.5,
+    "일조_total": 1064.0,
+    "cold_extreme": -1.9,
+    "heat_extreme": 33.2,
+    "day_count": 153
+   }
+  }
+ },
+ "상추|정선군|고랭지재배": {
+  "crop": "상추",
+  "station": "정선군",
+  "cultivation_type": "고랭지재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 83.58024691358024,
+    "강수_total": 631.5,
+    "일조_total": 558.7,
+    "cold_extreme": 8.3,
+    "heat_extreme": 35.9,
+    "day_count": 92
+   },
+   "2017": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 95.10288065843616,
+    "강수_total": 706.7,
+    "일조_total": 471.1,
+    "cold_extreme": 8.3,
+    "heat_extreme": 35.5,
+    "day_count": 92
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 0,
+    "강수_total": 629.2,
+    "일조_total": 503.1,
+    "cold_extreme": 10.3,
+    "heat_extreme": 39.6,
+    "day_count": 92
+   },
+   "2019": {
+    "강수_score": 82.32298569933728,
+    "일조_score": 100,
+    "온도_score": 92.22222222222213,
+    "강수_total": 306.9,
+    "일조_total": 361.4,
+    "cold_extreme": 8.4,
+    "heat_extreme": 35.6,
+    "day_count": 92
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 80.6995884773662,
+    "강수_total": 748.7,
+    "일조_total": 439.1,
+    "cold_extreme": 10.8,
+    "heat_extreme": 36.0,
+    "day_count": 92
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 442.3,
+    "일조_total": 420.7,
+    "cold_extreme": 11.0,
+    "heat_extreme": 35.2,
+    "day_count": 92
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 83.58024691358024,
+    "강수_total": 975.4,
+    "일조_total": 382.4,
+    "cold_extreme": 9.2,
+    "heat_extreme": 35.9,
+    "day_count": 92
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 37.48971193415632,
+    "강수_total": 815.0,
+    "일조_total": 445.2,
+    "cold_extreme": 10.0,
+    "heat_extreme": 37.5,
+    "day_count": 89
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 73.07327001356853,
+    "온도_score": 40.37037037037035,
+    "강수_total": 580.2,
+    "일조_total": 276.5,
+    "cold_extreme": 5.6,
+    "heat_extreme": 37.4,
+    "day_count": 92
+   },
+   "2025": {
+    "강수_score": 89.72096267875828,
+    "일조_score": 100,
+    "온도_score": 2.9218106995883346,
+    "강수_total": 337.2,
+    "일조_total": 554.9,
+    "cold_extreme": 8.0,
+    "heat_extreme": 38.7,
+    "day_count": 92
+   }
+  }
+ },
+ "상추|남해|저지대재배": {
+  "crop": "상추",
+  "station": "남해",
+  "cultivation_type": "저지대재배",
+  "years": {
+   "2016": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 56.30057803468209,
+    "강수_total": 1682.2,
+    "일조_total": 1030.3,
+    "cold_extreme": -5.8,
+    "heat_extreme": 31.6,
+    "day_count": 183
+   },
+   "2017": {
+    "강수_score": 94.23780487804879,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 572.2,
+    "일조_total": 1306.6,
+    "cold_extreme": -2.1,
+    "heat_extreme": 34.1,
+    "day_count": 183
+   },
+   "2018": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 1368.3,
+    "일조_total": 1170.4,
+    "cold_extreme": -2.1,
+    "heat_extreme": 31.4,
+    "day_count": 183
+   },
+   "2019": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 1100.2,
+    "일조_total": 1264.0,
+    "cold_extreme": -0.5,
+    "heat_extreme": 31.5,
+    "day_count": 183
+   },
+   "2020": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 752.8,
+    "일조_total": 1277.0,
+    "cold_extreme": -1.5,
+    "heat_extreme": 29.7,
+    "day_count": 183
+   },
+   "2021": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 786.4,
+    "일조_total": 1144.5,
+    "cold_extreme": 0.8,
+    "heat_extreme": 30.1,
+    "day_count": 183
+   },
+   "2022": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 721.8,
+    "일조_total": 1260.6,
+    "cold_extreme": -1.0,
+    "heat_extreme": 32.6,
+    "day_count": 183
+   },
+   "2023": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 987.7,
+    "일조_total": 1158.3,
+    "cold_extreme": -1.7,
+    "heat_extreme": 31.1,
+    "day_count": 183
+   },
+   "2024": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 84.6242774566474,
+    "강수_total": 1377.6,
+    "일조_total": 1105.8,
+    "cold_extreme": -5.1,
+    "heat_extreme": 35.0,
+    "day_count": 183
+   },
+   "2025": {
+    "강수_score": 100,
+    "일조_score": 100,
+    "온도_score": 100,
+    "강수_total": 675.8,
+    "일조_total": 1090.6,
+    "cold_extreme": -1.3,
+    "heat_extreme": 32.6,
+    "day_count": 183
+   }
+  }
+ }
+}
