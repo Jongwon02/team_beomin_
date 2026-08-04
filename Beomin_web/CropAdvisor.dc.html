@@ -1604,7 +1604,10 @@
        있어도 나머지 기능은 그대로 동작한다. -->
   <div class="anong-fab">
     <button type="button" class="anong-fab-btn" onClick="{{ chatToggle }}" aria-label="안농 도우미에게 물어보기">
-      <img src="uploads/chatbot_img.png" alt="안농 도우미" />
+      <!-- ?v=2 - vercel.json이 /uploads/* 를 immutable, max-age=1년으로 서빙한다.
+           파일명을 그대로 두고 내용만 바꾸면 이미 캐시한 방문자는 1년간 옛 이미지를
+           계속 본다. 이미지를 교체할 때는 이 숫자를 반드시 올려야 한다. -->
+      <img src="uploads/chatbot_img.png?v=2" alt="안농 도우미" />
     </button>
     <span class="anong-fab-bubble" aria-hidden="true">무엇을 도와드릴까요?</span>
   </div>
