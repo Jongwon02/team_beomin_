@@ -35,20 +35,17 @@
   .rgn-btn.province { background:#2F5D42; color:#fff; border-color:#2F5D42; }
   .rgn-btn.province:hover { background:#234934; }
 
-  /* 프로필 패널 (우측) */
-
-  /* 확인 모달 (참고 디자인: 읍면동 선택 지도 모달.dc.html) */
-  @keyframes cfFadeIn { from { opacity:0 } to { opacity:1 } }
-  @keyframes cfDlgIn { from { opacity:0; transform:translateY(10px) scale(.985) } to { opacity:1; transform:none } }
-  #confirm-back { display:none; position:absolute; inset:0; z-index:2000; background:rgba(40,34,20,.10); align-items:center; justify-content:center; animation:cfFadeIn .16s ease both; }
-  #confirm-card { background:#FAF6EC; border:1px solid #EDE6D4; border-radius:22px; padding:38px 44px 34px; width:600px; max-width:calc(100vw - 40px); box-shadow:0 18px 48px rgba(50,40,16,.22); display:flex; flex-direction:column; align-items:center; text-align:center; animation:cfDlgIn .2s cubic-bezier(.2,.8,.3,1) both; }
-  #confirm-region { font-size:26px; font-weight:800; color:#22633C; letter-spacing:-.01em; }
-  #confirm-msg { font-size:20px; font-weight:600; color:#3A3426; margin-top:16px; }
-  #cf-hint { font-size:15px; color:#6E6857; line-height:1.75; text-align:center; margin-top:26px; }
-  .cf-btns { display:flex; gap:16px; margin-top:32px; }
-  .cf-btns button { border:1px solid transparent; border-radius:12px; padding:16px 52px; font-size:17px; font-weight:700; cursor:pointer; font-family:inherit; }
-  #cf-ok { background:#2F5D42; color:#fff; border-color:#2F5D42; } #cf-ok:hover { filter:brightness(.93); }
-  #cf-cancel { background:#fff; color:#3A3426; border-color:#E2DAC6; } #cf-cancel:hover { background:#F3EEDF; }
+  /* 확인 모달 */
+  #confirm-back { display:none; position:absolute; inset:0; z-index:2000; background:rgba(43,38,32,.45); align-items:center; justify-content:center; }
+  #confirm-card { background:#FBF7EF; border-radius:18px; padding:28px 26px; width:320px; max-width:calc(100vw - 40px); box-shadow:0 12px 40px rgba(0,0,0,.3); text-align:center; }
+  #confirm-region { font-size:18px; font-weight:700; color:#2F5D42; margin-bottom:6px; }
+  #confirm-msg { font-size:15px; color:#2B2620; margin-bottom:8px; line-height:1.5; }
+  #confirm-code { font-size:11px; color:#9a917d; margin-bottom:14px; }
+  #cf-save-label { display:flex; align-items:center; justify-content:center; gap:6px; font-size:13px; color:#5A5140; margin-bottom:16px; cursor:pointer; user-select:none; }
+  .cf-btns { display:flex; gap:10px; }
+  .cf-btns button { flex:1; border:none; border-radius:10px; padding:11px 0; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+  #cf-ok { background:#2F5D42; color:#fff; } #cf-ok:hover { background:#234934; }
+  #cf-cancel { background:#fff; color:#5A5140; border:1px solid #D8CFB8; } #cf-cancel:hover { background:#F1EAD8; }
 
   #toast { position:absolute; bottom:24px; left:50%; transform:translateX(-50%); z-index:3000; background:#2B2620; color:#fff; padding:10px 18px; border-radius:999px; font-size:13px; font-weight:600; opacity:0; transition:opacity .25s; pointer-events:none; }
   #toast.show { opacity:.95; }
@@ -69,15 +66,15 @@
   <div id="btn-list"></div>
 </div>
 
-<!-- 귀농지역은 여러 곳 저장이 아니라 '나의 작물'을 고를 때 한 곳으로 확정된다.
-     그래서 지도 안의 저장 목록 패널은 없앴다(프로필 탭에서 확인). -->
-
 <!-- 확인 모달 -->
 <div id="confirm-back">
   <div id="confirm-card">
     <div id="confirm-region"></div>
     <div id="confirm-msg">이 지역의 작물 추천을 확인할까요?</div>
-    <div id="cf-hint">확인을 누르면 이 지역의 작물별 적합도를 보여줘요.<br></div>
+    <div id="confirm-code"></div>
+    <label id="cf-save-label">
+      <input type="checkbox" id="cf-save-profile"> 🌾 내 귀농지역으로도 저장
+    </label>
     <div class="cf-btns">
       <button id="cf-cancel" type="button">취소</button>
       <button id="cf-ok" type="button">확인</button>
@@ -239,6 +236,8 @@
   // ---- 확인 모달 ----
   var cfBack = document.getElementById('confirm-back');
   var cfRegion = document.getElementById('confirm-region');
+  var cfCode = document.getElementById('confirm-code');
+  var cfSaveProfile = document.getElementById('cf-save-profile');
   var pending = null;
 
   function openConfirm(dong, code) {
@@ -252,23 +251,47 @@
       name: sigunguName, fullName: fullName, dongs: dongList,
     };
     cfRegion.textContent = fullName;
+    cfCode.textContent = '법정동코드 ' + code;
+    cfSaveProfile.checked = false;   // 지역 선택할 때마다 매번 명시적으로 다시 체크해야 저장됨
     cfBack.style.display = 'flex';
   }
   document.getElementById('cf-cancel').addEventListener('click', function () { cfBack.style.display = 'none'; pending = null; });
   document.getElementById('cf-ok').addEventListener('click', function () {
     if (!pending) return;
-    // 지역 선택 = 적합도 조회일 뿐이다. 귀농지역 확정은 부모 페이지에서 '나의 작물'을
-    // 고르는 순간 일어난다(지역도 작물도 오직 하나).
+    // "내 귀농지역으로도 저장" 체크박스를 켰을 때만 프로필에 저장한다 - 그냥 지역별
+    // 추천을 보려고 지역을 고른 것만으로는 자동 저장되지 않는다.
+    var wantsSave = cfSaveProfile.checked;
+    var added = wantsSave ? addToProfile(pending) : false;
     window.parent.postMessage({
       type: 'selectRegion', id: pending.code, code: pending.code, name: pending.name,
       province: pending.province, sigungu: pending.sigungu, dong: pending.dong, dongs: pending.dongs
     }, '*');
     cfBack.style.display = 'none';
     pathEl.innerHTML = '✅ 선택됨: <b>' + pending.fullName + '</b>';
-    toast('지역이 선택되었습니다 - 아래에서 나의 작물을 골라주세요');
+    if (wantsSave) {
+      toast(added ? '내 귀농지역으로 저장되었습니다 🌱' : '이미 저장된 지역입니다');
+    } else {
+      toast('지역이 선택되었습니다');
+    }
     pending = null;
   });
   cfBack.addEventListener('click', function (e) { if (e.target === cfBack) { cfBack.style.display = 'none'; pending = null; } });
+
+  // ---- 프로필 (localStorage) ----
+  // '내 귀농 지역' 목록 표시는 부모 페이지(CropAdvisor.dc.html)의 지도 위 오버레이 패널로
+  // 옮겨졌다 - 이 iframe 안에 똑같은 목록 패널을 또 띄우면 화면에 2개가 겹쳐 보이므로,
+  // 저장/삭제 데이터 함수만 남기고 이 안에서의 목록 렌더링은 제거했다.
+  var LS_KEY = 'beomin_saved_regions';
+
+  function loadProfile() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; } catch (e) { return []; } }
+  function saveProfile(l) { localStorage.setItem(LS_KEY, JSON.stringify(l)); }
+  function addToProfile(r) {
+    var l = loadProfile();
+    if (l.some(function (x) { return x.code === r.code; })) { return false; }
+    l.push({ name: r.name, code: r.code, province: r.province, sigungu: r.sigungu, dong: r.dong });
+    saveProfile(l); return true;
+  }
+  function removeFromProfile(code) { saveProfile(loadProfile().filter(function (x) { return x.code !== code; })); }
 
   // ---- 토스트 ----
   var toastEl = document.getElementById('toast'), toastT = null;
