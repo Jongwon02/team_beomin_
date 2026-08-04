@@ -1172,3 +1172,79 @@ supabase-js는 저장된 세션을 그대로 신뢰하므로, 앱이 스스로 �
 > 운영 주의: **익명 계정을 일괄 삭제하지 말 것.** 지금 사이트를 쓰고 있는 사람의 세션을
 > 끊어 이 오류를 만든다. 정리해야 한다면 `created_at`이 오래되고 딸린 데이터가 없는
 > 익명 계정만 골라 지운다.
+
+---
+
+## 12. heeyeon2026 UI 병합 (2026-08-04)
+
+`heeyeon2026` 브랜치의 UI·기능을 기준으로 삼고, `login` 브랜치의 Supabase·Vercel
+서버 계층을 그 위에 얹었다. 병합 커밋 `0edd7b4`.
+
+### 12.1 진짜 `git merge`를 쓸 수 있었다
+
+`heeyeon0804`(§12 이전 병합)와 달리 **두 브랜치는 공통 조상이 있다** — `1966000`
+("데이터 출처 목록 추가"). 양쪽 모두 그 지점에서 갈라져 나왔다.
+
+```
+1966000 ─┬─ e3b9076 → 28ec7bd → 08b79e7 → 919b6a1   (login: Vercel + Supabase)
+         └─ ea82024 → 61df050 → 358dce7             (heeyeon2026: 예보 매핑 + UI)
+```
+
+그래서 파일 단위 이식이 아니라 `git merge`로 병합했다(`--allow-unrelated-histories`
+불필요). 3-way 머지가 대부분을 자동 처리하고 **충돌은 5건**만 났다.
+
+| 충돌 위치 | 해결 |
+|---|---|
+| API 상수 블록 (`LABELS`/`MEDALS`/주소) | heeyeon2026의 `LABELS`를 살리고, 주소는 login의 `IS_LOCAL` 분기를 채택 |
+| `loadWeekly` / `loadWeather` / `openDetail` / `loadNews` 의 `fetch` 4곳 | 하드코딩 `http://127.0.0.1:8001` → `NEWS_API` 상수 |
+
+`MEDALS`·`CROP_PHOTO`는 heeyeon2026이 UI 리디자인으로 참조를 없앤 상수라 되살리지
+않았다(병합본 전체에서 참조 0건 확인).
+
+### 12.2 스키마 변경이 필요 없다
+
+heeyeon2026은 **단일 농장 모델**(`my_farm` 1인 1행)을 그대로 유지한다. §4.3의 기존
+테이블이 그대로 맞아, heeyeon0804 병합 때 추가했던 `favorites`·`saved_regions`·
+`farm_plans`(다중 저장 모델용)는 이번 UI에서는 쓰지 않는다.
+
+| localStorage 키 | 테이블 | 상태 |
+|---|---|---|
+| `beomin_my_farm` | `my_farm` | 기존 재사용 |
+| `beomin_personal_info` | `personal_info` | 기존 재사용 |
+| `beomin_checklist_status` | `checklist_status` | 기존 재사용 |
+| `beomin_prep_suggestions` | `prep_status` | 기존 재사용 |
+| `beomin_region_log` | `region_log` | 기존 재사용 |
+
+### 12.3 heeyeon2026의 백엔드 개선이 배포 경로에도 자동 반영된다
+
+`api/*.py`는 `news_server.fetch_*`를 얇게 감싸는 래퍼다(§6.2). heeyeon2026이 고친
+아래 파일들은 그 호출 경로 안쪽에 있어, 함수 코드를 손대지 않아도 배포에 함께 실린다.
+
+- `backend/api/weekly_fcst.py` — 예보 API 병렬화
+- `backend/api/midfcst.py` · `midfcst_regions.py` — 특별시/광역시 중기예보 구역 매핑
+- `backend/utils/region_mapper.py` — 광역시 구·군 매핑
+
+`vercel.json`의 `includeFiles`가 이미 `backend/**`를 통째로 포함하므로 설정 변경도 없다.
+
+### 12.4 검증
+
+| 항목 | 결과 |
+|---|---|
+| 병합 충돌 마커 잔존 | 0건 |
+| `CropAdvisor.dc.html` JS 문법 (`node --check`) | OK |
+| 템플릿 `{{ }}` 바인딩 미해결 | 양쪽 부모와 동일(신규 0건) |
+| `state` 필드 / 클래스 메서드 / 최상위 상수 | 양쪽 부모의 합집합 그대로, 유실 0건 |
+| heeyeon2026 대비 삭제된 줄 | 7줄 — 전부 하드코딩 API 주소·`state` 한 줄 (의도된 교체) |
+| Python 13개 파일 `py_compile` | OK |
+| `api/` 함수 6개 import | 전부 OK |
+| Supabase 테이블 5개 존재·RLS | 전부 존재, RLS 켜짐 |
+
+### 12.5 알려진 제약 (이번 병합이 만든 것은 아님)
+
+- **품종 추천 UI**(`loadCultivars`/`pickCultivar`, `/api/cultivar-score`)는 `login`
+  브랜치에서 온 진행 중 작업으로, **서버 구현이 아직 없다**(로컬 8002·`api/`·
+  `vercel.json` 어디에도 해당 엔드포인트가 없다). 응답이 없으면
+  `cultivarBox.show`가 `false`가 되어 카드 자체가 렌더되지 않으므로 화면에는
+  드러나지 않는다. 살릴 때는 `backend/crop_score_server.py`에 라우트를 추가하고
+  `api/` 함수와 `vercel.json` rewrite를 함께 넣어야 한다.
+- 로컬 실행에는 `.env`가 필요하다(`.env.example` 복사). 배포는 Vercel 환경변수(§6.5).
