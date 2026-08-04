@@ -488,7 +488,11 @@
             </sc-if>
           </div>
         </div>
-        <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;">
+        <!-- ?v=2 - vercel.json이 /uploads/* 를 immutable, max-age=1년으로 서빙한다.
+             파일명을 그대로 두고 내용만 바꾸면 이미 방문한 사람은 1년간 옛 이미지를
+             계속 본다(배경이 있던 예전 히어로가 그래서 계속 보였다). 이미지를 교체할
+             때는 이 숫자를 반드시 올려야 한다. 아래 두 번째 히어로도 같이 올린다. -->
+        <img src="uploads/hero.png?v=2" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;">
       </div>
     </section>
 
@@ -542,7 +546,7 @@
               <h1 style="font-family:'Gowun Batang',serif;font-size:54px;line-height:1.35;font-weight:700;margin:0 0 20px;color:#2B2620;">어디서, 무엇을 심어야 할지<br>막막하셨다면</h1>
               <p style="font-size:20px;line-height:1.7;color:#5A5245;margin:0;">지역을 고르면 그 땅에 맞는 작물 적합도를 보여드리고, 나의 작물로 선택하면 재배 캘린더와 실시간 날씨, 챗봇까지 이어서 챙겨드려요!</p>
             </div>
-            <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;">
+            <img src="uploads/hero.png?v=2" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;">
           </div>
           </sc-if>
           <div onClick="{{ scrollToMap }}" title="지도로 이동" style="position:absolute;left:0;right:0;bottom:0;height:64px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px;">
