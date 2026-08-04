@@ -1,0 +1,1009 @@
+{
+ "dataset": {
+  "title": "상추 품종군별 특성 및 재배관리 데이터",
+  "language": "ko",
+  "purpose": "LLM 지식 제공 및 상추 품종군별 재배정보 검색",
+  "source_scope": "청치마·적축면·로메인 상추 품종군 재배 리포트",
+  "classification_note": [
+   "청치마, 적축면, 로메인은 단일 고정 품종명이 아니라 외형과 생육 형태가 유사한 품종군 또는 유형이다.",
+   "내서성, 만추대성, 수량, 병 저항성 및 수확일수는 개별 종자 품종에 따라 달라질 수 있다.",
+   "특정 육성품종의 시험 결과를 해당 품종군 전체의 공통 특성으로 일반화하지 않는다.",
+   "growth_period_days는 '파종→정식(육묘기간)'과 '정식→수확'을 구분하고, 파종~수확 전체 기간은 두 구간의 합산 추정치로 별도 표기했다. 로메인은 포기수확 기준으로 정식~수확 기간이 잎상추보다 길다."
+  ],
+  "caution": [
+   "정확한 파종일, 재식거리 및 시비량은 지역, 계절, 노지·시설 여부와 개별 품종에 따라 달라질 수 있다.",
+   "실제 재배 전 토양검정과 종자회사의 품종별 재배지침을 확인한다.",
+   "농약은 상추에 등록된 제품을 농약안전사용기준에 따라 사용한다."
+  ],
+  "data_date": "2026-08-04"
+ },
+ "common_management": {
+  "recommended_environment": {
+   "germination_temperature_c": {
+    "min": 15,
+    "max": 20
+   },
+   "seedling_temperature_c": {
+    "min": 18,
+    "max": 20
+   },
+   "growth_temperature_c": {
+    "min": 15,
+    "max": 20
+   },
+   "soil_ph": {
+    "recommended_range": {
+     "min": 5.8,
+     "max": 7.2
+    },
+    "note": "자료에 따라 적정 범위가 다르므로 약산성~중성 토양을 목표로 하고 토양검정 결과를 우선 적용"
+   },
+   "root_zone_ec_ds_m": {
+    "recommended_max": 2.0,
+    "note": "토경재배 현장 기술지원 사례의 관리 참고값이며 모든 포장에 동일하게 적용되는 절대 기준은 아님"
+   },
+   "soil_moisture_percent": {
+    "min": 12,
+    "max": 25,
+    "note": "현장 관리 참고범위"
+   },
+   "general_spacing_cm": {
+    "row": 20,
+    "plant": 20,
+    "note": "일반 잎상추의 참고 간격이며 로메인 포기재배는 목표 크기에 따라 조정"
+   }
+  },
+  "pre_planting": [
+   "재배 계절과 판매 목적에 맞는 개별 품종을 선택한다.",
+   "여름 재배 시 내서성·만추대성 여부를 확인한다.",
+   "토양검정을 실시하고 배수 상태를 확인한다.",
+   "검증된 종자를 사용한다.",
+   "상추 종자는 빛을 필요로 하므로 복토를 지나치게 두껍게 하지 않는다."
+  ],
+  "seedling_and_transplanting": [
+   "약 15~20℃에서 발아시키고 약 18~20℃에서 모를 관리한다.",
+   "웃자라거나 병든 모종은 정식하지 않는다.",
+   "배수가 불량한 밭은 두둑을 높인다.",
+   "정식 직후 충분히 관수해 뿌리와 토양이 밀착되게 한다.",
+   "재식거리는 품종군과 출하 형태에 맞게 조정한다."
+  ],
+  "growth_management": [
+   "토양이 지나치게 마르거나 계속 젖어 있지 않도록 관리한다.",
+   "고온기에는 환기와 적절한 차광으로 온도를 낮춘다.",
+   "과도한 차광으로 광량이 부족해지지 않도록 한다.",
+   "질소비료를 과다하게 사용하지 않는다.",
+   "팁번, 병반, 변색 및 추대 여부를 정기적으로 확인한다.",
+   "진딧물, 총채벌레, 온실가루이 및 나방류 유충을 예찰한다."
+  ],
+  "harvest_management": [
+   "잎상추는 일반적으로 정식 후 약 25~30일부터 수확을 시작할 수 있으나 개별 품종과 환경에 따라 달라진다.",
+   "청치마와 적축면은 상품 크기의 겉잎부터 순차적으로 수확한다.",
+   "로메인은 포기째 또는 잎별로 수확할 수 있다.",
+   "꽃대가 올라오면 잎의 쓴맛과 상품성 저하를 확인한다.",
+   "시들거나 병든 잎은 건전한 잎과 분리한다."
+  ],
+  "common_disease_and_pest_risks": [
+   {
+    "type": "disease",
+    "name": "노균병",
+    "risk_conditions": [
+     "저온다습",
+     "잎이 오랫동안 젖은 환경",
+     "통풍 불량"
+    ],
+    "management": [
+     "환기",
+     "잎 젖음 시간 단축",
+     "병든 잎 제거",
+     "등록 약제 사용"
+    ]
+   },
+   {
+    "type": "disease",
+    "name": "잿빛곰팡이병",
+    "risk_conditions": [
+     "고습",
+     "통풍 불량",
+     "포기 내부 과습"
+    ],
+    "management": [
+     "환기",
+     "과습 방지",
+     "병든 조직 제거",
+     "등록 약제 사용"
+    ]
+   },
+   {
+    "type": "disease",
+    "name": "무름병",
+    "risk_conditions": [
+     "고온다습",
+     "상처",
+     "배수 불량"
+    ],
+    "management": [
+     "배수 개선",
+     "상처 최소화",
+     "감염주 제거",
+     "과습 방지"
+    ]
+   },
+   {
+    "type": "disease",
+    "name": "뿌리썩음병",
+    "risk_conditions": [
+     "과습",
+     "배수 불량",
+     "높은 염류농도"
+    ],
+    "management": [
+     "배수 개선",
+     "관수 조절",
+     "EC 점검",
+     "건전한 모종 사용"
+    ]
+   },
+   {
+    "type": "pest",
+    "name": "진딧물",
+    "damage": [
+     "흡즙 피해",
+     "바이러스 매개"
+    ],
+    "management": [
+     "방충망",
+     "끈끈이트랩",
+     "정기 예찰",
+     "주변 잡초 제거",
+     "등록 약제 사용"
+    ]
+   },
+   {
+    "type": "pest",
+    "name": "총채벌레",
+    "damage": [
+     "잎 표면 손상",
+     "바이러스 매개"
+    ],
+    "management": [
+     "방충망",
+     "끈끈이트랩",
+     "정기 예찰",
+     "등록 약제 사용"
+    ]
+   },
+   {
+    "type": "pest",
+    "name": "온실가루이",
+    "damage": [
+     "흡즙 피해",
+     "그을음병 유발 가능"
+    ],
+    "management": [
+     "방충망",
+     "끈끈이트랩",
+     "정기 예찰",
+     "등록 약제 사용"
+    ]
+   }
+  ],
+  "common_physiological_disorders": [
+   {
+    "name": "팁번",
+    "description": "생장점 주변 어린잎 끝이 갈색으로 마르는 생리장해",
+    "causes": [
+     "고온",
+     "급격한 생육",
+     "뿌리 활력 저하",
+     "건조와 과습의 반복",
+     "높은 염류농도",
+     "칼슘 이동 불균형",
+     "수경재배 양액 이온 불균형"
+    ],
+    "management": [
+     "온도와 습도 관리",
+     "토양수분 일정 유지",
+     "EC와 근권 상태 확인",
+     "과도한 질소 시비 방지",
+     "단순 칼슘 부족으로만 판단하지 않기"
+    ]
+   },
+   {
+    "name": "추대",
+    "description": "꽃대가 올라와 잎 품질과 수확기간이 감소하는 현상",
+    "causes": [
+     "고온",
+     "긴 일장",
+     "내서성·만추대성이 낮은 품종"
+    ],
+    "management": [
+     "여름철 만추대 품종 선택",
+     "시설 환기와 온도 저감",
+     "재배 계절에 맞는 품종 선택",
+     "추대가 시작된 포기의 상품성 점검"
+    ]
+   }
+  ],
+  "common_beginner_mistakes": [
+   "청치마·적축면·로메인을 단일 고정 품종으로 이해하는 것",
+   "여름 재배에서 내서성·만추대성 여부를 확인하지 않는 것",
+   "복토를 지나치게 두껍게 해 발아를 방해하는 것",
+   "상추가 물을 좋아한다고 생각해 과습하게 관리하는 것",
+   "팁번을 단순 칼슘 부족으로만 판단하는 것",
+   "질소비료를 과다하게 사용해 잎을 연약하게 만드는 것",
+   "진딧물과 총채벌레의 바이러스 매개 위험을 무시하는 것"
+  ]
+ },
+ "varieties": [
+  {
+   "id": "green_chima_lettuce",
+   "name_ko": "청치마상추",
+   "name_en": "Green leaf lettuce, chima type",
+   "classification": {
+    "crop": "상추",
+    "group": "잎상추",
+    "growth_form": "불결구형",
+    "is_single_cultivar": false
+   },
+   "category": [
+    "쌈용",
+    "잎상추",
+    "녹색상추"
+   ],
+   "primary_use": [
+    "쌈",
+    "겉절이",
+    "모둠 쌈 채소",
+    "직거래",
+    "시장 출하",
+    "식당 납품"
+   ],
+   "leaf_characteristics": {
+    "color": "녹색",
+    "shape": "넓고 바깥쪽으로 부드럽게 퍼지는 형태",
+    "surface": "비교적 평탄하거나 완만한 주름",
+    "texture": "비교적 부드럽고 연함",
+    "growth_habit": "겉잎이 바깥쪽으로 퍼지는 불결구형",
+    "market_quality_factors": [
+     "잎 크기",
+     "수량",
+     "연한 식감",
+     "균일한 녹색",
+     "팁번 없는 잎"
+    ]
+   },
+   "recommended_environment": {
+    "germination_temperature_c": {
+     "min": 15,
+     "max": 20
+    },
+    "seedling_temperature_c": {
+     "min": 18,
+     "max": 20
+    },
+    "growth_temperature_c": {
+     "min": 15,
+     "max": 20
+    },
+    "soil_ph": {
+     "min": 5.8,
+     "max": 7.2,
+     "note": "토양검정 결과 우선"
+    },
+    "recommended_seasons": [
+     "봄",
+     "가을"
+    ],
+    "conditional_seasons": [
+     "내서성·만추대성 품종을 이용한 여름 시설재배"
+    ],
+    "light_requirement": "발아 시 얇은 복토가 필요한 광발아성 종자",
+    "water_requirement": "토양수분을 일정하게 유지하되 과습을 피함"
+   },
+   "seed_and_seedling_management": {
+    "use_certified_seed": true,
+    "sowing_depth": "얕게 복토",
+    "transplant_spacing_cm": {
+     "row": 20,
+     "plant": 20,
+     "note": "일반적인 참고 간격이며 개별 품종과 재배 방식에 따라 조정"
+    },
+    "notes": [
+     "여름에는 내서성·만추대성·팁번 저항성이 표시된 품종을 선택한다.",
+     "웃자라거나 병든 모종은 정식하지 않는다."
+    ]
+   },
+   "cultivation_management": [
+    "정식 후 토양이 완전히 마르지 않도록 관리한다.",
+    "상시 과습 상태를 피하고 배수로를 확보한다.",
+    "고온기에는 환기와 적절한 차광을 실시한다.",
+    "활착 후 큰 겉잎부터 순차적으로 수확한다.",
+    "꽃대가 올라오기 시작하면 쓴맛과 상품성을 확인한다."
+   ],
+   "disease_and_pest_risks": [
+    {
+     "name": "바이러스병",
+     "risk_level": "관리 필요",
+     "vectors": [
+      "진딧물",
+      "총채벌레"
+     ],
+     "symptoms": [
+      "잎의 모자이크",
+      "변형",
+      "생육 위축"
+     ],
+     "management": [
+      "매개충 예찰",
+      "감염 의심주 제거",
+      "방충망",
+      "주변 잡초 제거"
+     ]
+    },
+    {
+     "name": "무름병 및 뿌리썩음",
+     "risk_level": "과습 시 증가",
+     "symptoms": [
+      "잎 또는 밑동 무름",
+      "뿌리 갈변",
+      "시듦"
+     ],
+     "management": [
+      "배수 개선",
+      "관수 조절",
+      "과습 방지"
+     ]
+    }
+   ],
+   "physiological_disorders": [
+    {
+     "name": "팁번",
+     "causes": [
+      "고온",
+      "급격한 생육",
+      "수분 불균형",
+      "높은 EC",
+      "뿌리 활력 저하"
+     ],
+     "management": [
+      "온도 저감",
+      "수분 일정 유지",
+      "EC 점검",
+      "과다 질소 방지"
+     ]
+    },
+    {
+     "name": "조기 추대",
+     "causes": [
+      "고온",
+      "긴 일장",
+      "만추대성이 낮은 품종"
+     ],
+     "management": [
+      "여름용 만추대 품종 선택",
+      "환기",
+      "적정 재배시기 선택"
+     ]
+    }
+   ],
+   "harvest": {
+    "harvest_type": [
+     "겉잎 반복 수확"
+    ],
+    "first_harvest_days_after_transplanting": {
+     "min": 25,
+     "max": 30,
+     "note": "일반 참고값이며 품종과 환경에 따라 달라짐"
+    },
+    "harvest_method": "상품 크기의 바깥쪽 잎부터 수확하고 생장점을 남김",
+    "quality_checks": [
+     "잎 크기",
+     "시듦",
+     "팁번",
+     "병반",
+     "꽃대 발생",
+     "쓴맛"
+    ]
+   },
+   "storage_and_sales": {
+    "storage_ability": "낮음",
+    "recommended_strategy": "수확 후 신속히 예냉·선별하여 신선 상태로 출하",
+    "market_positioning": [
+     "부드러운 녹색 쌈 채소",
+     "반복 수확형 잎상추"
+    ],
+    "risks": [
+     "수확 후 시듦",
+     "잎 손상",
+     "고온 노출",
+     "수분 손실"
+    ]
+   },
+   "recommended_for_beginner": true,
+   "beginner_reason": "국내에서 익숙한 쌈용 품종군이고 겉잎 반복 수확이 가능하지만 여름 고온과 팁번 관리는 필요함",
+   "selection_conditions": [
+    "부드러운 녹색 쌈 채소를 생산하려는 경우",
+    "겉잎을 반복 수확하려는 경우",
+    "일반 시장이나 식당 납품을 목표로 하는 경우"
+   ],
+   "representative_cultivars": [
+    {
+     "name": "삼복하청",
+     "group": "청치마",
+     "reported_traits": [
+      "고온기 팁번 발생이 비교적 적음",
+      "쓴맛이 적고 아삭한 식감",
+      "시험에서 포기당 평균 77장의 잎과 약 551g의 평균 무게가 보고됨"
+     ],
+     "generalization_warning": "해당 수치와 내서성은 삼복하청의 시험 특성이며 모든 청치마 품종에 적용되지 않음"
+    }
+   ],
+   "key_warnings": [
+    "청치마라는 유형명만으로 여름 재배 적합성을 판단하지 않기",
+    "여름에는 내서성·만추대성 품종 선택",
+    "과습과 높은 EC 주의",
+    "팁번을 단순 칼슘 부족으로만 판단하지 않기"
+   ],
+   "growth_period_days": {
+    "seedling_days_sowing_to_transplant": {
+     "spring_fall": {
+      "min": 25,
+      "max": 35
+     },
+     "summer": {
+      "min": 20,
+      "max": 25
+     },
+     "winter": {
+      "min": 35,
+      "max": 40
+     },
+     "confidence": "확실",
+     "source": "제주농업기술원 결구상추 자료, RDA 웹진(2020.06)"
+    },
+    "transplant_to_first_harvest_days": {
+     "min": 25,
+     "max": 30,
+     "confidence": "확실"
+    },
+    "sowing_to_harvest_total_days_estimate": {
+     "min": 45,
+     "max": 65,
+     "confidence": "보통(육묘기간+정식후일수 합산 추정치, 전체기간을 직접 명시한 1차 출처는 확인 못함)"
+    }
+   }
+  },
+  {
+   "id": "red_crisped_leaf_lettuce",
+   "name_ko": "적축면상추",
+   "name_en": "Red crisped leaf lettuce",
+   "classification": {
+    "crop": "상추",
+    "group": "잎상추",
+    "growth_form": "불결구형",
+    "is_single_cultivar": false
+   },
+   "category": [
+    "쌈용",
+    "잎상추",
+    "적색상추",
+    "모둠채소용"
+   ],
+   "primary_use": [
+    "쌈",
+    "모둠 채소",
+    "직거래",
+    "시장 출하",
+    "식당 납품"
+   ],
+   "leaf_characteristics": {
+    "color": "녹색 바탕에 적색 또는 적갈색",
+    "shape": "잎 가장자리가 굴곡지고 표면 주름이 발달한 형태",
+    "surface": "오돌토돌하고 주름이 많음",
+    "texture": "청치마보다 두껍고 아삭한 편",
+    "growth_habit": "불결구형",
+    "market_quality_factors": [
+     "적색 발현",
+     "잎 두께",
+     "잎 무게",
+     "아삭한 식감",
+     "균일한 주름"
+    ]
+   },
+   "recommended_environment": {
+    "germination_temperature_c": {
+     "min": 15,
+     "max": 20
+    },
+    "seedling_temperature_c": {
+     "min": 18,
+     "max": 20
+    },
+    "growth_temperature_c": {
+     "min": 15,
+     "max": 20
+    },
+    "soil_ph": {
+     "min": 5.8,
+     "max": 7.2,
+     "note": "토양검정 결과 우선"
+    },
+    "recommended_seasons": [
+     "봄",
+     "가을"
+    ],
+    "conditional_seasons": [
+     "적색 안정성과 만추대성이 검증된 품종을 이용한 여름 시설재배"
+    ],
+    "light_requirement": "적색 발현을 위해 충분한 광량이 필요하나 고온기 과도한 일사에는 온도 저감 필요",
+    "water_requirement": "토양수분을 일정하게 유지하되 과습을 피함"
+   },
+   "seed_and_seedling_management": {
+    "use_certified_seed": true,
+    "sowing_depth": "얕게 복토",
+    "transplant_spacing_cm": {
+     "row": 20,
+     "plant": 20,
+     "note": "일반적인 참고 간격이며 개별 품종과 재배 방식에 따라 조정"
+    },
+    "notes": [
+     "판매 목적에 맞는 적색 정도와 잎 두께를 가진 품종을 선택한다.",
+     "여름에는 내서성·만추대성·고온기 적색 안정성을 확인한다.",
+     "과도한 밀식을 피해 광량과 통풍을 확보한다."
+    ]
+   },
+   "cultivation_management": [
+    "정식 후 충분한 햇빛이 들어오도록 밀식을 피한다.",
+    "수분을 일정하게 유지해 급격한 생육과 시듦을 줄인다.",
+    "질소비료를 과다하게 사용하지 않는다.",
+    "겉잎이 상품 크기에 도달하면 순차적으로 수확한다.",
+    "출하 전 적색, 잎 두께, 팁번 및 병반을 확인한다."
+   ],
+   "disease_and_pest_risks": [
+    {
+     "name": "바이러스병",
+     "risk_level": "관리 필요",
+     "vectors": [
+      "총채벌레",
+      "진딧물"
+     ],
+     "symptoms": [
+      "잎 변색",
+      "모자이크",
+      "기형",
+      "생육 저하"
+     ],
+     "management": [
+      "매개충 예찰",
+      "감염 의심주 제거",
+      "방충망",
+      "잡초 제거"
+     ]
+    },
+    {
+     "name": "무름병 및 뿌리썩음",
+     "risk_level": "과습 시 증가",
+     "symptoms": [
+      "밑동 무름",
+      "뿌리 갈변",
+      "시듦"
+     ],
+     "management": [
+      "배수 개선",
+      "관수 조절",
+      "과습 방지"
+     ]
+    }
+   ],
+   "physiological_disorders": [
+    {
+     "name": "적색 발현 저하",
+     "causes": [
+      "고온",
+      "일조 부족",
+      "과도한 밀식",
+      "질소비료 과다",
+      "지나치게 빠른 수확",
+      "적색 발현이 약한 개별 품종"
+     ],
+     "management": [
+      "고온기 적색 안정성이 검증된 품종 선택",
+      "광량과 통풍 확보",
+      "과다 질소 방지",
+      "적정 시기에 수확"
+     ]
+    },
+    {
+     "name": "팁번",
+     "causes": [
+      "고온",
+      "급격한 생육",
+      "수분 불균형",
+      "높은 EC",
+      "뿌리 활력 저하"
+     ],
+     "management": [
+      "온도 저감",
+      "수분 일정 유지",
+      "EC 점검",
+      "과다 질소 방지"
+     ]
+    },
+    {
+     "name": "조기 추대",
+     "causes": [
+      "고온",
+      "긴 일장",
+      "만추대성이 낮은 품종"
+     ],
+     "management": [
+      "만추대 품종 선택",
+      "시설 환기",
+      "적정 재배시기 선택"
+     ]
+    }
+   ],
+   "harvest": {
+    "harvest_type": [
+     "겉잎 반복 수확"
+    ],
+    "first_harvest_days_after_transplanting": {
+     "min": 25,
+     "max": 30,
+     "note": "일반 참고값이며 품종과 환경에 따라 달라짐"
+    },
+    "harvest_method": "상품 크기의 바깥쪽 잎부터 수확하고 생장점을 남김",
+    "quality_checks": [
+     "적색 발현",
+     "잎 두께",
+     "주름",
+     "팁번",
+     "병반",
+     "꽃대 발생"
+    ]
+   },
+   "storage_and_sales": {
+    "storage_ability": "낮음",
+    "recommended_strategy": "수확 후 신속히 예냉·선별하고 청상추와 구분해 출하",
+    "market_positioning": [
+     "붉은색 쌈 채소",
+     "모둠 채소",
+     "아삭한 잎상추"
+    ],
+    "risks": [
+     "수확 후 시듦",
+     "적색 저하",
+     "잎 손상",
+     "고온 노출"
+    ]
+   },
+   "recommended_for_beginner": true,
+   "beginner_reason": "쌈용으로 수요가 높지만 적색 발현이 환경의 영향을 받으므로 광량·온도·질소 관리가 필요함",
+   "selection_conditions": [
+    "붉은색과 아삭한 식감을 강조하려는 경우",
+    "모둠 쌈 채소를 구성하려는 경우",
+    "충분한 햇빛과 통풍을 확보할 수 있는 경우"
+   ],
+   "representative_cultivars": [
+    {
+     "name": "춘풍적축면",
+     "group": "적축면",
+     "reported_traits": [
+      "정식 후 약 25일부터 수확 가능한 조·중생종",
+      "고온기 비가림하우스에서 적색이 비교적 오래 유지됨",
+      "잎 주름이 조밀하고 잎 경도가 높은 편",
+      "전국 6개 지역 시험에서 평균 수량 약 2,069kg/10a가 보고됨"
+     ],
+     "generalization_warning": "해당 수량과 적색 안정성은 춘풍적축면의 시험 결과이며 모든 적축면 품종에 적용되지 않음"
+    },
+    {
+     "name": "햇살적축면",
+     "group": "적축면",
+     "reported_traits": [
+      "꽃대 발생이 비교적 늦음",
+      "잎이 두껍고 아삭한 편",
+      "수량성이 우수한 품종으로 평가됨"
+     ],
+     "generalization_warning": "해당 특성은 햇살적축면의 평가 결과이며 모든 적축면 품종에 적용되지 않음"
+    }
+   ],
+   "key_warnings": [
+    "적색 발현은 품종·온도·광량의 영향을 받음",
+    "여름에는 고온기 적색 안정성과 만추대성 확인",
+    "색을 진하게 하려고 수분이나 비료를 과도하게 제한하지 않기",
+    "과도한 밀식과 질소비료 과다 주의"
+   ],
+   "growth_period_days": {
+    "seedling_days_sowing_to_transplant": {
+     "spring_fall": {
+      "min": 25,
+      "max": 35
+     },
+     "summer": {
+      "min": 20,
+      "max": 25
+     },
+     "winter": {
+      "min": 35,
+      "max": 40
+     }
+    },
+    "transplant_to_first_harvest_days": {
+     "min": 25,
+     "max": 30
+    },
+    "sowing_to_harvest_total_days_estimate": {
+     "min": 45,
+     "max": 65
+    },
+    "confidence": "보통(적축면 단독 수치는 확인하지 못해 RDA 자료가 잎상추로 묶어 서술하는 청치마·청축면·적치마·적축면 공통값을 유추 적용함)",
+    "source": "RDA 웹진(2020.06)"
+   }
+  },
+  {
+   "id": "romaine_lettuce",
+   "name_ko": "로메인상추",
+   "alternative_name": "코스상추",
+   "name_en": "Romaine lettuce",
+   "classification": {
+    "crop": "상추",
+    "group": "로메인상추",
+    "growth_form": "반결구형",
+    "is_single_cultivar": false
+   },
+   "category": [
+    "샐러드용",
+    "반결구형",
+    "포기수확용",
+    "잎수확용"
+   ],
+   "primary_use": [
+    "샐러드",
+    "시저샐러드",
+    "샌드위치",
+    "쌈",
+    "외식업체 납품",
+    "포기째 소매 출하"
+   ],
+   "leaf_characteristics": {
+    "color": "녹색 또는 적색",
+    "shape": "길고 위쪽으로 곧게 자라며 숟가락 모양에 가까움",
+    "surface": "품종에 따라 평활하거나 약한 주름",
+    "texture": "잎맥이 굵고 단단하며 아삭함",
+    "growth_habit": "안쪽 잎이 느슨하게 모이는 반결구형",
+    "market_quality_factors": [
+     "포기 모양",
+     "잎 길이",
+     "속잎 충실도",
+     "아삭한 식감",
+     "내부 팁번 없는 상태"
+    ]
+   },
+   "recommended_environment": {
+    "germination_temperature_c": {
+     "min": 15,
+     "max": 20
+    },
+    "seedling_temperature_c": {
+     "min": 18,
+     "max": 20
+    },
+    "growth_temperature_c": {
+     "min": 15,
+     "max": 20
+    },
+    "soil_ph": {
+     "min": 5.8,
+     "max": 7.2,
+     "note": "토양검정 결과 우선"
+    },
+    "recommended_seasons": [
+     "봄",
+     "가을"
+    ],
+    "conditional_seasons": [
+     "내서성·만추대성·팁번 저항성이 확인된 품종을 이용한 여름 시설재배"
+    ],
+    "light_requirement": "충분한 광량과 포기 내부 통풍이 필요",
+    "water_requirement": "속잎이 차는 시기에 수분을 일정하게 유지하되 포기 내부 과습을 피함"
+   },
+   "seed_and_seedling_management": {
+    "use_certified_seed": true,
+    "sowing_depth": "얕게 복토",
+    "transplant_spacing_cm": {
+     "row": null,
+     "plant": 30,
+     "note": "포기사이 약 30cm로, 일반 잎상추(25cm)보다 넓게 확보한다. 이랑나비는 재배방식에 따라 달라(예: 터널재배 120cm 이랑에 5~6줄, 배수 불량 점질토양은 70cm 이랑에 2줄) 특정값으로 고정하지 않는다.",
+     "confidence": "확실(포기사이 수치), 이랑나비는 참고용",
+     "source": "제주농업기술원 로메인상추 자료"
+    },
+    "notes": [
+     "포기 수확인지 잎 수확인지 먼저 결정한다.",
+     "녹색·적색·미니 로메인은 생육속도와 목표 크기가 다르므로 개별 품종 설명을 우선 적용한다.",
+     "포기 수확용은 일반 잎상추보다 충분한 간격을 확보한다."
+    ]
+   },
+   "cultivation_management": [
+    "속잎이 빠르게 차는 시기에 토양이 마르지 않도록 관리한다.",
+    "시설재배에서는 통풍을 확보해 포기 안쪽의 과습을 줄인다.",
+    "포기 수확 전 내부 팁번과 부패를 확인한다.",
+    "잎별 수확 시 생장점과 안쪽 잎을 손상하지 않는다.",
+    "여름에는 내서성과 만추대성이 확인된 개별 품종을 선택한다."
+   ],
+   "disease_and_pest_risks": [
+    {
+     "name": "잿빛곰팡이병",
+     "risk_level": "포기 내부 과습 시 증가",
+     "symptoms": [
+      "속잎 부패",
+      "회색 곰팡이",
+      "수침상 병반"
+     ],
+     "management": [
+      "통풍 개선",
+      "과습 방지",
+      "병든 잎 제거",
+      "등록 약제 사용"
+     ]
+    },
+    {
+     "name": "무름병",
+     "risk_level": "고온다습 및 상처 발생 시 증가",
+     "symptoms": [
+      "속잎 또는 밑동이 물러짐",
+      "악취",
+      "급격한 부패"
+     ],
+     "management": [
+      "상처 최소화",
+      "배수 개선",
+      "과습 방지",
+      "감염 포기 제거"
+     ]
+    },
+    {
+     "name": "바이러스병",
+     "risk_level": "관리 필요",
+     "vectors": [
+      "진딧물",
+      "총채벌레"
+     ],
+     "symptoms": [
+      "모자이크",
+      "잎 변형",
+      "생육 저하"
+     ],
+     "management": [
+      "매개충 예찰",
+      "방충망",
+      "감염 의심주 제거"
+     ]
+    }
+   ],
+   "physiological_disorders": [
+    {
+     "name": "속잎 팁번",
+     "causes": [
+      "고온",
+      "포기 내부의 높은 습도",
+      "급격한 생육",
+      "수분과 칼슘 이동 불균형",
+      "높은 EC",
+      "수경재배 양액 이온 불균형"
+     ],
+     "management": [
+      "온도와 습도 관리",
+      "통풍 확보",
+      "수분 일정 유지",
+      "EC와 양액 이온 균형 점검",
+      "출하 전 일부 포기를 절단해 내부 확인"
+     ]
+    },
+    {
+     "name": "조기 추대",
+     "causes": [
+      "고온",
+      "긴 일장",
+      "만추대성이 낮은 품종"
+     ],
+     "management": [
+      "만추대 품종 선택",
+      "온도 저감",
+      "봄·가을 중심 재배"
+     ]
+    }
+   ],
+   "harvest": {
+    "harvest_type": [
+     "포기 수확",
+     "겉잎 반복 수확"
+    ],
+    "first_harvest_days_after_transplanting": {
+     "min": 45,
+     "max": 50,
+     "note": "포기 수확 기준. 잎별 수확 시에는 이보다 다소 빠르게 시작할 수 있다.",
+     "confidence": "확실",
+     "source": "제주농업기술원 로메인상추 자료"
+    },
+    "harvest_method": {
+     "whole_head": "포기 모양이 갖춰진 뒤 밑동을 절단해 수확",
+     "individual_leaf": "바깥쪽 큰 잎부터 수확하고 생장점을 남김"
+    },
+    "quality_checks": [
+     "포기 모양",
+     "속잎 충실도",
+     "내부 팁번",
+     "내부 부패",
+     "꽃대 발생",
+     "잎 길이"
+    ]
+   },
+   "storage_and_sales": {
+    "storage_ability": "낮음",
+    "recommended_strategy": "수확 후 신속히 예냉하고 포기 또는 잎 출하 규격에 맞춰 포장",
+    "market_positioning": [
+     "샐러드용",
+     "샌드위치용",
+     "포기째 출하",
+     "아삭한 식감"
+    ],
+    "risks": [
+     "내부 팁번 미확인",
+     "포기 내부 부패",
+     "수분 손실",
+     "잎맥 손상"
+    ]
+   },
+   "recommended_for_beginner": false,
+   "beginner_reason": "포기 내부의 팁번과 부패를 외부에서 확인하기 어렵고 목표 크기에 따른 재식거리·수확 관리가 필요함",
+   "selection_conditions": [
+    "샐러드와 샌드위치 시장을 목표로 하는 경우",
+    "포기째 출하하거나 차별화된 상추 상품을 생산하려는 경우",
+    "포기 내부 품질을 검사할 수 있는 경우"
+   ],
+   "representative_cultivars": [
+    {
+     "name": "햇살적로메인",
+     "group": "적색 로메인",
+     "reported_traits": [
+      "포기 수확이 가능한 적색 반결구형 로메인",
+      "씹는 식감이 좋아 쌈과 샐러드용으로 평가됨"
+     ],
+     "generalization_warning": "해당 특성은 햇살적로메인의 평가 결과이며 모든 적로메인 품종에 적용되지 않음"
+    }
+   ],
+   "key_warnings": [
+    "포기 수확 전 내부 팁번과 부패 확인",
+    "일반 잎상추와 동일한 밀도로 심지 않기",
+    "고온기에는 포기 형성 전 추대 가능",
+    "미니·녹색·적색 로메인의 개별 재배지침 우선 적용"
+   ],
+   "growth_period_days": {
+    "transplant_to_head_harvest_days": {
+     "min": 45,
+     "max": 50,
+     "confidence": "확실",
+     "source": "제주농업기술원 로메인상추 자료"
+    },
+    "sowing_to_harvest_total_days_estimate": {
+     "min": 60,
+     "max": 90,
+     "confidence": "불확실(출처 간 편차 있음: 육묘 25~40일+정식후 45~50일 합산 시 70~90일, 일부 2차 자료는 파종~수확 50~70일로 더 짧게 제시)"
+    },
+    "note": "정식 후 45~50일부터 결구가 된 포기부터 순차적으로 수확할 수 있다."
+   }
+  }
+ ],
+ "llm_response_guidelines": [
+  "청치마·적축면·로메인을 개별 고정 품종명으로 표현하지 않는다.",
+  "특정 육성품종의 수량과 내병성을 품종군 전체에 적용하지 않는다.",
+  "파종일을 안내하기 전 지역, 계절, 노지·시설 여부를 확인한다.",
+  "여름 재배에서는 내서성·만추대성 여부를 확인하도록 안내한다.",
+  "토양 pH와 비료량은 토양검정 결과를 우선한다.",
+  "상추는 수분이 필요하지만 과습에 약하다고 함께 설명한다.",
+  "적축면의 적색 발현은 품종, 온도, 광량 및 질소 관리의 영향을 받는다고 설명한다.",
+  "로메인은 포기 수확과 잎 수확이 모두 가능하다고 설명한다.",
+  "팁번을 단순 칼슘 부족으로 단정하지 않는다.",
+  "농약 정보는 현재 상추에 등록된 약제와 안전사용기준 확인을 전제로 제공한다."
+ ]
+}

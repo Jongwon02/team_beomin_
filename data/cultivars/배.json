@@ -1,0 +1,434 @@
+{
+ "dataset": {
+  "title": "배 품종별 특성 및 재배관리 데이터",
+  "language": "ko",
+  "purpose": "LLM 지식 제공 및 배 품종별 재배정보 검색",
+  "source_scope": "사용자가 제공한 신고·원황·신화 품종 설명",
+  "verification_status": "사용자 제공 원문을 구조화했으며 외부 자료로 별도 검증하지 않음",
+  "historical_data_warning": [
+   "신고의 국내 재식 비율 81.5%는 2007년 기준이며 현재 재식 비율로 사용하지 않는다."
+  ],
+  "caution": [
+   "개화기와 숙기는 지역, 연도, 기상 및 재배 조건에 따라 달라질 수 있다.",
+   "수분수 조합은 개화기 중복과 교배친화성을 함께 확인한다.",
+   "농약과 병해충 방제는 현재 등록 약제와 안전사용기준을 확인한다.",
+   "growth_period_days(만개~수확 일수)는 감자의 파종~수확 생육기간과 달리 다년생 과수 특성상 만개일 기준으로 산정한 값이며, 실측 1차 자료를 확인하지 못한 품종은 confidence를 '불확실'로 표시한 추정치다."
+  ],
+  "data_date": "2026-08-04"
+ },
+ "common_management": {
+  "pollination": [
+   "개화기가 겹치고 교배친화성이 있는 수분수를 배치한다.",
+   "꽃가루가 적거나 없는 품종은 인공수분 계획을 마련한다.",
+   "개화기 저온·강우·늦서리에 대비한다."
+  ],
+  "soil_and_water": [
+   "비옥하고 배수가 좋은 토양을 선택한다.",
+   "가뭄과 과습이 반복되지 않도록 토양수분을 일정하게 유지한다.",
+   "배수로와 관수시설을 확보한다."
+  ],
+  "pruning_and_flower_bud_management": [
+   "품종별 수세와 열매가지 특성에 맞는 전정법을 적용한다.",
+   "과도한 수세는 꽃눈 형성을 저해할 수 있다.",
+   "꽃눈 수와 연령을 정리해 과실 균일도를 높인다."
+  ],
+  "harvest_management": [
+   "숙기, 만개 후 일수, 과피색, 경도와 당도를 함께 확인한다.",
+   "조생 품종은 수확 지연에 따른 저장성 저하를 주의한다.",
+   "기준 수확일은 지역과 연도별 기상에 맞춰 조정한다."
+  ],
+  "common_beginner_mistakes": [
+   "수분수가 필요 없는 것으로 판단하는 것",
+   "개화기만 보고 교배친화성을 확인하지 않는 것",
+   "모든 품종에 동일한 전정법을 적용하는 것",
+   "과실 크기만 보고 수확을 늦추는 것",
+   "가뭄 후 한 번에 많은 물을 공급하는 것",
+   "과거 재식 비율을 현재 통계로 해석하는 것"
+  ]
+ },
+ "varieties": [
+  {
+   "id": "niitaka",
+   "name_ko": "신고",
+   "name_hanja": "新高",
+   "name_en": "Niitaka",
+   "crop": "배",
+   "origin_and_breeding": {
+    "country": "일본",
+    "female_parent": "天の川",
+    "male_parent": "금촌추",
+    "cross_year": 1915,
+    "named_year": 1927,
+    "introduced_to_korea": "1930년대"
+   },
+   "maturity": {
+    "class": "중만생",
+    "harvest_period": "9월 하순~10월 상·중순",
+    "reference_region": null
+   },
+   "tree_characteristics": {
+    "vigor": "강함",
+    "growth_habit": "직립성",
+    "canopy": "성목이 되면 수관이 커짐",
+    "fruiting_branch_characteristics": "단과지와 겨드랑이 꽃눈 형성이 좋고 중과지도 많은 편"
+   },
+   "flowering_and_pollination": {
+    "pollen_amount": "거의 없음",
+    "pollinizer_required": true,
+    "recommended_pollinizers": [
+     "추황배",
+     "감천배",
+     "화산",
+     "장십랑",
+     "풍수",
+     "원황"
+    ],
+    "incompatible_cultivars": [],
+    "artificial_pollination": "필요",
+    "frost_risk": "개화기가 빨라 늦서리 피해 우려"
+   },
+   "fruit_characteristics": {
+    "weight_g": {
+     "min": 550,
+     "max": null
+    },
+    "soluble_solids_brix": {
+     "approx": 11.0
+    },
+    "size_class": "대과"
+   },
+   "recommended_environment": {
+    "climate": [
+     "한랭지보다 따뜻한 난지"
+    ],
+    "soil": [
+     "비옥한 양토"
+    ],
+    "regional_adaptation": "전국적으로 광범위하게 재배 가능"
+   },
+   "cultivation_management": [
+    "성목기 주지 기부에서 발생하는 강한 발육지를 조절한다.",
+    "강전정보다 약전정을 적용해 꽃눈 형성을 유도한다.",
+    "수분수와 인공수분 계획을 준비한다."
+   ],
+   "disease_and_pest_risks": [
+    {
+     "name": "검은무늬병",
+     "type": "disease",
+     "resistance": "강함",
+     "note": "감수성 품종(20세기, 신수 등) 대신 저항성 품종으로 신고·풍수·행수·만삼길·장십랑 등이 재배 권장되는 것으로 확인됨",
+     "source": "작물별 병해충도감/방제정보(hescience.co.kr)",
+     "confidence": "보통"
+    },
+    {
+     "name": "검은별무늬병",
+     "type": "disease",
+     "resistance": "약함"
+    }
+   ],
+   "physiological_disorders": [],
+   "harvest_and_storage": {
+    "harvest_guidance": "9월 하순~10월 상·중순을 기준으로 지역과 기상에 따라 조정",
+    "storage_days_room_temperature": null,
+    "storage_ability": null,
+    "storage_days_room_temperature_note": "정량적인 상온저장 일수 자료를 확인하지 못했다(확인 불가). '저장성은 뛰어나지만 품질 면에서는 낮다는 평가가 있다'는 정성적 서술만 확인했다(무등일보, 확신도 보통)."
+   },
+   "regional_and_market_use": [
+    "전국 재배의 대표 품종",
+    "중만생 대과 생산"
+   ],
+   "historical_statistics": [
+    {
+     "metric": "국내 재식 비율",
+     "value_percent": 81.5,
+     "reference_year": 2007,
+     "warning": "현재 비율이 아닌 과거 통계"
+    }
+   ],
+   "selection_conditions": [
+    "전국 적응성이 높은 대표 품종을 원하는 경우",
+    "따뜻하고 비옥한 양토를 확보한 경우",
+    "수분수와 인공수분 체계를 갖출 수 있는 경우"
+   ],
+   "key_warnings": [
+    "꽃가루가 거의 없어 수분수 필수",
+    "개화기 늦서리 피해 대비",
+    "검은별무늬병에 약함",
+    "성목기 과도한 수세와 강전정 주의"
+   ],
+   "growth_period_days": {
+    "metric": "만개~수확 일수(만개후일수)",
+    "min": 155,
+    "max": 165,
+    "confidence": "불확실(간접 역산치, 공식 실측 자료 미확인)",
+    "note": "학술논문(Predicting Harvest Date of 'Niitaka' Pear by Using Full Bloom Date and Growing Season Weather)이 2000~2010년 평균 만개일을 4월 19일로 제시하고 과실 생육 측정을 만개 후 160일 시점까지 수행했으나, 160일이 정확히 수확일이라고 명시하지는 않았다. 화산(신화의 교배모본, '만개 후 150일 수확, 신고보다 개화 2~3일 늦고 숙기 7~10일 빠름')의 상대적 서술을 역산해 155~165일 범위로 추정했다.",
+    "source": "KoreaScience(JAKO201122350106118), 한국농어민신문(agrinet.co.kr idxno=174394), soil-farm.co.kr"
+   }
+  },
+  {
+   "id": "wonwhang",
+   "name_ko": "원황",
+   "name_hanja": "園黃",
+   "name_en": "Wonwhang",
+   "crop": "배",
+   "origin_and_breeding": {
+    "country": "대한민국",
+    "female_parent": "조생적",
+    "male_parent": "만삼길",
+    "cross_year": 1978,
+    "regional_adaptation_test_start_year": 1991,
+    "selected_and_named_year": 1994
+   },
+   "maturity": {
+    "class": "조생",
+    "harvest_date": "9월 1일",
+    "reference_region": "나주",
+    "comparison": "장십랑보다 약 15일 빠름",
+    "days_after_full_bloom": 125
+   },
+   "tree_characteristics": {
+    "vigor": "강함",
+    "growth_habit": "반개장형",
+    "shoot_characteristics": "새 가지가 가늘고 아래로 늘어지는 완곡형",
+    "axillary_flower_bud_formation": "양호",
+    "short_fruiting_spur_maintenance": "낮음"
+   },
+   "flowering_and_pollination": {
+    "pollen_mg_per_100_flowers": 244,
+    "pollen_amount": "풍부",
+    "pollinizer_potential": "높음",
+    "incompatible_cultivars": [
+     "만풍배"
+    ]
+   },
+   "fruit_characteristics": {
+    "weight_g": {
+     "min": 560,
+     "max": null
+    },
+    "soluble_solids_brix": {
+     "approx": 13.4
+    },
+    "size_class": "대과"
+   },
+   "recommended_environment": {
+    "soil": [
+     "관수와 배수가 가능한 토양"
+    ],
+    "regional_adaptation": {
+     "southern_korea": "신고 출하 전 조기 출하용",
+     "central_korea": "추석 출하용"
+    }
+   },
+   "cultivation_management": [
+    "3년 이상 된 나무에는 장과지 전정법을 적용한다.",
+    "성숙기 가뭄과 과습을 피한다.",
+    "만개 후 약 125일의 적숙기를 기준으로 수확한다."
+   ],
+   "disease_and_pest_risks": [],
+   "physiological_disorders": [
+    {
+     "name": "과심갈변",
+     "causes": [
+      "성숙기 가뭄",
+      "성숙기 과습",
+      "급격한 토양수분 변화"
+     ],
+     "management": [
+      "관수 조절",
+      "배수 개선",
+      "토양수분 일정 유지"
+     ]
+    }
+   ],
+   "harvest_and_storage": {
+    "harvest_guidance": "나주 기준 9월 1일 또는 만개 후 약 125일",
+    "late_harvest_effect": "저장력이 급격히 감소",
+    "storage_days_room_temperature": null,
+    "storage_ability": "적기 수확이 중요"
+   },
+   "regional_and_market_use": [
+    "남부 지방 조기 출하",
+    "중부 지방 추석 출하",
+    "대과·고당도 조생 배"
+   ],
+   "selection_conditions": [
+    "신고보다 빠른 출하를 원하는 경우",
+    "남부 조기 출하 또는 중부 추석 출하를 계획하는 경우",
+    "장과지 전정과 정밀한 수분 관리가 가능한 경우"
+   ],
+   "key_warnings": [
+    "만풍배와 교배 불친화",
+    "단과지 유지성이 낮아 장과지 전정 필요",
+    "성숙기 가뭄·과습 시 과심갈변 위험",
+    "만개 후 약 125일 적숙기 준수",
+    "늦은 수확 시 저장성 급감"
+   ],
+   "growth_period_days": {
+    "metric": "만개~수확 일수(만개후일수)",
+    "min": 125,
+    "max": 125,
+    "confidence": "보통(기존 값 유지, 독립적인 1차 출처로 재검증은 못했으나 반증 자료도 없음)",
+    "note": "나주 기준 만개 후 125일. maturity.days_after_full_bloom과 동일한 값이다.",
+    "source": "기존 데이터"
+   }
+  },
+  {
+   "id": "sinhwa",
+   "name_ko": "신화",
+   "name_hanja": "新華",
+   "name_en": "Sinhwa",
+   "crop": "배",
+   "origin_and_breeding": {
+    "country": "대한민국",
+    "female_parent": "신고",
+    "male_parent": "화산",
+    "cross_year": 1995,
+    "first_selected_year": 2003,
+    "named_year": 2009,
+    "seedling_distribution_start_year": 2013
+   },
+   "maturity": {
+    "class": "중생",
+    "harvest_date": "9월 15일",
+    "reference_region": "나주",
+    "comparison": [
+     "원황보다 약 15일 늦음",
+     "신고보다 15일 이상 빠름"
+    ]
+   },
+   "tree_characteristics": {
+    "vigor": "강함",
+    "growth_habit": "반개장형",
+    "shoot_characteristics": "신초 발생이 좋음",
+    "short_fruiting_spur_formation": "양호",
+    "fruit_set": "양호",
+    "yield_potential": "높은 편"
+   },
+   "flowering_and_pollination": {
+    "pollen_amount": "적음",
+    "pollinizer_potential": "단일 수분수로 활용하기 어려움",
+    "pollinizer_required": true,
+    "artificial_pollination": "권장",
+    "poor_pollination_effect": "수정 불량 시 과경부에 골이 생길 수 있음"
+   },
+   "fruit_characteristics": {
+    "weight_g": {
+     "approx": 630
+    },
+    "soluble_solids_brix": {
+     "approx": 13.0
+    },
+    "size_class": "중대과",
+    "taste_note": "식미 우수"
+   },
+   "recommended_environment": {
+    "soil": [
+     "토양수분을 일정하게 유지할 수 있는 토양"
+    ],
+    "regional_adaptation": "추석이 9월 중순 이후인 해의 출하에 적합"
+   },
+   "cultivation_management": [
+    "연차가 다른 꽃눈을 정리해 과실 균일도를 높인다.",
+    "수분수 확보와 인공수분으로 결실을 안정시킨다.",
+    "유목기 만개 후 60~70일 동안 토양수분 변화를 줄인다.",
+    "꼬마배나무이를 정기적으로 예찰한다."
+   ],
+   "disease_and_pest_risks": [
+    {
+     "name": "검은무늬병",
+     "type": "disease",
+     "resistance": "저항성"
+    },
+    {
+     "name": "검은별무늬병",
+     "type": "disease",
+     "resistance": "비교적 강함"
+    },
+    {
+     "name": "꼬마배나무이",
+     "type": "pest",
+     "risk_level": "발생에 유의"
+    }
+   ],
+   "physiological_disorders": [
+    {
+     "name": "과경부 골",
+     "causes": [
+      "수정 불량"
+     ],
+     "management": [
+      "수분수 확보",
+      "인공수분",
+      "개화기 결실 관리"
+     ]
+    },
+    {
+     "name": "유목기 열과",
+     "risk_period": "만개 후 60~70일, 대체로 6월 하순",
+     "causes": [
+      "급격한 토양수분 변화"
+     ],
+     "management": [
+      "관수와 배수 관리",
+      "토양수분 일정 유지"
+     ]
+    },
+    {
+     "name": "과실 균일도 저하",
+     "causes": [
+      "연차가 다른 꽃눈의 혼재"
+     ],
+     "management": [
+      "적절한 꽃눈 정리"
+     ]
+    }
+   ],
+   "harvest_and_storage": {
+    "harvest_guidance": "나주 기준 9월 15일 전후에 과실 성숙도를 함께 확인",
+    "storage_days_room_temperature": {
+     "min": 30,
+     "max": 50
+    },
+    "storage_ability": "좋은 편"
+   },
+   "regional_and_market_use": [
+    "원황과 신고 사이의 중생 출하",
+    "추석이 늦은 해의 선물용 배",
+    "친환경 재배 후보 품종"
+   ],
+   "selection_conditions": [
+    "원황보다 늦고 신고보다 빠른 출하 시기를 원하는 경우",
+    "늦은 추석용 중대과를 생산하려는 경우",
+    "꽃눈 정리와 결실 관리를 세밀하게 수행할 수 있는 경우"
+   ],
+   "key_warnings": [
+    "꽃가루가 적어 단일 수분수로 부적합",
+    "수정 불량 시 과경부 골 발생",
+    "연차가 다른 꽃눈 정리 필요",
+    "유목기 만개 후 60~70일 열과 주의",
+    "꼬마배나무이 예찰 필요"
+   ],
+   "growth_period_days": {
+    "metric": "만개~수확 일수(만개후일수, 간접 추정)",
+    "min": 145,
+    "max": 150,
+    "confidence": "불확실(간접 추정치)",
+    "note": "직접적인 만개후일수 자료를 확인하지 못했다. 신고의 추정 만개후일수(약 155~165일, 만개일 4월 19일 가정)와 나주 기준 수확일(9월 15일)을 이용해 역산한 값으로, 만개일이 신고와 동일하다는 가정을 전제로 하므로 신뢰도가 낮다.",
+    "source": "농업인신문(nongupin.co.kr idxno=200426) 상대비교 서술, KoreaScience 신고 만개일 자료 기반 역산"
+   }
+  }
+ ],
+ "llm_response_guidelines": [
+  "신고·원황·신화는 각각 개별 배 품종으로 표현한다.",
+  "2007년 신고 재식 비율을 현재 통계처럼 사용하지 않는다.",
+  "나주 기준 숙기와 수확일은 해당 지역의 기준값이라고 설명한다.",
+  "개화기와 수확일은 지역과 연도별 기상에 따라 달라질 수 있다고 안내한다.",
+  "수분수 추천 시 개화기 중복과 교배친화성을 함께 확인하도록 안내한다.",
+  "원황과 만풍배의 교배 불친화성을 수분 계획에 반영한다.",
+  "신고는 꽃가루가 거의 없고 신화는 꽃가루가 적다는 점을 구분한다.",
+  "원황의 만개 후 125일은 적숙기 참고값이며 전국 공통 절대값으로 사용하지 않는다.",
+  "신화의 상온 저장 30~50일은 사용자 제공 원문에 따른 값으로 표현한다.",
+  "병해충 방제는 현재 등록 약제와 안전사용기준 확인을 전제로 안내한다."
+ ]
+}

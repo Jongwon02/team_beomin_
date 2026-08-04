@@ -12,7 +12,9 @@
     { "source": "/api/news/:crop", "destination": "/api/news?crop=:crop" },
     { "source": "/api/weather/:province", "destination": "/api/weather?province=:province" },
     { "source": "/api/weekly/:region", "destination": "/api/weekly?region=:region" },
-    { "source": "/api/crop-score/:crop", "destination": "/api/crop_score?crop=:crop" }
+    { "source": "/api/crop-score/:crop", "destination": "/api/crop_score?crop=:crop" },
+    { "source": "/api/cultivar-score/:crop", "destination": "/api/cultivar_score?crop=:crop" },
+    { "source": "/api/cultivars/:crop", "destination": "/api/cultivars?crop=:crop" }
   ],
   "headers": [
     {

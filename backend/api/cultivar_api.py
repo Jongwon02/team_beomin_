@@ -13,6 +13,7 @@ import re
 import time
 from pathlib import Path
 
+import cultivar_conditions
 import cultivar_data
 import cultivar_fit
 
@@ -36,6 +37,13 @@ def cultivars_payload(crop):
         gd = v["growth_days"]
         days = (f"{gd['min']}~{gd['max']}일" if gd.get("max") else
                 (f"{gd['min']}일 이상" if gd.get("min") else None))
+        # 과수는 파종~수확 일수가 없다. 대신 만개후일수를 쓰되 그것이 만개 기준임을
+        # 문구에 박아 둔다 - '188일'만 보이면 파종 후 188일로 읽힌다.
+        bloom = v.get("bloom_to_harvest")
+        if not days and bloom:
+            days = f"만개 후 {bloom['min']}~{bloom['max']}일"
+            if bloom.get("confidence") and not bloom["confidence"].startswith(("확실", "보통")):
+                days += " (추정)"
         out.append({
             "name": v["name"], "aliases": v["aliases"], "maturity": v["maturity"],
             "growth_days": days, "category": v["category"],
@@ -48,8 +56,11 @@ def cultivars_payload(crop):
         })
     return {
         "crop": crop, "count": len(out), "cultivars": out,
+        "unit": payload["unit"],
+        "scoring_mode": payload["scoring_mode"],
         "common_management": payload["common_management"],
-        "cautions": payload["dataset"].get("caution") or [],
+        "selection_guide": payload.get("selection_guide") or [],
+        "cautions": cultivar_data.dataset_cautions(crop),
         "source": payload["source_file"],
     }
 
@@ -67,7 +78,15 @@ def score_payload(crop, region, experience="beginner", crop_score=None):
     if hit and now - hit[0] < SCORE_TTL:
         payload = hit[1]
     else:
-        payload = cultivar_fit.score_cultivars(region, crop, experience=experience)
+        # 작물에 따라 엔진이 갈린다(cultivar_data.CROP_SCORING_MODE).
+        #   climate    감자 - 파종일을 훑는 기후 채점(cultivar_fit)
+        #   conditions 사과·배·오이·상추 - 데이터에 적힌 선택조건 기반(cultivar_conditions)
+        # 4작물을 기후 채점에 태우면 만개후일수가 생육일수로 읽혀 "재배 불가"가 찍히거나
+        # 품종이 전부 동점이 된다. 자세한 근거는 cultivar_conditions 모듈 도크스트링.
+        if cultivar_data.scoring_mode(crop) == cultivar_data.SCORING_CLIMATE:
+            payload = cultivar_fit.score_cultivars(region, crop, experience=experience)
+        else:
+            payload = cultivar_conditions.recommend(region, crop, experience=experience)
         if payload.get("status") == "matched":
             _score_cache[key] = (now, payload)
 
