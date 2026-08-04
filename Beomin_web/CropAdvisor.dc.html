@@ -1643,9 +1643,14 @@ const LEVEL_META = {
 
 // /api/crop-score-normal(climate_normal_score.py) 총점 등급 - 백엔드 grade_of()와
 // 같은 경계(80/60/40)를 프론트에서도 씀(총점만 오고 등급 문자열은 안 내려주므로).
+// bg는 카드 헤더 띠 + 배지 배경, color는 순위 동그라미 배경(흰 글씨)·점수 숫자에 쓴다.
+// ⚠️ 우수(#E7F0E4)와 양호(#E4F1E6)가 채널당 1~3 차이라 사실상 같은 색으로 보였다.
+// 네 등급이 한 화면에 나란히 놓이므로 "진한 초록(우수) → 옅은 연두(양호) → 크림
+// 주황(주의) → 흐린 분홍(위험)"으로 명도가 단계적으로 밝아지게 잡아, 색상뿐 아니라
+// 명도만으로도 순위가 읽히게 했다(우수가 가장 진해 눈에 먼저 들어옴).
 const NORMAL_GRADE_META = {
-  good:    { label: '우수', bg: '#E7F0E4', color: '#2F5D42' },
-  normal:  { label: '양호', bg: '#E4F1E6', color: '#2F7A44' },
+  good:    { label: '우수', bg: '#CFE4D2', color: '#245A3C' },
+  normal:  { label: '양호', bg: '#EDF4E6', color: '#477A40' },
   caution: { label: '주의', bg: '#FBE8D6', color: '#8A5A22' },
   bad:     { label: '위험', bg: '#F3E2DC', color: '#B5482F' },
 };
@@ -1799,10 +1804,18 @@ function varGuidanceOf(varName, score, clusterId, cropName) {
   if (!cropName) return '';
   const advice = VAR_TIER_ADVICE[varName];
   if (!advice) return '';
+  const grade = normalGradeOf(score);
+  const tip = advice[grade].split('{c}').join(cropName);
   const fact = (typeof clusterId === 'number' && CLUSTER_VAR_FACT[clusterId])
-    ? (CLUSTER_VAR_FACT[clusterId][varName] || '') : '';
-  const tip = advice[normalGradeOf(score)].split('{c}').join(cropName);
-  return fact ? (fact + ' ' + tip) : tip;
+    ? CLUSTER_VAR_FACT[clusterId][varName] : null;
+  if (!fact) return tip;
+  // 지역 사실과 이 작물 기준 점수의 방향이 엇갈리면 연결어로 이어준다 - 안 그러면
+  // "볕이 가장 적어요. 볕이 충분해요."처럼 모순돼 보인다(CLUSTER_VAR_FACT의 tone 주석 참고).
+  const scoreIsGood = (grade === 'good' || grade === 'normal');
+  let bridge = '';
+  if (fact.tone === 'minus' && scoreIsGood) bridge = '그래도 ';
+  else if (fact.tone === 'plus' && !scoreIsGood) bridge = '다만 ';
+  return fact.s + ' ' + bridge + tip;
 }
 
 // 클러스터(지역) × 작물 코멘트. CROP_ZONE(예전 5권역 방식, 실시간 점수가 없을 때만 쓰는
