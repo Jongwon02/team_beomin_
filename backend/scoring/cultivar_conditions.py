@@ -267,9 +267,15 @@ def _cultivation_hint(variety):
     return ""
 
 
-def _reasons(variety, frost_reasons):
-    """카드에 보여줄 근거. 데이터에 적힌 문장을 그대로 쓴다(새로 쓰지 않는다)."""
-    out = list(frost_reasons)
+def _reasons(variety, region_reasons):
+    """카드에 보여줄 근거. 데이터에 적힌 문장을 그대로 쓴다(새로 쓰지 않는다).
+
+    selection_conditions가 1순위지만 **사과는 이 필드가 null이다**(상추·오이·배·감자만
+    갖고 있다). 그래서 사과가 실제로 가진 서술로 물러난다 - 용도 → 저장성 → 과실 특징.
+    이 폴백이 없으면 착색 정보가 주의로 올라간 품종(홍로)은 근거 줄이 통째로 비어
+    카드에 품종명과 경고만 남는다.
+    """
+    out = list(region_reasons)
     for cond in variety.get("selection_conditions") or []:
         if isinstance(cond, str) and cond.strip():
             out.append(cond.strip())
@@ -279,6 +285,18 @@ def _reasons(variety, frost_reasons):
                 out.append(str(text).strip())
     if variety.get("beginner_reason"):
         out.append(str(variety["beginner_reason"]).strip())
+
+    if not out:
+        uses = [str(u).strip() for u in (variety.get("primary_use") or []) if u]
+        if uses:
+            out.append("주로 " + " · ".join(uses[:3]) + "에 쓰여요")
+        storage = variety.get("storage") or {}
+        ability = storage.get("ability")
+        if ability:
+            cold = storage.get("cold_storage_days_approx")
+            out.append(f"저장성 {ability}" + (f" (냉장 약 {cold}일)" if cold else ""))
+        if variety.get("headline"):
+            out.append(f"과실 특징: {variety['headline']}")
     return out[:4]
 
 

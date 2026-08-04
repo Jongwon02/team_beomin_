@@ -324,6 +324,15 @@ _HEADLINE_SOURCES = (
 _COMMON_ENV_KEYS = ("environment", "recommended_environment")
 
 
+def _first_dict(raw, keys):
+    """주어진 키들 중 앞에서 처음 나오는 dict. 없으면 {}."""
+    for k in keys:
+        v = raw.get(k)
+        if isinstance(v, dict) and v:
+            return v
+    return {}
+
+
 def _first_text(v):
     """문자열이면 그대로, 리스트면 앞 2개를 이어 붙인다."""
     if isinstance(v, str) and v.strip():
@@ -471,8 +480,10 @@ def _normalize_variety(crop, raw, std, common_env=None):
 
     gd = _growth_days(raw.get("growth_period_days"))
     disorders = raw.get("physiological_disorders") or []
-    storage = raw.get("storage_and_sales") or {}
-    harvest = raw.get("harvest") or {}
+    # 저장 정보가 담긴 키가 작물마다 다르다: 감자·상추 storage_and_sales / 사과 storage
+    # / 배 harvest_and_storage. 앞에서 찾은 것을 쓴다.
+    storage = _first_dict(raw, ("storage_and_sales", "storage", "harvest_and_storage"))
+    harvest = _first_dict(raw, ("harvest", "harvest_and_storage"))
     tuber = raw.get("tuber_characteristics") or {}
 
     name = raw.get("name_ko") or raw.get("id")
@@ -509,7 +520,8 @@ def _normalize_variety(crop, raw, std, common_env=None):
         # ── 화면·챗봇에 그대로 넘기는 서술 ──
         "headline": _headline(raw),
         "tuber": tuber,
-        "primary_use": raw.get("primary_use") or [],
+        # 용도 키도 작물마다 다르다: 감자·상추 primary_use / 사과 market_use.
+        "primary_use": raw.get("primary_use") or raw.get("market_use") or [],
         "soil_type": env.get("soil_type") or [],
         "caution_soil": env.get("caution_soil") or [],
         "regional_notes": env.get("regional_notes"),
