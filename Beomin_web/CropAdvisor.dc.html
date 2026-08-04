@@ -12,14 +12,19 @@
 <x-dc>
 <helmet>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+  <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" as="style" crossorigin="" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
   <link rel="icon" type="image/png" href="uploads/logo.png">
   <title>안농 · 초보 귀농인 작물 도우미</title>
   <script src="./image-slot.js"></script>
   <style>
     *{box-sizing:border-box;}
     body{margin:0;}
+    html{scroll-behavior:smooth;}
+    .op-section{flex:0 0 auto;}
+    .op-track{transition:transform 1.1s cubic-bezier(.16,.84,.24,1);transform:translateY(0);}
+    .op-track.at-map{transform:translateY(calc(105px - 100vh));}
+    @keyframes tossBounce{0%,100%{transform:translateY(0);opacity:.55;}50%{transform:translateY(8px);opacity:1;}}
     ::selection{background:#D9EFE0;}
     @keyframes tractorDrive {
       0% { transform: translateX(0) scaleX(1); }
@@ -372,27 +377,25 @@
   <header style="position:sticky;top:0;z-index:50;background:#FBF7EFEE;borderBottom:1px solid #E4DCC8;">
     <div style="max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;gap:24px;">
       <div style="display:flex;align-items:center;gap:10px;cursor:pointer;" onClick="{{ goLanding }}">
-        <img src="uploads/logo.png" alt="안농 로고" style="width:72px;height:72px;object-fit:contain;" />
+        <img src="uploads/logo.png" alt="안농 로고" style="width:72px;height:72px;object-fit:contain;">
         <span style="font-family:'Gowun Batang',serif;font-size:24px;font-weight:700;color:#2F5D42;">안농</span>
         <span style="font-size:12px;color:#9A9080;">초보 귀농인 작물 도우미</span>
       </div>
       <nav style="display:flex;gap:4px;flex-wrap:wrap;">
-        <button type="button" style="{{ navStyles.home }}" onClick="{{ goHome }}">홈</button>
-        <button type="button" style="{{ navStyles.crops }}" onClick="{{ goCrops }}">작물 정보</button>
-        <button type="button" style="{{ navStyles.policy }}" onClick="{{ goPolicy }}">정책·지원금</button>
-        <button type="button" style="{{ navStyles.news }}" onClick="{{ goNews }}">농업 소식</button>
-        <button type="button" style="{{ navStyles.favorites }}" onClick="{{ goFavorites }}">프로필<sc-if value="{{ hasMyFarm }}"> · {{ myFarm.cropEmoji }}{{ myFarm.crop }}</sc-if></button>
+        <button type="button" style="{{ navStyles.home }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goHome }}">지역정보</button>
+        <button type="button" style="{{ navStyles.crops }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goCrops }}">작물 정보</button>
+        <button type="button" style="{{ navStyles.policy }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goPolicy }}">정책·지원금</button>
+        <button type="button" style="{{ navStyles.news }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goNews }}">농업 소식</button>
+        <button type="button" style="{{ navStyles.favorites }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goFavorites }}">프로필<sc-if value="{{ hasMyFarm }}"> · {{ myFarm.cropEmoji }}{{ myFarm.crop }}</sc-if></button>
 
         <!-- 로그인 상태 버튼. 로그인 전에는 '로그인', 후에는 이메일 아이디를 보여준다.
              회원가입을 강제하지 않는다 - 익명으로도 모든 기능을 쓸 수 있고, 가입하면
              그때까지 저장한 내용이 같은 계정으로 그대로 넘어간다. -->
         <sc-if value="{{ signedOut }}">
-          <button type="button" onClick="{{ openLogin }}"
-            style="margin-left:6px;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;color:#2F5D42;background:transparent;border:1px solid #CFC4A8;cursor:pointer;">로그인</button>
+          <button type="button" onClick="{{ openLogin }}" style="margin-left:6px;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;color:#2F5D42;background:transparent;border:1px solid #CFC4A8;cursor:pointer;">로그인</button>
         </sc-if>
         <sc-if value="{{ signedIn }}">
-          <button type="button" onClick="{{ openAuthPanel }}" title="계정 보기"
-            style="margin-left:6px;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;color:#2F5D42;background:#EDF3EC;border:1px solid #CFE0D2;cursor:pointer;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authBtnLabel }}</button>
+          <button type="button" onClick="{{ openAuthPanel }}" title="계정 보기" style="margin-left:6px;padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;color:#2F5D42;background:#EDF3EC;border:1px solid #CFE0D2;cursor:pointer;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ authBtnLabel }}</button>
         </sc-if>
       </nav>
     </div>
@@ -400,8 +403,7 @@
     <sc-if value="{{ hasAuthNotice }}">
       <div style="max-width:1180px;margin:0 auto;padding:0 24px 12px;display:flex;align-items:center;gap:10px;">
         <div style="flex:1;background:#EDF3EC;border:1px solid #CFE0D2;border-radius:10px;padding:10px 14px;font-size:13px;color:#1F5132;">{{ authNotice }}</div>
-        <button type="button" onClick="{{ dismissNotice }}"
-          style="border:none;background:transparent;font-size:16px;color:#8A7F65;cursor:pointer;padding:4px 6px;">✕</button>
+        <button type="button" onClick="{{ dismissNotice }}" style="border:none;background:transparent;font-size:16px;color:#8A7F65;cursor:pointer;padding:4px 6px;">✕</button>
       </div>
     </sc-if>
   </header>
@@ -409,15 +411,12 @@
 
   <!-- ── 로그인 / 회원가입 / 계정 모달 ────────────────────────────────── -->
   <sc-if value="{{ authModalOpen }}">
-  <div onClick="{{ closeAuth }}"
-    style="position:fixed;left:0;top:0;right:0;bottom:0;z-index:100;background:rgba(43,38,32,.45);display:flex;align-items:center;justify-content:center;padding:20px;">
-    <div onClick="{{ stopClick }}"
-      style="width:100%;max-width:390px;background:#FBF7EF;border:1px solid #E4DCC8;border-radius:18px;box-shadow:0 12px 40px rgba(60,48,20,.28);padding:22px 24px 24px;box-sizing:border-box;">
+  <div onClick="{{ closeAuth }}" style="position:fixed;left:0;top:0;right:0;bottom:0;z-index:100;background:rgba(43,38,32,.45);display:flex;align-items:center;justify-content:center;padding:20px;">
+    <div onClick="{{ stopClick }}" style="width:100%;max-width:390px;background:#FBF7EF;border:1px solid #E4DCC8;border-radius:18px;box-shadow:0 12px 40px rgba(60,48,20,.28);padding:22px 24px 24px;box-sizing:border-box;">
 
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
         <span style="font-family:'Gowun Batang',serif;font-size:20px;font-weight:700;color:#2F5D42;">안농 계정</span>
-        <button type="button" onClick="{{ closeAuth }}"
-          style="border:none;background:transparent;font-size:18px;color:#8A7F65;cursor:pointer;padding:2px 6px;">✕</button>
+        <button type="button" onClick="{{ closeAuth }}" style="border:none;background:transparent;font-size:18px;color:#8A7F65;cursor:pointer;padding:2px 6px;">✕</button>
       </div>
 
       <!-- 이미 로그인한 상태: 계정 정보 + 로그아웃 -->
@@ -430,8 +429,7 @@
           <div style="font-size:13px;color:#8A7F65;line-height:1.6;">
             내 농장·체크리스트·인적사항이 이 계정에 저장돼요. 다른 기기에서 로그인하면 그대로 이어서 볼 수 있어요.
           </div>
-          <button type="button" onClick="{{ doLogout }}"
-            style="width:100%;padding:13px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;font-size:15px;font-weight:700;color:#B4462F;cursor:pointer;">로그아웃</button>
+          <button type="button" onClick="{{ doLogout }}" style="width:100%;padding:13px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;font-size:15px;font-weight:700;color:#B4462F;cursor:pointer;">로그아웃</button>
         </div>
       </sc-if>
 
@@ -451,26 +449,21 @@
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div>
             <label style="display:block;font-size:13px;font-weight:700;color:#2B2620;margin-bottom:6px;">이메일</label>
-            <input id="anong-auth-email" type="email" autocomplete="email" value="{{ authEmailVal }}" onChange="{{ onAuthEmail }}"
-              placeholder="예: farmer@example.com"
-              style="width:100%;font-size:14px;padding:11px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;color:#2B2620;box-sizing:border-box;" />
+            <input id="anong-auth-email" type="email" autocomplete="email" value="{{ authEmailVal }}" onChange="{{ onAuthEmail }}" placeholder="예: farmer@example.com" style="width:100%;font-size:14px;padding:11px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;color:#2B2620;box-sizing:border-box;">
           </div>
           <div>
             <label style="display:block;font-size:13px;font-weight:700;color:#2B2620;margin-bottom:6px;">비밀번호</label>
-            <input id="anong-auth-pw" type="password" autocomplete="current-password" value="{{ authPwVal }}" onChange="{{ onAuthPw }}"
-              placeholder="6자 이상"
-              style="width:100%;font-size:14px;padding:11px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;color:#2B2620;box-sizing:border-box;" />
+            <input id="anong-auth-pw" type="password" autocomplete="current-password" value="{{ authPwVal }}" onChange="{{ onAuthPw }}" placeholder="6자 이상" style="width:100%;font-size:14px;padding:11px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;color:#2B2620;box-sizing:border-box;">
           </div>
 
           <sc-if value="{{ hasAuthError }}">
             <div style="background:#FBEDE9;border:1px solid #F0CFC5;border-radius:10px;padding:10px 12px;font-size:13px;color:#B4462F;line-height:1.5;">{{ authError }}</div>
           </sc-if>
 
-          <button type="button" onClick="{{ submitAuth }}"
-            style="width:100%;margin-top:2px;padding:14px;border-radius:10px;border:none;background:#1F5132;font-size:15px;font-weight:700;color:#FFFFFF;cursor:pointer;">{{ authSubmitLabel }}</button>
+          <button type="button" onClick="{{ submitAuth }}" style="width:100%;margin-top:2px;padding:14px;border-radius:10px;border:none;background:#1F5132;font-size:15px;font-weight:700;color:#FFFFFF;cursor:pointer;">{{ authSubmitLabel }}</button>
 
           <div style="font-size:12px;color:#9A9080;line-height:1.6;text-align:center;">
-            로그인하지 않아도 모든 기능을 쓸 수 있어요.<br />계정을 만들면 다른 기기에서도 이어서 볼 수 있어요.
+            로그인하지 않아도 모든 기능을 쓸 수 있어요.<br>계정을 만들면 다른 기기에서도 이어서 볼 수 있어요.
           </div>
         </div>
       </sc-if>
@@ -483,49 +476,58 @@
        순서로 안내한다(홈 탭 자체가 지역·작물 선택을 겸하고 있어 별도 단계 없이 이어진다). -->
   <sc-if value="{{ isLanding }}">
   <main style="flex:1;display:flex;flex-direction:column;">
-    <section style="background:linear-gradient(180deg,#F3EEE0 0%,#FBF7EF 60%);padding:64px 24px 40px;">
+    <section style="background:linear-gradient(180deg,#F3EEE0 0%,#FBF7EF 60%);padding:64px 24px 40px;position:relative;">
       <div style="max-width:1180px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:40px;align-items:center;">
         <div>
           <p style="font-size:17px;font-weight:700;color:#2F5D42;letter-spacing:0.02em;margin:0 0 14px;">초보 귀농인을 위한 작물 도우미</p>
-          <h1 style="font-family:'Gowun Batang',serif;font-size:46px;line-height:1.35;font-weight:700;margin:0 0 20px;color:#2B2620;">어디서, 무엇을 심어야 할지<br/>막막하셨다면 안농과 함께</h1>
+          <h1 style="font-family:'Gowun Batang',serif;font-size:46px;line-height:1.35;font-weight:700;margin:0 0 20px;color:#2B2620;">어디서, 무엇을 심어야 할지<br>막막하셨다면 안농과 함께</h1>
           <p style="font-size:16px;line-height:1.8;color:#5A5245;margin:0 0 32px;max-width:46ch;">지역을 고르면 그 땅에 맞는 작물 적합도를 보여드리고, 나의 작물로 선택하면 재배 캘린더와 실시간 날씨·챗봇까지 이어서 챙겨드려요.</p>
           <div style="display:flex;gap:12px;flex-wrap:wrap;">
             <!-- 로그인 기록이 없는 사람(익명) - 로그인/회원가입 두 버튼을 보여준다. -->
             <sc-if value="{{ signedOut }}">
-              <button type="button" onClick="{{ openSignup }}" style="padding:16px 30px;border-radius:999px;border:none;background:#1F5132;color:#FFFFFF;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(31,81,50,0.25);">회원가입</button>
-              <button type="button" onClick="{{ openLogin }}" style="padding:16px 26px;border-radius:999px;border:1px solid #CFC4A8;background:transparent;color:#2F5D42;font-size:16px;font-weight:700;cursor:pointer;">로그인</button>
+              <button type="button" onClick="{{ goPickRegion }}" style="padding:16px 30px;border-radius:999px;border:none;background:#1F5132;color:#FFFFFF;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(31,81,50,0.25);transition:background .15s ease,box-shadow .15s ease,transform .15s ease;" style-hover="background:#164027;box-shadow:0 10px 24px rgba(31,81,50,0.35);transform:translateY(-1px);">게스트로 시작</button>
+              <button type="button" onClick="{{ openLogin }}" style="padding:16px 26px;white-space:nowrap;border-radius:999px;border:1px solid #CFC4A8;background:transparent;color:#2F5D42;font-size:16px;font-weight:700;cursor:pointer;transition:background .15s ease,border-color .15s ease,transform .15s ease;" style-hover="background:#F1EADA;border-color:#2F5D42;transform:translateY(-1px);">로그인/회원가입</button>
             </sc-if>
             <!-- 이전에 가입한 계정의 세션이 복원된 경우 - 다시 로그인/가입할 필요 없이 곧장 내 계획으로. -->
             <sc-if value="{{ signedIn }}">
-              <button type="button" onClick="{{ goFavorites }}" style="padding:16px 30px;border-radius:999px;border:none;background:#1F5132;color:#FFFFFF;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(31,81,50,0.25);">귀농일정 확인</button>
+              <button type="button" onClick="{{ goFavorites }}" style="padding:16px 30px;border-radius:999px;border:none;background:#1F5132;color:#FFFFFF;font-size:16px;font-weight:700;cursor:pointer;box-shadow:0 8px 20px rgba(31,81,50,0.25);transition:background .15s ease,box-shadow .15s ease,transform .15s ease;" style-hover="background:#164027;box-shadow:0 10px 24px rgba(31,81,50,0.35);transform:translateY(-1px);">귀농일정 확인</button>
             </sc-if>
           </div>
         </div>
-        <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;" />
+        <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;">
       </div>
     </section>
 
     <section style="max-width:1180px;margin:0 auto;padding:8px 24px 72px;width:100%;box-sizing:border-box;">
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
-        <div style="background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;">
-          <span style="font-size:30px;">📍</span>
-          <span style="font-size:16px;font-weight:700;color:#2B2620;">지역 맞춤 추천</span>
+        <div style="position:relative;background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;cursor:pointer;" onMouseEnter="{{ cardEnter.a }}" onMouseLeave="{{ cardLeave }}" onClick="{{ goPickRegion }}">
+          <span style="font-size:30px;">🗺️</span>
+          <span style="font-size:16px;font-weight:700;color:#2B2620;">지역 선택</span>
           <span style="font-size:13px;line-height:1.7;color:#8A7F65;">지도에서 지역을 고르면 그 땅에 맞는 작물 적합도를 실측 데이터로 보여드려요.</span>
+          <div style="position:absolute;inset:0;border-radius:16px;background:#2F5D42;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:20px;font-weight:700;letter-spacing:0.02em;pointer-events:none;transition:opacity .18s ease;opacity:{{ cardOv.a }};">지역 선택</div>
         </div>
-        <div style="background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;">
-          <span style="font-size:30px;">🗓</span>
-          <span style="font-size:16px;font-weight:700;color:#2B2620;">농사 캘린더</span>
-          <span style="font-size:13px;line-height:1.7;color:#8A7F65;">나의 작물을 고르면 심는 시기부터 수확까지, 할 일을 캘린더로 정리해드려요.</span>
-        </div>
-        <div style="background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;">
-          <span style="font-size:30px;">🌦</span>
-          <span style="font-size:16px;font-weight:700;color:#2B2620;">실시간 날씨 대비</span>
-          <span style="font-size:13px;line-height:1.7;color:#8A7F65;">7일 예보를 보고 미리 준비할 일을 알려드리고, 챗봇으로 바로 물어볼 수 있어요.</span>
-        </div>
-        <div style="background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;">
-          <span style="font-size:30px;">🏛</span>
+        
+        <div style="position:relative;background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;cursor:pointer;" onMouseEnter="{{ cardEnter.b }}" onMouseLeave="{{ cardLeave }}" onClick="{{ goCrops }}">
+          <span style="font-size:30px;">🍎</span>
+          <span style="font-size:16px;font-weight:700;color:#2B2620;">작물 정보</span>
+          <span style="font-size:13px;line-height:1.7;color:#8A7F65;">원하는 작물을 클릭하면 그 작물의 재배에 필요한 소식과 정보를 알 수 있어요.</span>
+          <div style="position:absolute;inset:0;border-radius:16px;background:#2F5D42;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:20px;font-weight:700;letter-spacing:0.02em;pointer-events:none;transition:opacity .18s ease;opacity:{{ cardOv.b }};">작물 정보<br></div>
+        </div><div style="position:relative;background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;cursor:pointer;" onMouseEnter="{{ cardEnter.c }}" onMouseLeave="{{ cardLeave }}" onClick="{{ goPolicy }}">
+          <span style="font-size:30px;">🏛️</span>
           <span style="font-size:16px;font-weight:700;color:#2B2620;">정책·지원금 진단</span>
           <span style="font-size:13px;line-height:1.7;color:#8A7F65;">인적사항을 입력하면 받을 수 있는 귀농 정책·지원금을 바로 찾아드려요.</span>
+          <div style="position:absolute;inset:0;border-radius:16px;background:#2F5D42;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:20px;font-weight:700;letter-spacing:0.02em;pointer-events:none;transition:opacity .18s ease;opacity:{{ cardOv.c }};"><span style="letter-spacing: 0.02em;">정책 · 지원금 진단</span></div>
+        </div>
+        <div style="position:relative;background:#FFFDF7;border:1px solid #E9E0CC;border-radius:16px;padding:26px 22px;display:flex;flex-direction:column;gap:10px;cursor:pointer;" onMouseEnter="{{ cardEnter.d }}" onMouseLeave="{{ cardLeave }}" onClick="{{ openNewsCard }}">
+          <span style="font-size:30px;">{{ newsCardEmoji }}</span>
+          <span style="font-size:16px;font-weight:700;color:#2B2620;">{{ newsCardCropTitle }}</span>
+          <sc-if value="{{ hasNewsCardItem }}">
+            <span style="font-size:13px;line-height:1.7;color:#8A7F65;">{{ newsCardDesc }}</span>
+          </sc-if>
+          <sc-if value="{{ noNewsCardItem }}">
+            <span style="font-size:13px;line-height:1.7;color:#8A7F65;">최신 소식을 준비 중이에요.</span>
+          </sc-if>
+          <div style="position:absolute;inset:0;border-radius:16px;background:#2F5D42;display:flex;align-items:center;justify-content:center;color:#FFFFFF;font-size:20px;font-weight:700;letter-spacing:0.02em;pointer-events:none;transition:opacity .18s ease;opacity:{{ cardOv.d }};">{{ newsCardCropTitle }}</div>
         </div>
       </div>
     </section>
@@ -535,62 +537,66 @@
   <!-- HOME -->
   <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
   <main>
-    <section style="max-width:1180px;margin:0 auto;padding:56px 24px 28px;">
-      <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:32px;align-items:center;">
-        <div style="padding-left:clamp(0px,8vw,60px);">
-          <p style="font-size:17px;font-weight:700;color:#2F5D42;letter-spacing:0.02em;margin:0 0 14px;">귀농 초보자와 함께하는 첫 걸음</p>
-          <h1 style="font-family:'Gowun Batang',serif;font-size:44px;line-height:1.35;font-weight:700;margin:0 0 20px;color:#2B2620;">어디서, 무엇을 심어야 할지<br/>막막하셨다면</h1>
-          <p style="font-size:17px;line-height:1.7;color:#5A5245;margin:0;">지도에서 관심 있는 지역을 클릭해보세요.<br/>기후와 토양에 맞는 오이·배·사과·감자·상추 재배 정보를 알려드릴게요.</p>
-        </div>
-        <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;" />
-      </div>
-    </section>
-
-    <!-- 지역 선택 지도 + 작물 추천 (구 '지역별 추천' 탭 기능을 홈으로 통합).
-         지도는 히어로(1180px)보다 넓은 1600px 컨테이너에 전체폭으로 크게 띄운다. -->
-    <section style="max-width:1600px;margin:0 auto;padding:0 24px 80px;">
-      <div style="position:relative;border-radius:16px;overflow:hidden;border:1px solid #E3DBC6;box-shadow:0 2px 12px rgba(60,48,20,.06);height:calc(100vh - 190px);min-height:680px;">
-        <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
-
-        <!-- 내가 찾아본 지역 기록. 지도 자체의 '지역 선택' 패널이 좌측 상단(iframe 안
-             left:16/top:16)을 쓰고 있어 겹치므로 우측 상단에 둔다. 지도 확대/축소 버튼도
-             우측 상단(TOP_RIGHT)에 있어서 그 아래로 내려 배치한다. -->
-        <sc-if value="{{ hasRegionLog }}">
-        <div style="position:absolute;right:16px;top:70px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;">
-          <sc-if value="{{ regionLogOpen }}">
-            <div style="width:250px;box-sizing:border-box;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:14px;box-shadow:0 4px 14px rgba(60,48,20,.18);display:flex;flex-direction:column;overflow:hidden;">
-              <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px 12px;border-bottom:1px solid #EFE7D5;">
-                <span style="font-size:14px;font-weight:700;color:#2B2620;">🔎 내가 찾아본 지역</span>
-                <button type="button" onClick="{{ toggleRegionLog }}" title="접기"
-                  style="border:none;background:transparent;font-size:13px;color:#8A7F65;cursor:pointer;padding:2px 4px;">▲</button>
-              </div>
-              <div style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;max-height:320px;overflow-y:auto;">
-                <sc-for list="{{ regionLogItems }}" as="g" hint-placeholder-count="4">
-                  <div onClick="{{ g.revisit }}" title="{{ g.dong }} 추천작물 다시 보기"
-                    style="display:flex;flex-direction:column;gap:1px;border:1px solid #EFE7D5;background:#FFFFFF;border-radius:10px;padding:8px 10px;cursor:pointer;">
-                    <span style="font-size:13px;font-weight:700;color:#2B2620;">{{ g.dong }}</span>
-                    <span style="font-size:11px;color:#8A7F65;">{{ g.sub }}</span>
-                  </div>
-                </sc-for>
-              </div>
-              <button type="button" onClick="{{ clearRegionLog }}"
-                style="border:none;border-top:1px solid #EFE7D5;background:transparent;font-size:12px;color:#8A7F65;cursor:pointer;padding:9px 12px;">기록 지우기</button>
+    <div id="onepage-wrap" style="position:relative;height:calc(100vh - 105px);overflow:hidden;">
+      <div class="op-track {{ atMapClass }}">
+        <section class="op-section" style="height:calc(100vh - 105px);max-width:1180px;margin:0 auto;padding:0 24px;display:flex;align-items:center;position:relative;">
+          
+          <sc-if value="{{ showFirstVisitHero }}">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:32px;align-items:center;width:100%;position:relative;z-index:1;">
+            <div style="padding-left:clamp(0px,8vw,60px);">
+              <p style="font-size:20px;font-weight:700;color:#2F5D42;letter-spacing:0.02em;margin:0 0 14px;">귀농 초보자와 함께하는 첫 걸음</p>
+              <h1 style="font-family:'Gowun Batang',serif;font-size:54px;line-height:1.35;font-weight:700;margin:0 0 20px;color:#2B2620;">어디서, 무엇을 심어야 할지<br>막막하셨다면</h1>
+              <p style="font-size:20px;line-height:1.7;color:#5A5245;margin:0;">지역을 고르면 그 땅에 맞는 작물 적합도를 보여드리고, 나의 작물로 선택하면 재배 캘린더와 실시간 날씨, 챗봇까지 이어서 챙겨드려요!</p>
             </div>
+            <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;">
+          </div>
           </sc-if>
-          <sc-if value="{{ regionLogClosed }}">
-            <button type="button" onClick="{{ toggleRegionLog }}" title="내가 찾아본 지역 보기"
-              style="display:flex;align-items:center;gap:6px;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:999px;box-shadow:0 3px 10px rgba(60,48,20,.16);font-size:13px;font-weight:700;color:#2B2620;padding:8px 13px;cursor:pointer;">
-              🔎 내가 찾아본 지역
-              <span style="min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#2F5D42;color:#FBF7EF;font-size:11px;display:flex;align-items:center;justify-content:center;">{{ regionLogCount }}</span>
-            </button>
-          </sc-if>
-        </div>
-        </sc-if>
+          <div onClick="{{ scrollToMap }}" title="지도로 이동" style="position:absolute;left:0;right:0;bottom:0;height:64px;cursor:pointer;display:flex;align-items:flex-end;justify-content:center;padding-bottom:20px;">
+            <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#2F5D42" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="animation:tossBounce 1.6s ease-in-out infinite;"><path d="M6 9l6 6 6-6"></path></svg>
+          </div>
+        </section>
+
+        <section id="ca-map-section" class="op-section" style="height:calc(100vh - 105px);max-width:1600px;margin:0 auto;padding:16px 24px;display:flex;flex-direction:column;">
+          <div style="position:relative;width:100%;flex:1;min-height:0;border-radius:16px;overflow:hidden;border:1px solid #E3DBC6;box-shadow:0 2px 12px rgba(60,48,20,.06);">
+            <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
+
+            <sc-if value="{{ hasRegionLog }}">
+            <div style="position:absolute;right:16px;top:70px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;">
+              <sc-if value="{{ regionLogOpen }}">
+                <div style="width:250px;box-sizing:border-box;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:14px;box-shadow:0 4px 14px rgba(60,48,20,.18);display:flex;flex-direction:column;overflow:hidden;">
+                  <div style="display:flex;align-items:center;justify-content:space-between;gap:6px;padding:11px 12px;border-bottom:1px solid #EFE7D5;">
+                    <span style="font-size:14px;font-weight:700;color:#2B2620;">🔎 내가 찾아본 지역</span>
+                    <button type="button" onClick="{{ toggleRegionLog }}" title="접기" style="border:none;background:transparent;font-size:13px;color:#8A7F65;cursor:pointer;padding:2px 4px;">▲</button>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:6px;padding:10px 12px;max-height:320px;overflow-y:auto;">
+                    <sc-for list="{{ regionLogItems }}" as="g" hint-placeholder-count="4">
+                      <div onClick="{{ g.revisit }}" title="{{ g.dong }} 추천작물 다시 보기" style="display:flex;flex-direction:column;gap:1px;border:1px solid #EFE7D5;background:#FFFFFF;border-radius:10px;padding:8px 10px;cursor:pointer;">
+                        <span style="font-size:13px;font-weight:700;color:#2B2620;">{{ g.dong }}</span>
+                        <span style="font-size:11px;color:#8A7F65;">{{ g.sub }}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <button type="button" onClick="{{ clearRegionLog }}" style="border:none;border-top:1px solid #EFE7D5;background:transparent;font-size:12px;color:#8A7F65;cursor:pointer;padding:9px 12px;">기록 지우기</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{ regionLogClosed }}">
+                <button type="button" onClick="{{ toggleRegionLog }}" title="내가 찾아본 지역 보기" style="display:flex;align-items:center;gap:6px;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:999px;box-shadow:0 3px 10px rgba(60,48,20,.16);font-size:13px;font-weight:700;color:#2B2620;padding:8px 13px;cursor:pointer;">
+                  🔎 내가 찾아본 지역
+                  <span style="min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#2F5D42;color:#FBF7EF;font-size:11px;display:flex;align-items:center;justify-content:center;">{{ regionLogCount }}</span>
+                </button>
+              </sc-if>
+            </div>
+            </sc-if>
+            <div style="position:absolute;left:16px;bottom:14px;z-index:6;display:flex;align-items:center;gap:8px;font-size:13px;color:#5A5245;background:#FBF7EFE6;padding:6px 12px;border-radius:999px;box-shadow:0 2px 8px rgba(60,48,20,.1);">
+              <span style="width:10px;height:10px;border-radius:50%;background:#2F5D42;display:inline-block;"></span> 선택 가능 지역
+              <span style="width:10px;height:10px;border-radius:50%;background:#D97B3A;display:inline-block;margin-left:12px;"></span> 선택된 지역
+            </div>
+          </div>
+        </section>
       </div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
-        <span style="width:10px;height:10px;border-radius:50%;background:#2F5D42;display:inline-block;"></span> 선택 가능 지역
-        <span style="width:10px;height:10px;border-radius:50%;background:#D97B3A;display:inline-block;margin-left:12px;"></span> 선택된 지역
-      </div>
+    </div>
+
+    <div style="max-width:1600px;margin:0 auto;padding:0 24px 80px;">
     <sc-if value="{{ selectedRegion }}">
       <div id="region-recommend" style="margin-top:32px;background:#FFFFFF;border:1px solid #EAE2CE;border-radius:18px;padding:24px 30px;box-shadow:0 2px 10px rgba(60,48,20,.05);display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
         <div style="display:flex;flex-direction:column;gap:6px;">
@@ -633,29 +639,29 @@
             <div class="plow" aria-hidden="true">
               <!-- 트랙터가 지나간 뒤 솟아나는 작물들. 왼→오 주행(0~3.8초)에 5개,
                    되돌아오는 주행(4~7.8초)에 5개가 순서대로 튀어나온다. -->
-              <img class="plow-crop" src="uploads/crops/lettuce.png"  alt="" style="left:8%;margin-left:-25px;width:50px;animation-delay:0.87s;" />
-              <img class="plow-crop" src="uploads/crops/apple.png"    alt="" style="left:24%;margin-left:-27px;width:54px;animation-delay:1.43s;" />
-              <img class="plow-crop" src="uploads/crops/cucumber.png" alt="" style="left:40%;margin-left:-23px;width:46px;animation-delay:2.00s;" />
-              <img class="plow-crop" src="uploads/crops/pear.png"     alt="" style="left:56%;margin-left:-26px;width:52px;animation-delay:2.56s;" />
-              <img class="plow-crop" src="uploads/crops/potato.png"   alt="" style="left:72%;margin-left:-25px;width:50px;animation-delay:3.12s;" />
-              <img class="plow-crop" src="uploads/crops/apple.png"    alt="" style="left:88%;margin-left:-26px;width:52px;animation-delay:5.01s;" />
-              <img class="plow-crop" src="uploads/crops/potato.png"   alt="" style="left:64%;margin-left:-23px;width:46px;animation-delay:5.86s;" />
-              <img class="plow-crop" src="uploads/crops/lettuce.png"  alt="" style="left:48%;margin-left:-27px;width:54px;animation-delay:6.42s;" />
-              <img class="plow-crop" src="uploads/crops/pear.png"     alt="" style="left:32%;margin-left:-25px;width:50px;animation-delay:6.98s;" />
-              <img class="plow-crop" src="uploads/crops/cucumber.png" alt="" style="left:16%;margin-left:-25px;width:50px;animation-delay:7.55s;" />
+              <img class="plow-crop" src="uploads/crops/lettuce.png" alt="" style="left:8%;margin-left:-25px;width:50px;animation-delay:0.87s;">
+              <img class="plow-crop" src="uploads/crops/apple.png" alt="" style="left:24%;margin-left:-27px;width:54px;animation-delay:1.43s;">
+              <img class="plow-crop" src="uploads/crops/cucumber.png" alt="" style="left:40%;margin-left:-23px;width:46px;animation-delay:2.00s;">
+              <img class="plow-crop" src="uploads/crops/pear.png" alt="" style="left:56%;margin-left:-26px;width:52px;animation-delay:2.56s;">
+              <img class="plow-crop" src="uploads/crops/potato.png" alt="" style="left:72%;margin-left:-25px;width:50px;animation-delay:3.12s;">
+              <img class="plow-crop" src="uploads/crops/apple.png" alt="" style="left:88%;margin-left:-26px;width:52px;animation-delay:5.01s;">
+              <img class="plow-crop" src="uploads/crops/potato.png" alt="" style="left:64%;margin-left:-23px;width:46px;animation-delay:5.86s;">
+              <img class="plow-crop" src="uploads/crops/lettuce.png" alt="" style="left:48%;margin-left:-27px;width:54px;animation-delay:6.42s;">
+              <img class="plow-crop" src="uploads/crops/pear.png" alt="" style="left:32%;margin-left:-25px;width:50px;animation-delay:6.98s;">
+              <img class="plow-crop" src="uploads/crops/cucumber.png" alt="" style="left:16%;margin-left:-25px;width:50px;animation-delay:7.55s;">
               <div class="plow-soil"></div>
               <svg class="plow-tractor" viewBox="0 0 120 70">
-                <line x1="4" y1="60" x2="30" y2="48" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"/>
-                <line x1="4" y1="66" x2="30" y2="54" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"/>
-                <rect x="30" y="40" width="64" height="10" rx="2" fill="#2B2620"/>
-                <rect x="30" y="26" width="34" height="16" rx="3" fill="#4C8F5E"/>
-                <rect x="60" y="6" width="30" height="34" rx="6" fill="#2F5D42"/>
-                <rect x="66" y="11" width="12" height="10" rx="2" fill="#CFE7D6"/>
-                <rect x="84" y="0" width="6" height="10" rx="2" fill="#3A342A"/>
-                <circle cx="36" cy="48" r="16" fill="#2B2620"/>
-                <circle cx="36" cy="48" r="7" fill="#8B6444"/>
-                <circle cx="90" cy="54" r="10" fill="#2B2620"/>
-                <circle cx="90" cy="54" r="5" fill="#8B6444"/>
+                <line x1="4" y1="60" x2="30" y2="48" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"></line>
+                <line x1="4" y1="66" x2="30" y2="54" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"></line>
+                <rect x="30" y="40" width="64" height="10" rx="2" fill="#2B2620"></rect>
+                <rect x="30" y="26" width="34" height="16" rx="3" fill="#4C8F5E"></rect>
+                <rect x="60" y="6" width="30" height="34" rx="6" fill="#2F5D42"></rect>
+                <rect x="66" y="11" width="12" height="10" rx="2" fill="#CFE7D6"></rect>
+                <rect x="84" y="0" width="6" height="10" rx="2" fill="#3A342A"></rect>
+                <circle cx="36" cy="48" r="16" fill="#2B2620"></circle>
+                <circle cx="36" cy="48" r="7" fill="#8B6444"></circle>
+                <circle cx="90" cy="54" r="10" fill="#2B2620"></circle>
+                <circle cx="90" cy="54" r="5" fill="#8B6444"></circle>
               </svg>
             </div>
           </div>
@@ -668,7 +674,7 @@
                   <span style="{{ r.rankStyle }}">{{ r.rankLabel }}</span>
                   <sc-if value="{{ r.hasPhoto }}">
                     <div style="position:relative;flex:0 0 auto;">
-                      <img src="{{ r.photo }}" alt="{{ r.name }} 사진" loading="lazy" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                      <img src="{{ r.photo }}" alt="{{ r.name }} 사진" loading="lazy" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;">
                       <sc-if value="{{ r.hasMedal }}">
                         <span style="{{ r.medalStyle }}" title="적합도 {{ r.rankLabel }}">{{ r.medal }}</span>
                       </sc-if>
@@ -706,15 +712,14 @@
               </sc-if>
               <div style="display:flex;gap:8px;margin-top:12px;">
                 <button type="button" style="{{ r.pickStyle }}" onClick="{{ r.pick }}">{{ r.pickLabel }}</button>
-                <button type="button" onClick="{{ r.openDetail }}" title="{{ r.name }} 재배 정보와 이 지역 맞춤 정보 보기"
-                  style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+                <button type="button" onClick="{{ r.openDetail }}" title="{{ r.name }} 재배 정보와 이 지역 맞춤 정보 보기" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
               </div>
             </div>
           </sc-for>
         </div>
       </div>
     </sc-if>
-    </section>
+    </div>
   </main>
   </sc-if>
 
@@ -725,7 +730,7 @@
     <p style="font-size:14px;color:#6B6250;margin:0 0 12px;">농장 그림에서 궁금한 작물을 클릭하면 자세한 정보를 볼 수 있어요.</p>
 
     <div class="farm-scene">
-      <img src="uploads/farm_scene.png" alt="농장 전경 - 작물을 클릭하세요" />
+      <img src="uploads/farm_scene.png" alt="농장 전경 - 작물을 클릭하세요">
       <button type="button" class="crop-hotspot" style="left:4%;top:11%;width:28%;height:50%;" onClick="{{ sceneBae }}"><span class="hs-label">🍐 배</span></button>
       <button type="button" class="crop-hotspot" style="left:33%;top:28%;width:29%;height:44%;" onClick="{{ sceneOi }}"><span class="hs-label">🥒 오이</span></button>
       <button type="button" class="crop-hotspot" style="left:67%;top:9%;width:25%;height:54%;" onClick="{{ sceneApple }}"><span class="hs-label">🍎 사과</span></button>
@@ -736,16 +741,16 @@
 
   </main>
   <div class="fall-field" aria-hidden="true">
-    <img class="fall-item fi1" src="uploads/fall/apple.png" alt="" />
-    <img class="fall-item fi2" src="uploads/fall/lettuce.png" alt="" />
-    <img class="fall-item fi3" src="uploads/fall/cucumber.png" alt="" />
-    <img class="fall-item fi4" src="uploads/fall/pear.png" alt="" />
-    <img class="fall-item fi5" src="uploads/fall/potato.png" alt="" />
-    <img class="fall-item fi6" src="uploads/fall/apple.png" alt="" />
-    <img class="fall-item fi7" src="uploads/fall/lettuce.png" alt="" />
-    <img class="fall-item fi8" src="uploads/fall/cucumber.png" alt="" />
-    <img class="fall-item fi9" src="uploads/fall/pear.png" alt="" />
-    <img class="fall-item fi10" src="uploads/fall/potato.png" alt="" />
+    <img class="fall-item fi1" src="uploads/fall/apple.png" alt="">
+    <img class="fall-item fi2" src="uploads/fall/lettuce.png" alt="">
+    <img class="fall-item fi3" src="uploads/fall/cucumber.png" alt="">
+    <img class="fall-item fi4" src="uploads/fall/pear.png" alt="">
+    <img class="fall-item fi5" src="uploads/fall/potato.png" alt="">
+    <img class="fall-item fi6" src="uploads/fall/apple.png" alt="">
+    <img class="fall-item fi7" src="uploads/fall/lettuce.png" alt="">
+    <img class="fall-item fi8" src="uploads/fall/cucumber.png" alt="">
+    <img class="fall-item fi9" src="uploads/fall/pear.png" alt="">
+    <img class="fall-item fi10" src="uploads/fall/potato.png" alt="">
   </div>
   </sc-if>
 
@@ -767,11 +772,11 @@
         <h3 style="grid-column:1/-1;font-size:13px;font-weight:700;color:#2F5D42;border-bottom:1px solid #EFE7D5;padding-bottom:6px;margin:6px 0 0;">기본 정보</h3>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">이름</label>
-          <input type="text" value="{{ pi.name }}" onChange="{{ piOn.name }}" placeholder="예: 홍길동" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="text" value="{{ pi.name }}" onChange="{{ piOn.name }}" placeholder="예: 홍길동" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">생년월일 <span style="color:#2F7A44;font-weight:700;">{{ piAgeText }}</span></label>
-          <input type="date" value="{{ pi.birth }}" onChange="{{ piOn.birth }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="date" value="{{ pi.birth }}" onChange="{{ piOn.birth }}" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">성별</label>
@@ -786,15 +791,15 @@
         <h3 style="grid-column:1/-1;font-size:13px;font-weight:700;color:#2F5D42;border-bottom:1px solid #EFE7D5;padding-bottom:6px;margin:12px 0 0;">귀농 요건</h3>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">현재 거주지</label>
-          <input type="text" value="{{ pi.curResidence }}" onChange="{{ piOn.curResidence }}" placeholder="예: 서울특별시 강남구" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="text" value="{{ pi.curResidence }}" onChange="{{ piOn.curResidence }}" placeholder="예: 서울특별시 강남구" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">귀농 예정·정착 지역</label>
-          <input type="text" value="{{ pi.targetRegion }}" onChange="{{ piOn.targetRegion }}" placeholder="예: 충청북도 충주시" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="text" value="{{ pi.targetRegion }}" onChange="{{ piOn.targetRegion }}" placeholder="예: 충청북도 충주시" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">이전/현재 직업</label>
-          <input type="text" value="{{ pi.job }}" onChange="{{ piOn.job }}" placeholder="예: 회사원" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="text" value="{{ pi.job }}" onChange="{{ piOn.job }}" placeholder="예: 회사원" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">도시 거주 기간</label>
@@ -831,7 +836,7 @@
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">농지 면적 (평)</label>
-          <input type="number" value="{{ pi.landArea }}" onChange="{{ piOn.landArea }}" placeholder="예: 300" min="0" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="number" value="{{ pi.landArea }}" onChange="{{ piOn.landArea }}" placeholder="예: 300" min="0" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">재배 예정 작물</label>
@@ -876,7 +881,7 @@
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">가구원 수</label>
-          <input type="number" value="{{ pi.householdSize }}" onChange="{{ piOn.householdSize }}" placeholder="예: 3" min="1" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
+          <input type="number" value="{{ pi.householdSize }}" onChange="{{ piOn.householdSize }}" placeholder="예: 3" min="1" style="width:100%;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
         </div>
         <div>
           <label style="display:block;font-size:12px;font-weight:600;color:#8A7F65;margin:0 0 6px;">가구 연소득</label>
@@ -1310,7 +1315,7 @@
             <span style="align-self:center;font-size:14px;color:#3A3427;white-space:nowrap;">부터</span>
           </div>
           <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#3A3427;cursor:pointer;">
-            <input type="checkbox" checked="{{ myFarm.notStarted }}" onChange="{{ myFarm.toggleNotStarted }}" />
+            <input type="checkbox" checked="{{ myFarm.notStarted }}" onChange="{{ myFarm.toggleNotStarted }}">
             아직 시작 안 함 (오늘부터 새로 계획 짜기)
           </label>
         </div>
@@ -1328,7 +1333,7 @@
 
     <sc-if value="{{ noMyFarm }}">
       <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:16px;padding:40px;text-align:center;color:#8A7F65;font-size:14px;line-height:1.8;">
-        아직 정한 귀농지역과 작물이 없어요.<br/>
+        아직 정한 귀농지역과 작물이 없어요.<br>
         <b>홈</b>의 지도에서 지역을 고르면 작물별 적합도가 나오고, 거기서 <b>🌱 나의 작물로 선택</b>을 누르면 여기에 그 지역 기준 농사 계획이 만들어져요.
         <div style="margin-top:16px;">
           <button type="button" onClick="{{ goPickFarm }}" style="background:#2F5D42;color:#FBF7EF;border:none;border-radius:10px;padding:11px 20px;font-size:14px;font-weight:700;cursor:pointer;">홈에서 지역 고르기</button>
@@ -1562,17 +1567,17 @@
     <div style="height:20px;margin-top:16px;position:relative;background:repeating-linear-gradient(115deg,rgba(255,255,255,0.06) 0px,rgba(255,255,255,0.06) 40px,rgba(0,0,0,0.05) 40px,rgba(0,0,0,0.05) 80px),linear-gradient(180deg,#6FB07E 0%,#4C8F5E 35%,#3C7248 100%);">
       <div style="position:absolute;left:6px;bottom:4px;width:100px;animation:tractorDrive 9s ease-in-out infinite;">
         <svg viewBox="0 0 120 70" style="width:100px;height:auto;display:block;">
-          <line x1="4" y1="60" x2="30" y2="48" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"/>
-          <line x1="4" y1="66" x2="30" y2="54" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"/>
-          <rect x="30" y="40" width="64" height="10" rx="2" fill="#2B2620"/>
-          <rect x="30" y="26" width="34" height="16" rx="3" fill="#4C8F5E"/>
-          <rect x="60" y="6" width="30" height="34" rx="6" fill="#2F5D42"/>
-          <rect x="66" y="11" width="12" height="10" rx="2" fill="#CFE7D6"/>
-          <rect x="84" y="0" width="6" height="10" rx="2" fill="#3A342A"/>
-          <circle cx="36" cy="48" r="16" fill="#2B2620"/>
-          <circle cx="36" cy="48" r="7" fill="#8B6444"/>
-          <circle cx="90" cy="54" r="10" fill="#2B2620"/>
-          <circle cx="90" cy="54" r="5" fill="#8B6444"/>
+          <line x1="4" y1="60" x2="30" y2="48" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"></line>
+          <line x1="4" y1="66" x2="30" y2="54" stroke="#6b4f36" stroke-width="4" stroke-linecap="round"></line>
+          <rect x="30" y="40" width="64" height="10" rx="2" fill="#2B2620"></rect>
+          <rect x="30" y="26" width="34" height="16" rx="3" fill="#4C8F5E"></rect>
+          <rect x="60" y="6" width="30" height="34" rx="6" fill="#2F5D42"></rect>
+          <rect x="66" y="11" width="12" height="10" rx="2" fill="#CFE7D6"></rect>
+          <rect x="84" y="0" width="6" height="10" rx="2" fill="#3A342A"></rect>
+          <circle cx="36" cy="48" r="16" fill="#2B2620"></circle>
+          <circle cx="36" cy="48" r="7" fill="#8B6444"></circle>
+          <circle cx="90" cy="54" r="10" fill="#2B2620"></circle>
+          <circle cx="90" cy="54" r="5" fill="#8B6444"></circle>
         </svg>
       </div>
     </div>
@@ -1586,7 +1591,7 @@
        있어도 나머지 기능은 그대로 동작한다. -->
   <div class="anong-fab">
     <button type="button" class="anong-fab-btn" onClick="{{ chatToggle }}" aria-label="안농 도우미에게 물어보기">
-      <img src="uploads/chatbot_img.png" alt="안농 도우미" />
+      <img src="uploads/chatbot_img.png" alt="안농 도우미">
     </button>
     <span class="anong-fab-bubble" aria-hidden="true">무엇을 도와드릴까요?</span>
   </div>
@@ -1599,19 +1604,17 @@
         <div style="font-weight:700;font-size:15px;">안농 도우미</div>
         <div style="font-size:11px;opacity:0.85;">{{ chatSubtitle }}</div>
       </div>
-      <button type="button" onClick="{{ chatToggle }}" title="닫기"
-        style="border:none;background:transparent;color:#FBF7EF;font-size:18px;cursor:pointer;padding:4px 6px;">✕</button>
+      <button type="button" onClick="{{ chatToggle }}" title="닫기" style="border:none;background:transparent;color:#FBF7EF;font-size:18px;cursor:pointer;padding:4px 6px;">✕</button>
     </div>
 
     <div id="anong-chat-log" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:10px;">
       <sc-if value="{{ chatEmpty }}">
         <div style="background:#F3EEE0;border:1px dashed #D8CDB0;border-radius:12px;padding:14px;font-size:13px;line-height:1.7;color:#5A5245;">
-          앱이 실제로 조회한 기상·토양 데이터로 답해드려요.<br/>
+          앱이 실제로 조회한 기상·토양 데이터로 답해드려요.<br>
           병해충 진단이나 농약 추천은 하지 않고, 농업기술센터로 안내해요.
           <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;">
             <sc-for list="{{ chatSamples }}" as="s" hint-placeholder-count="3">
-              <button type="button" onClick="{{ s.ask }}"
-                style="font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid #C9B896;background:#FBF7EF;color:#2F5D42;cursor:pointer;">{{ s.q }}</button>
+              <button type="button" onClick="{{ s.ask }}" style="font-size:12px;padding:6px 10px;border-radius:999px;border:1px solid #C9B896;background:#FBF7EF;color:#2F5D42;cursor:pointer;">{{ s.q }}</button>
             </sc-for>
           </div>
         </div>
@@ -1629,10 +1632,8 @@
     </div>
 
     <div style="border-top:1px solid #E4DCC8;padding:10px;display:flex;gap:8px;background:#F6F1E6;">
-      <input id="anong-chat-input" type="text" placeholder="{{ chatPlaceholder }}" autocomplete="off"
-        style="flex:1;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;" />
-      <button type="button" onClick="{{ chatSend }}"
-        style="font-size:14px;font-weight:700;padding:10px 16px;border-radius:10px;border:none;background:#2F5D42;color:#FBF7EF;cursor:pointer;">보내기</button>
+      <input id="anong-chat-input" type="text" placeholder="{{ chatPlaceholder }}" autocomplete="off" style="flex:1;font-size:14px;padding:10px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;box-sizing:border-box;">
+      <button type="button" onClick="{{ chatSend }}" style="font-size:14px;font-weight:700;padding:10px 16px;border-radius:10px;border:none;background:#2F5D42;color:#FBF7EF;cursor:pointer;">보내기</button>
     </div>
   </div>
   </sc-if>
@@ -1823,6 +1824,23 @@ const TOOL_LABEL = {
   get_crop_schedule: '📅 재배 일정 찾는 중…'
 };
 const CROPS = ['오이', '배', '사과', '감자', '상추'];
+// 홈 화면 4번째 카드에서 실시간 농업소식을 한 작물씩 순서대로 돌려 보여줄 때 쓰는 순서.
+const NEWS_ROTATE_CROPS = ['사과', '배', '오이', '상추', '감자'];
+// 작물별 기사 중 맨 위(최신) 것만 계속 도는 게 아니라, 각 작물의 2번째·3번째... 기사도
+// 차례로 섞여 나오도록 라운드로빈 순서(사과1,배1,오이1,상추1,감자1,사과2,배2…)로 편 리스트를 만든다.
+function buildNewsRotatePool(newsByCrop) {
+  const nb = newsByCrop || {};
+  const perCrop = NEWS_ROTATE_CROPS.map((c) => nb[c] || []);
+  const maxLen = Math.max(0, ...perCrop.map((items) => items.length));
+  const pool = [];
+  for (let i = 0; i < maxLen; i++) {
+    NEWS_ROTATE_CROPS.forEach((c, ci) => {
+      const item = perCrop[ci][i];
+      if (item) pool.push({ crop: c, item: item });
+    });
+  }
+  return pool;
+}
 const CROP_IMG = { '상추': 'uploads/lettuce.png', '사과': 'uploads/apple.png' };   // 실제 이미지가 있는 작물
 
 // 적합도 카드 썸네일 (uploads/crops/*.png) - uploads/fall의 원본(1~2MB, 1254px)을
@@ -3178,9 +3196,35 @@ class Component extends DCLogic {
     // authUser: Supabase 사용자(익명 포함). authIsAnon이면 '아직 계정을 안 만든 상태'다.
     authUser: null, authIsAnon: true, authReady: false,
     authOpen: false, authMode: 'login', authEmail: '', authPw: '',
-    authBusy: false, authError: '', authNotice: '', cloudSyncing: false };
+    authBusy: false, authError: '', authNotice: '', cloudSyncing: false,
+    justSignedUp: false, heroDismissed: false, newsRotateIdx: 0, homeIdx: 0 };
 
   componentDidMount() {
+    // 원페이지 스크롤: 홈 탭 상단(히어로/지도)에 있을 때만 휠을 가로채 한 번에 한 섹션씩 넘긴다.
+    this._reachedIdx1At = 0;
+    this._onHomeWheel = (e) => {
+      if (this.state.activeTab !== 'home') return;
+      const idx = this.state.homeIdx;
+      if (window.scrollY > 2) return; // 지도 아래 결과 영역까지 스크롤된 상태 - 일반 스크롤에 맡긴다.
+      if (idx === 0 && e.deltaY > 0) {
+        e.preventDefault();
+        if (this._opLock) return;
+        this._opLock = true;
+        this.setState({ homeIdx: 1 }, () => setTimeout(() => window.dispatchEvent(new Event('resize')), 100));
+        this._reachedIdx1At = Date.now();
+        setTimeout(() => { this._opLock = false; }, 1150);
+      } else if (idx === 1 && e.deltaY > 0) {
+        // 같은 제스처(휠 관성)로 지도 화면을 그냥 지나쳐버리지 않도록, 도착 직후 잠깐은 계속 막는다.
+        if (Date.now() - this._reachedIdx1At < 550) e.preventDefault();
+      } else if (idx === 1 && e.deltaY < 0) {
+        e.preventDefault();
+        if (this._opLock) return;
+        this._opLock = true;
+        this.setState({ homeIdx: 0 });
+        setTimeout(() => { this._opLock = false; }, 1150);
+      }
+    };
+    window.addEventListener('wheel', this._onHomeWheel, { passive: false });
     // 다중 저장(지역 목록·즐겨찾기·작물별 계획) 시절 데이터는 더 이상 쓰지 않는다.
     try { LEGACY_KEYS.forEach((k) => window.localStorage.removeItem(k)); } catch (e) {}
     try {
@@ -3196,7 +3240,16 @@ class Component extends DCLogic {
       if (rl) this.setState({ regionLog: JSON.parse(rl) || [] });
     } catch (e) {}
     this.loadMyFarm();
+    // 홈 화면 4번째 카드용 실시간 농업소식 - 뉴스 탭에 들어가기 전에도 바로 보여야 하므로 여기서 미리 불러온다.
+    this.loadNews();
+    this._newsRotateTimer = window.setInterval(() => {
+      this.setState((s) => {
+        const len = buildNewsRotatePool(s.newsByCrop).length || NEWS_ROTATE_CROPS.length;
+        return { newsRotateIdx: (s.newsRotateIdx + 1) % len };
+      });
+    }, 2500);
     // 로그인 상태를 확인하고(없으면 익명으로) 서버에 저장된 내 데이터를 불러온다.
+    try { if (window.localStorage.getItem('ca_justSignedUp') === '1') this.setState({ justSignedUp: true }); } catch (e) {}
     this.initAuth();
     // 챗봇: 세션 ID 1개 발급(서버 턴 상한이 이 값 기준) + 엔터로 전송.
     // 입력창은 패널을 열고 닫을 때마다 사라졌다 생기므로, 엘리먼트에 직접 붙이지 않고
@@ -3237,6 +3290,7 @@ class Component extends DCLogic {
       // (setState 콜백 = DOM 커밋 이후) 결과 영역으로 화면을 내려준다.
       this.setState({ selectedRegion: region, selectedDong: dong, showResults: true },
         () => this.scrollToRecommend());
+      this.clearJustSignedUp();
       // fetchScores는 state 대신 dong을 직접 받는다 - setState 반영 타이밍에 의존하지 않도록.
       this.fetchScores(region, dong);
       this.pushRegionLog(region, dong);
@@ -3250,6 +3304,7 @@ class Component extends DCLogic {
   // 익명으로 저장해둔 데이터가 그대로 계정으로 승계된다.
   initAuth() {
     if (!SB) { this.setState({ authReady: true }); return; }
+
     SB.auth.getSession()
       .then((r) => {
         const s = (r && r.data) ? r.data.session : null;
@@ -3455,6 +3510,17 @@ class Component extends DCLogic {
 
   closeAuth() { this.setState({ authOpen: false, authError: '' }); }
 
+  markJustSignedUp() {
+    this.setState({ justSignedUp: true, heroDismissed: false });
+    try { window.localStorage.setItem('ca_justSignedUp', '1'); } catch (e) {}
+  }
+  clearJustSignedUp() {
+    if (this.state.justSignedUp) {
+      try { window.localStorage.removeItem('ca_justSignedUp'); } catch (e) {}
+    }
+    this.setState({ justSignedUp: false, heroDismissed: true });
+  }
+
   authMsg(e) {
     const m = ((e && (e.message || e.error_description)) || '').toLowerCase();
     if (m.indexOf('invalid login') !== -1 || m.indexOf('invalid credentials') !== -1)
@@ -3503,6 +3569,7 @@ class Component extends DCLogic {
             return SB.auth.getUser();
           })
           .then((r) => {
+            this.markJustSignedUp();
             this.applyAuthUser((r && r.data) ? r.data.user : null);
             // 처음 가입한 사용자는 지역선택 → 작물선택 → 프로필 순으로 안내한다(홈 탭이
             // 지역·작물 선택을 겸하고 있고, 작물을 고르면 setMyCrop이 프로필로 넘겨준다).
@@ -3514,6 +3581,7 @@ class Component extends DCLogic {
           .then((r) => {
             if (r && r.error) throw r.error;
             const u2 = r.data ? r.data.user : null;
+            this.markJustSignedUp();
             this.applyAuthUser(u2);
             if (u2) this.syncFromCloud(u2);
             done('회원가입이 완료됐어요.', 'home');
@@ -3587,6 +3655,7 @@ class Component extends DCLogic {
       selectedRegion: region, selectedDong: item.dong, showResults: true,
       activeTab: 'home', regionLogOpen: false
     }, () => this.scrollToRecommend());
+      this.clearJustSignedUp();
     this.fetchScores(region, item.dong);
     this.pushRegionLog(region, item.dong);
   }
@@ -4387,8 +4456,10 @@ class Component extends DCLogic {
   }
 
   componentWillUnmount() {
+    window.removeEventListener('wheel', this._onHomeWheel);
     window.document.removeEventListener('keydown', this._onChatKey);
     window.removeEventListener('message', this._onMsg);
+    if (this._newsRotateTimer) { window.clearInterval(this._newsRotateTimer); this._newsRotateTimer = null; }
     // 인적사항 입력 중에 화면을 떠나도 마지막 입력은 저장한다. 단 '아직 저장 안 된
     // 수정이 있을 때만' 보낸다 - 폼을 건드리지도 않은 사용자에게 전부 null인 행을
     // 만들어 두면(민감정보 테이블이다) 의미 없는 데이터만 쌓인다.
@@ -4404,7 +4475,7 @@ class Component extends DCLogic {
 
   navBtnStyle(tab) {
     const active = this.state.activeTab === tab;
-    return { padding: '10px 16px', borderRadius: 999, fontSize: 14, fontWeight: active ? 700 : 500, color: active ? '#FFFFFF' : '#2B2620', background: active ? '#2F5D42' : 'transparent', border: 'none', cursor: 'pointer' };
+    return { padding: '10px 16px', borderRadius: 999, fontSize: 14, fontWeight: active ? 700 : 500, color: active ? '#FFFFFF' : '#2B2620', background: active ? '#2F5D42' : 'transparent', border: 'none', cursor: 'pointer', transition: 'background .15s ease, color .15s ease' };
   }
 
   // 결과 영역으로 부드럽게 스크롤. 지도 카드가 뷰포트를 거의 채우기 때문에 지역을
@@ -5139,6 +5210,17 @@ class Component extends DCLogic {
     });
     this._dayChecklists = dayLists;   // 챗봇이 참조하는 날짜별 체크리스트 캐시
 
+    // ── 홈 화면 4번째 카드: 실시간 농업소식 1건을 작물별·기사별로 순서대로 돌려 보여준다 ──
+    // (작물마다 맨 위 기사만 반복하지 않도록, 각 작물의 다음 기사들도 라운드로빈으로 섞어 돈다)
+    const newsRotatePool = buildNewsRotatePool(this.state.newsByCrop);
+    const newsRotateEntry = newsRotatePool.length
+      ? newsRotatePool[this.state.newsRotateIdx % newsRotatePool.length]
+      : null;
+    const newsRotateCrop = newsRotateEntry
+      ? newsRotateEntry.crop
+      : NEWS_ROTATE_CROPS[this.state.newsRotateIdx % NEWS_ROTATE_CROPS.length];
+    const newsRotateItem = newsRotateEntry ? newsRotateEntry.item : null;
+
     // ── 로그인 / 회원가입 ──
     const authUser = this.state.authUser;
     const signedIn = !!(authUser && !this.state.authIsAnon);
@@ -5192,6 +5274,37 @@ class Component extends DCLogic {
       doLogout: () => this.authLogout(),
       dismissNotice: () => this.setState({ authNotice: '' }),
 
+      cardOv: {
+        a: this.state.hoverCard === 'a' ? 1 : 0,
+        b: this.state.hoverCard === 'b' ? 1 : 0,
+        c: this.state.hoverCard === 'c' ? 1 : 0,
+        d: this.state.hoverCard === 'd' ? 1 : 0
+      },
+      cardEnter: {
+        a: () => this.setState({ hoverCard: 'a' }),
+        b: () => this.setState({ hoverCard: 'b' }),
+        c: () => this.setState({ hoverCard: 'c' }),
+        d: () => this.setState({ hoverCard: 'd' })
+      },
+      cardLeave: () => this.setState({ hoverCard: null }),
+      hasNewsCardItem: !!newsRotateItem,
+      noNewsCardItem: !newsRotateItem,
+      newsCardEmoji: CROP_EMOJI[newsRotateCrop] || '📰',
+      newsCardCropTitle: newsRotateCrop + ' 소식',
+      newsCardDesc: newsRotateItem ? newsRotateItem.title : '',
+      openNewsCard: () => {
+        if (newsRotateItem && newsRotateItem.link) window.open(newsRotateItem.link, '_blank', 'noopener');
+      },
+      goPickRegion: () => this.setState({ activeTab: 'home', hoverCard: null, heroDismissed: false, homeIdx: 0 }, () => window.scrollTo(0, 0)),
+
+      showFirstVisitHero: !this.state.heroDismissed && (this.state.justSignedUp || !signedIn),
+      atMapClass: this.state.homeIdx === 1 ? 'at-map' : '',
+      scrollToMap: () => {
+        const reveal = () => { this._reachedIdx1At = Date.now(); this.setState({ homeIdx: 1 }, () => setTimeout(() => window.dispatchEvent(new Event('resize')), 100)); };
+        if (this.state.activeTab !== 'home') {
+          this.setState({ activeTab: 'home' }, () => setTimeout(reveal, 50));
+        } else reveal();
+      },
       isLanding: tab === 'landing', hasHeader: tab !== 'landing',
       isHome: tab === 'home', isCrops: tab === 'crops', isPolicy: tab === 'policy', isFavorites: tab === 'favorites', isDetail: tab === 'detail', isNews: tab === 'news',
       detail, closeDetail: () => this.closeDetail(),
@@ -5204,9 +5317,9 @@ class Component extends DCLogic {
       // 헤더 로고·텍스트를 누르면 홈이 아니라 첫 화면(랜딩)으로 되돌아간다.
       goLanding: () => this.setState({ activeTab: 'landing' }, () => window.scrollTo(0, 0)),
       goHome: () => this.setState({ activeTab: 'home' }),
-      goCrops: () => this.setState({ activeTab: 'crops' }),
-      goPolicy: () => this.setState({ activeTab: 'policy' }),
-      goFavorites: () => { this.setState({ activeTab: 'favorites' }); this.refreshLiveDataForPlans(); },
+      goCrops: () => { this.clearJustSignedUp(); this.setState({ activeTab: 'crops' }); },
+      goPolicy: () => { this.clearJustSignedUp(); this.setState({ activeTab: 'policy' }); },
+      goFavorites: () => { this.clearJustSignedUp(); this.setState({ activeTab: 'favorites' }); this.refreshLiveDataForPlans(); },
       hasMyFarm: !!myFarm,
       noMyFarm: !myFarm,
       myFarm: myFarmView,
