@@ -221,10 +221,17 @@ SYSTEM_PROMPT = """당신은 '안농'이라는 귀농 도우미 웹앱의 상담
   "정확한 진단은 가까운 농업기술센터에 문의하세요"로 마칩니다.
 - 수익이나 소득을 보장하는 표현을 쓰지 않습니다.
 
-# 데이터 신뢰도
-적합도 응답의 신뢰도가 '주의'나 '신뢰불가'면 점수를 말할 때 그 사실을 함께
-알려줍니다. 예: "68.9점인데, 토양 데이터가 일부 빠져 있어 참고용이에요."
-기상 데이터는 도 단위 대표 관측소 값이므로 관측소 이름을 함께 밝힙니다."""
+# 적합도 점수의 기준
+- 적합도(get_crop_score)는 **여러 해 평년 통계** 기준입니다. 오늘 날씨와 무관하게
+  항상 같은 값이고, 화면에 보이는 점수와 같은 기준입니다. "오늘 더워서 점수가
+  낮아졌다"처럼 말하지 않습니다.
+- 온도·강수·일조는 평년 통계값이고, 토양(pH·유기물·유효인산·EC)은 흙토람 누적
+  검정값입니다. 응답의 항목별 '원천'에 적혀 있으니 근거를 물으면 그대로 밝히세요.
+- '반영된가중치%'가 100보다 낮거나 '데이터없어_제외된항목'이 있으면 그 사실을 함께
+  알려줍니다. 예: "80.8점인데, 유기물 자료가 없어 그 항목을 빼고 계산한 값이에요."
+- '관측소주의'가 있으면 함께 전달하고, 기상은 관측소 기준이므로 관측소 이름을 밝힙니다.
+- 오늘·이번 주 날씨를 묻는 것이면 get_weather를 쓰고, 그 값은 적합도 점수와 별개임을
+  분명히 합니다."""
 
 
 # ────────────────────────────────────────────────────────────────────────────
@@ -234,9 +241,11 @@ TOOLS = [
     {
         "name": "get_crop_score",
         "description": (
-            "특정 지역에서 특정 작물이 얼마나 잘 자랄지(적합도 점수)를 실측 기상·토양 "
-            "데이터로 조회합니다. 사용자가 '이 지역에 뭐가 맞아요', '점수가 왜 낮아요', "
-            "'사과 키울 만해요' 같은 질문을 하면 호출하세요."
+            "특정 지역에서 특정 작물이 얼마나 잘 자랄지(적합도 점수)를 조회합니다. "
+            "**여러 해 평년 통계 기준**이라 오늘 날씨와 무관하게 항상 같은 값이며, "
+            "화면에 보이는 점수와 같은 기준입니다. 사용자가 '이 지역에 뭐가 맞아요', "
+            "'점수가 왜 낮아요', '사과 키울 만해요' 같은 질문을 하면 호출하세요. "
+            "'요즘 날씨'를 묻는 것이면 get_weather를 쓰세요."
         ),
         "strict": True,
         "input_schema": {
@@ -397,8 +406,17 @@ def _get_json(url, timeout):
 
 
 def tool_get_crop_score(crop, region):
-    """8002 응답을 100~200토큰짜리로 축약. raw_readings·risk_signals는 넣지 않는다."""
-    url = f"{SCORE_API}/api/crop-score/{urllib.parse.quote(crop)}?region={urllib.parse.quote(region)}"
+    """8002 응답을 100~200토큰짜리로 축약.
+
+    ⚠️ 화면과 **같은 기준**을 써야 한다. 예전에는 이 도구만 실시간
+    /api/crop-score(단기예보 온도 + 올해 누적 ASOS 강수·일조)를 불러서, 같은 지역·작물을
+    물어도 화면(평년)과 챗봇(실시간)이 다른 점수를 말했다 - 폭염·장마 중에는 눈에 띄게
+    갈렸다. 사용자가 "화면은 우수인데 챗봇은 주의라던데?"를 묻게 된다.
+
+    지금은 /api/crop-score-normal(여러 해 평년 통계)을 쓴다. 접속 시점에 따라 등급이
+    바뀌지 않는다. 오늘 날씨가 궁금하면 그건 get_weather가 담당한다.
+    """
+    url = f"{SCORE_API}/api/crop-score-normal/{urllib.parse.quote(crop)}?region={urllib.parse.quote(region)}"
     d = _get_json(url, SCORE_TIMEOUT)
 
     if d.get("error"):
@@ -410,30 +428,40 @@ def tool_get_crop_score(crop, region):
     def r1(v):
         return round(v, 1) if isinstance(v, (int, float)) else v
 
+    # source를 함께 넘긴다 - 온도·강수·일조는 평년 통계고 토양은 흙토람 누적 검정값이라
+    # 원천이 다르다. 사용자가 "이 숫자 어디서 나왔냐"를 물으면 항목별로 답해야 한다.
     breakdown = {}
     for k, v in (d.get("breakdown") or {}).items():
         if not isinstance(v, dict):
             continue
         sc, w = v.get("score"), v.get("weight")
-        breakdown[k] = {
+        item = {
             "점수": round(sc) if isinstance(sc, (int, float)) else None,
             "가중치%": round(w) if isinstance(w, (int, float)) else None,
         }
+        if v.get("source"):
+            item["원천"] = v["source"]
+        breakdown[k] = item
 
     out = {
         "작물": d.get("crop"), "지역": d.get("input_region"),
         "점수": r1(d.get("total_score")),
         "등급": d.get("grade_label"),
-        "신뢰도": d.get("reliability"),
+        "기준": "여러 해 평년 통계 (오늘 날씨와 무관하게 항상 같은 값)",
+        "기후대": d.get("cluster_name"),
+        "작형": d.get("cultivation_type"),
         "항목별점수": breakdown,
         "관측소": d.get("matched_station"),
     }
-    if d.get("reliability_reason"):
-        out["신뢰도_사유"] = d["reliability_reason"]
+    # 실시간 응답의 reliability 대신 '가중치 몇 %가 실제로 반영됐나'가 신뢰도 지표다.
+    if isinstance(d.get("weight_coverage"), (int, float)):
+        out["반영된가중치%"] = r1(d["weight_coverage"])
     if d.get("excluded_variables"):
         out["데이터없어_제외된항목"] = d["excluded_variables"]
-    if d.get("data_sources"):
-        out["데이터출처"] = d["data_sources"]
+    if d.get("station_warning"):
+        out["관측소주의"] = d["station_warning"]
+    if d.get("years_used"):
+        out["평년산출연수"] = d["years_used"]
     return out
 
 

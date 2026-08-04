@@ -129,11 +129,21 @@ class Handler(BaseHTTPRequestHandler):
                 return self._send(400, {"error": "region 파라미터가 필요합니다 (예: ?region=충주시)"})
             try:
                 # 작물 점수는 이미 캐시에 있을 때만 함께 싣는다(새로 계산하면 수초 더 걸린다).
-                cached = _cache.get((crop, region))
+                # 화면이 "감자 93.7점 → 그중 수미 77.4점"으로 이을 수 있게 작물 점수를
+                # 함께 싣는다. **평년 기준**을 쓴다 - 화면·챗봇의 적합도가 모두 평년으로
+                # 통일됐으므로 여기서 실시간 점수를 실으면 같은 화면에 두 기준이 섞인다.
+                # (예전에는 실시간 _cache 를 읽었는데, 아무도 /api/crop-score 를 부르지
+                #  않게 된 뒤로는 늘 비어 있어 작물점수가 아예 실리지 않았다.)
                 crop_score = None
-                if cached and time.time() - cached[0] < CACHE_TTL:
-                    crop_score = {"score": cached[1].get("score"),
-                                  "grade_label": cached[1].get("grade_label")}
+                try:
+                    ns = build_normal(crop, region)   # JSON만 읽어 빠르다
+                    if isinstance(ns, dict) and ns.get("status") == "matched":
+                        crop_score = {"score": ns.get("total_score"),
+                                      "grade_label": ns.get("grade_label")}
+                except Exception as e:
+                    # 이 파일은 logging 을 쓰지 않는다(표준 라이브러리 서버). 작물점수는
+                    # 부가 정보이므로 실패해도 품종 응답은 그대로 내보낸다.
+                    print(f"[cultivar-score] 작물 평년점수 조회 실패: {e}", file=sys.stderr)
                 return self._send(200, cultivar_api.score_payload(
                     crop, region, experience=experience, crop_score=crop_score))
             except Exception as e:
