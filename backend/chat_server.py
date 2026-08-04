@@ -194,6 +194,22 @@ SYSTEM_PROMPT = """당신은 '안농'이라는 귀농 도우미 웹앱의 상담
 - 품종을 권할 때는 도구가 준 '추천이유'와 '고려할점'을 **함께** 말합니다. 좋은 점만
   말하면 사용자가 위험을 모르고 고릅니다.
 
+# 작형(재배 시기) 순위로 답하는 작물 — 상추·오이
+- get_cultivar_candidates 응답에 '순위단위: 작형'이 있고 목록 키가 '작형'이면, 그 목록의
+  '이름'은 **품종이 아니라 작형**입니다(여름재배·가을재배·촉성재배·억제재배 등).
+  이것을 품종처럼 말하면 안 됩니다. "여름재배 품종을 추천합니다"는 틀린 문장입니다.
+- 상추·오이에서 품종 이름을 말할 수 있는 유일한 출처는 각 작형 항목의 '이작형에쓸품종'
+  목록입니다. 그 밖의 이름은 쓰지 않습니다.
+- 상추·오이에 "어떤 품종이 좋아요?"라고 물으면, 품종 사이에 순위를 매기지 않고 이렇게
+  답합니다: (1) 이 지역에 맞는 작형을 점수와 함께 알려주고 (2) 그 작형에 쓸 품종을
+  '이작형에쓸품종'에서 제시하고 (3) 품종끼리는 자료에 기후 수치가 없어 점수로 가릴 수
+  없다는 사실을 밝힙니다. 없는 순위를 만들지 않습니다.
+- 작형 점수는 '점수의뜻'에 적힌 정의(그 작기 동안 **바깥 노지 기상**이 적온에 맞는 정도)
+  그대로 설명합니다. 시설(하우스) 작형의 낮은 점수를 "재배 불가"로 말하지 말고,
+  "그만큼 난방·보온으로 메워야 한다"고 말합니다.
+- '재배구조'가 시설이면 하우스가 필요하다는 사실을 점수보다 먼저 말합니다. 초보자에게는
+  시설 투자·난방이 가장 큰 진입 장벽입니다.
+
 # 역병(疫病) 안내 규칙
 - 품종 도구 응답의 '역병' 항목만으로 답합니다. 판정이 '자료 없음'이면 **위험이 없다는
   뜻이 아니라 조사 자료가 없다는 뜻**입니다. "이 품종은 역병에 강해요/약해요"처럼
@@ -323,11 +339,14 @@ TOOLS = [
     {
         "name": "get_cultivar_candidates",
         "description": (
-            "특정 지역에서 어떤 품종이 잘 맞는지, 실측 기상(무상기간·작기 기온)과 토양으로 "
+            "특정 지역에서 무엇이 잘 맞는지 평년 기상(무상기간·작기 기온·강수)과 토양으로 "
             "비교해 순위·권장 파종시기와 함께 돌려줍니다. '어떤 품종 심어요', "
             "'추백이랑 자영 중에 뭐가 나아요', '우리 동네에 맞는 감자 품종', "
             "'자영 심어도 돼요' 같은 질문에 호출하세요. "
-            f"품종 데이터가 있는 작물: {CULTIVAR_CROPS_LABEL}."
+            "감자·사과·배는 **품종** 순위를 주고, 상추·오이는 품종별 기후 수치가 자료에 "
+            "없어 **작형(재배 시기) 순위**와 각 작형에 쓸 품종 목록을 줍니다 - 응답의 "
+            "'순위단위'로 어느 쪽인지 확인하세요. "
+            f"자료가 있는 작물: {CULTIVAR_CROPS_LABEL}."
         ),
         "strict": True,
         "input_schema": {
@@ -509,8 +528,14 @@ def tool_get_cultivar_candidates(crop, region, experience=None):
                 "사유": d.get("error") or d.get("status")}
 
     rm = d.get("region_metrics") or {}
+    # 상추·오이는 순위의 한 줄이 품종이 아니라 **작형**이다(breed.md §23). 그 응답을
+    # '품종' 키에 그대로 담으면 모델이 "여름재배 품종을 추천합니다"라고 답한다 - 자료에
+    # 없는 품종을 만들어 내는 것과 같은 잘못이다. 키 이름부터 갈라서 담는다.
+    is_season = (d.get("scoring_mode") == "season")
+    list_key = "작형" if is_season else "품종"
     out = {
         "작물": d.get("crop"), "지역": d.get("region"),
+        "순위단위": d.get("unit") or ("작형" if is_season else "품종"),
         "지역요약": {
             "기후대": rm.get("cluster_name"),
             "관측소": rm.get("station_name"),
@@ -519,9 +544,14 @@ def tool_get_cultivar_candidates(crop, region, experience=None):
             "마지막봄서리": rm.get("last_spring_frost"),
             "첫가을서리": rm.get("first_fall_frost"),
         },
-        "품종": [],
+        list_key: [],
         "신뢰도": d.get("reliability"),
     }
+    if is_season:
+        out["점수의뜻"] = d.get("score_note")
+        out["작형순위인이유"] = d.get("note")
+        if d.get("tie_note"):
+            out["동점안내"] = d["tie_note"]
     if d.get("crop_score"):
         out["작물점수"] = d["crop_score"].get("score")
     if d.get("reliability_reason"):
@@ -530,7 +560,8 @@ def tool_get_cultivar_candidates(crop, region, experience=None):
     for r in (d.get("ranking") or [])[:3]:
         pw = r.get("planting_window") or {}
         item = {
-            "이름": r.get("cultivar"), "점수": r.get("score"), "등급": r.get("grade_label"),
+            "이름": r.get("name") or r.get("cultivar"),
+            "점수": r.get("score"), "등급": r.get("grade_label"),
             "작형": r.get("cultivation_type"),
             "권장파종": f'{pw.get("from")}~{pw.get("to")}',
             "예상수확": pw.get("harvest"), "생육일수": pw.get("days"),
@@ -553,11 +584,22 @@ def tool_get_cultivar_candidates(crop, region, experience=None):
         risky = [b for b in (r.get("badges") or []) if "시험재배" in b]
         if risky:
             item["배지"] = risky
-        out["품종"].append(item)
+        if is_season:
+            item["재배구조"] = r.get("structure")
+            # 작형 줄에 딸린 품종. 이 목록이 곧 "그 작형에 쓸 수 있는 품종"이고,
+            # 모델이 품종 이름을 말할 수 있는 유일한 출처다.
+            item["이작형에쓸품종"] = [
+                {"이름": v.get("name"), "근거": v.get("reason") or v.get("headline")}
+                for v in (r.get("varieties") or [])
+            ]
+            if r.get("variety_hint"):
+                item["품종안내"] = r["variety_hint"]
+        out[list_key].append(item)
 
     if d.get("skipped"):
-        out["이지역에서제외된품종"] = [{"이름": s.get("cultivar"), "사유": s.get("reason")}
-                              for s in d["skipped"][:3]]
+        out["이지역에서제외된" + list_key] = [
+            {"이름": s.get("cultivar") or s.get("season"), "사유": s.get("reason")}
+            for s in d["skipped"][:3]]
     # 데이터 제공자가 붙인 주의문 중 첫 줄(관측소 거리 등)만 싣는다.
     if d.get("cautions"):
         out["안내"] = d["cautions"][0]

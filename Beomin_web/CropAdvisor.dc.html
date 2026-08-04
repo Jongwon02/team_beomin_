@@ -1225,7 +1225,7 @@
             </sc-if>
           </sc-if>
           <sc-if value="{{ needsCultivarPick }}">
-            <span style="margin-top:2px;background:#FBF1DE;border:1px solid #E3D2A0;border-radius:8px;padding:10px 14px;font-size:14px;line-height:1.6;color:#8A6B2A;">아래에서 품종을 고르면 그 품종 기준으로 농업일지가 만들어져요</span>
+            <span style="margin-top:2px;background:#FBF1DE;border:1px solid #E3D2A0;border-radius:8px;padding:10px 14px;font-size:14px;line-height:1.6;color:#8A6B2A;">{{ cultivarPick.cardHint }}</span>
           </sc-if>
           <div style="margin-top:auto;display:flex;gap:10px;padding-top:10px;">
             <button type="button" onClick="{{ goPickFarm }}" style="flex:1;font-size:16px;font-weight:700;color:#fff;background:#1F5132;border:none;border-radius:10px;padding:15px;cursor:pointer;">지역·작물 다시 고르기</button>
@@ -1237,9 +1237,17 @@
     <sc-if value="{{ cultivarPick.show }}">
       <div style="border:1px solid #DCD3B8;background:#FBF7EA;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;">
         <div style="display:flex;flex-direction:column;gap:4px;">
-          <span style="font-size:16px;font-weight:800;line-height:1.5;color:#241F16;">🌱 이 지역에 맞는 품종을 골라봤어요</span>
+          <span style="font-size:16px;font-weight:800;line-height:1.5;color:#241F16;">{{ cultivarPick.title }}</span>
           <sc-if value="{{ cultivarPick.note }}">
             <span style="font-size:12px;line-height:1.6;color:#8F856D;">{{ cultivarPick.note }}</span>
+          </sc-if>
+          <!-- 점수가 무엇을 뜻하는지 밝힌다. 작형 점수는 '노지 기상이 적온에 맞는 정도'라서,
+               시설 작형에서 낮게 나온 값은 재배 불가가 아니라 난방·보온 부담을 뜻한다. -->
+          <sc-if value="{{ cultivarPick.hasScoreNote }}">
+            <span style="font-size:12px;line-height:1.7;color:#786F5A;background:#F6F1E3;border-radius:8px;padding:8px 10px;">{{ cultivarPick.scoreNote }}</span>
+          </sc-if>
+          <sc-if value="{{ cultivarPick.hasTieNote }}">
+            <span style="font-size:12px;line-height:1.7;color:#7A6A2F;">⚖️ {{ cultivarPick.tieNote }}</span>
           </sc-if>
           <sc-if value="{{ cultivarPick.hasPicked }}">
             <span style="font-size:12px;font-weight:700;line-height:1.6;color:#2F6B44;">✅ {{ cultivarPick.pickedLine }}</span>
@@ -1260,12 +1268,20 @@
                 </div>
                 <span style="font-size:13px;font-weight:600;line-height:1.6;color:#2E3B2B;">{{ cv.windowLine }}</span>
 
+                <!-- 근거는 눌러서 본다. 근거를 전부 펼쳐 두면 카드 하나가 15~20줄이 되고
+                     작형이 5개면 화면이 근거로만 찬다. 여기서는 열림 여부를 데이터로
+                     처리한다(닫히면 서버가 준 목록을 비운다) - 템플릿에 sc-if를 한 겹 더
+                     두면 sc-for > sc-if > sc-for 로 중첩이 깊어진다. -->
+                <sc-if value="{{ cv.hasDetailToggle }}">
+                  <button type="button" onClick="{{ cv.detailToggle }}" style="{{ cv.detailBtnStyle }}">{{ cv.detailBtnLabel }}</button>
+                </sc-if>
+
                 <!-- 추천 이유 / 고려할 점. 예전에는 reasons[0]·cautions[0] 한 줄씩만
                      보여줘서 "왜 이 품종인지"가 전달되지 않았다. 서버가 근거 출처
                      (basis)를 함께 주므로 사용자가 어느 자료에서 나온 말인지 확인할 수 있다. -->
                 <sc-if value="{{ cv.hasPros }}">
                   <div style="display:flex;flex-direction:column;gap:3px;">
-                    <span style="font-size:12px;font-weight:700;color:#2F6B44;">이 품종을 추천하는 이유</span>
+                    <span style="font-size:12px;font-weight:700;color:#2F6B44;">{{ cv.prosTitle }}</span>
                     <sc-for list="{{ cv.pros }}" as="p" hint-placeholder-count="4">
                       <span style="font-size:12.5px;line-height:1.65;color:#3C4A38;">✅ {{ p.text }} <span style="color:#9A9080;font-size:11px;">{{ p.basis }}</span></span>
                     </sc-for>
@@ -1312,17 +1328,53 @@
                 <sc-if value="{{ cv.hasBadge }}">
                   <span style="font-size:11.5px;line-height:1.6;color:#8F856D;">{{ cv.badge }}</span>
                 </sc-if>
+
+                <!-- 작형 줄에서는 품종을 함께 고른다. 상추·오이는 품종끼리 기후 점수가
+                     갈리지 않아 순위를 세우지 않고, 자료에 근거가 있는 만큼만 곁들인다. -->
+                <sc-if value="{{ cv.hasVarieties }}">
+                  <div style="border-top:1px dashed #E3D2A0;padding-top:9px;display:flex;flex-direction:column;gap:7px;">
+                    <span style="font-size:12px;font-weight:700;color:#241F16;">이 작형에 쓸 품종을 고르세요</span>
+                    <div style="display:flex;flex-wrap:wrap;gap:6px;">
+                      <sc-for list="{{ cv.varieties }}" as="v" hint-placeholder-count="3">
+                        <button type="button" onClick="{{ v.pick }}" style="{{ v.btnStyle }}">{{ v.btnLabel }}</button>
+                      </sc-for>
+                    </div>
+                    <!-- 품종 설명은 근거를 펼쳤을 때만. 버튼 아래에 한 줄씩 붙이면 작형마다
+                         3줄이 더 붙어 목록이 설명으로 가득 찬다. -->
+                    <sc-if value="{{ cv.hasVarietyNotes }}">
+                      <div style="display:flex;flex-direction:column;gap:3px;">
+                        <sc-for list="{{ cv.varietyNotes }}" as="n" hint-placeholder-count="3">
+                          <span style="font-size:12px;line-height:1.6;color:#5A5140;">· {{ n.text }} <span style="color:#9A9080;font-size:11px;">{{ n.basis }}</span></span>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                    <sc-if value="{{ cv.hasVarietyHint }}">
+                      <span style="font-size:11.5px;line-height:1.6;color:#9A9080;">ℹ️ {{ cv.varietyHint }}</span>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
                 <div style="display:flex;gap:8px;margin-top:2px;">
                   <sc-if value="{{ cv.notPicked }}">
                     <button type="button" onClick="{{ cv.pick }}" style="font-size:13px;font-weight:700;color:#fff;background:#2F6B44;border:none;border-radius:8px;padding:8px 13px;cursor:pointer;">이 품종으로 정하기</button>
                   </sc-if>
                   <sc-if value="{{ cv.isPicked }}">
-                    <span style="font-size:12.5px;font-weight:700;color:#2F6B44;padding:8px 0;">✅ 내 품종으로 저장됨</span>
+                    <span style="font-size:12.5px;font-weight:700;color:#2F6B44;padding:8px 0;">{{ cv.pickedNote }}</span>
                   </sc-if>
                 </div>
               </div>
             </sc-for>
           </div>
+          <!-- 목록에서 빠진 작형은 이유와 함께 밝힌다(평지에 고랭지 작형을 권하지 않는 등).
+               조용히 빠지면 "왜 없지?"가 남는다. -->
+          <sc-if value="{{ cultivarPick.hasSkipped }}">
+            <div style="border-top:1px dashed #E3D2A0;padding-top:10px;display:flex;flex-direction:column;gap:3px;">
+              <span style="font-size:11.5px;font-weight:700;color:#8F856D;">여기서는 권하지 않은 작형</span>
+              <sc-for list="{{ cultivarPick.skipped }}" as="s" hint-placeholder-count="2">
+                <span style="font-size:11.5px;line-height:1.6;color:#9A9080;">· {{ s.text }}</span>
+              </sc-for>
+            </div>
+          </sc-if>
           <sc-if value="{{ cultivarPick.hasHint }}">
             <p style="font-size:11.5px;line-height:1.6;color:#9A9080;border-top:1px dashed #E3D2A0;padding-top:10px;margin:0;">ℹ️ {{ cultivarPick.hint }}</p>
           </sc-if>
@@ -1338,8 +1390,8 @@
            사용자가 그 날짜를 자기 일정으로 받아들인 뒤 품종을 골라 날짜가 바뀐다. -->
       <sc-if value="{{ needsCultivarPick }}">
         <div style="margin-top:32px;background:#FBF7EA;border:1px dashed #DCD3B8;border-radius:14px;padding:28px;text-align:center;">
-          <p style="margin:0 0 6px;font-size:17px;font-weight:800;color:#241F16;">품종을 고르면 농업일지를 만들어 드려요</p>
-          <p style="margin:0;font-size:14px;line-height:1.8;color:#786F5A;">위 품종 카드에서 <b>이 품종으로 정하기</b>를 누르세요.<br/>품종마다 파종·수확 시기가 달라서, 고른 품종 기준으로 일정을 맞춰 드립니다.</p>
+          <p style="margin:0 0 6px;font-size:17px;font-weight:800;color:#241F16;">{{ cultivarPick.gateTitle }}</p>
+          <p style="margin:0;font-size:14px;line-height:1.8;color:#786F5A;">{{ cultivarPick.gateBody }}</p>
         </div>
       </sc-if>
     </sc-if>
@@ -3710,15 +3762,25 @@ function applyCultivarOffset(instances, adj) {
   };
 }
 
-// /api/cultivar-score 응답에서 그 품종의 보정 정보를 뽑는다.
-function cultivarAdjustFrom(cvInfo, cultivarName) {
-  if (!cvInfo || !cultivarName) return null;
-  const r = ((cvInfo.ranking) || []).find(x => x.cultivar === cultivarName);
+// /api/cultivar-score 응답에서 날짜 보정 정보를 뽑는다.
+// 응답의 순위 한 줄이 무엇인지는 작물에 따라 다르다(breed.md §23).
+//   감자·사과·배 : 한 줄 = 품종        -> cultivar 로 찾는다
+//   상추·오이    : 한 줄 = 작형        -> cultivation_type 으로 찾는다
+// 작형 응답에는 cultivar 필드가 없어서, 품종명으로만 찾으면 상추·오이는 항상 못 찾고
+// "품종별 날짜 자료가 없어 일정은 작물 기준 그대로예요"가 찍힌다 - 실제로는 작형의
+// 권장 파종일과 생육일수가 응답에 있는데도 그렇다.
+function cultivarAdjustFrom(cvInfo, cultivarName, cultivationType) {
+  if (!cvInfo) return null;
+  const rows = (cvInfo.ranking) || [];
+  let r = cultivarName ? rows.find(x => x.cultivar === cultivarName) : null;
+  if (!r && cultivationType) r = rows.find(x => x.cultivation_type === cultivationType);
   if (!r) return null;
   const pw = r.planting_window || {};
   const hw = r.harvest_window || {};
   return {
-    name: cultivarName,
+    // 일정 보정 문구에 쓰는 이름. 작형 줄이면 작형 이름을 써야 "여름재배 기준으로
+    // 파종 5/1에 맞췄어요"가 되고, 품종 이름을 쓰면 없는 근거를 품종에 붙이게 된다.
+    name: (r.row_kind === 'season') ? (r.cultivation_type || r.name || '') : cultivarName,
     plant: pw.best || '',
     days: pw.days || null,
     harvestFrom: hw.from || '',
@@ -4269,8 +4331,8 @@ class Component extends DCLogic {
       // 품종이 저장돼 있으면 그 품종 기준으로 만든다. 단 품종 응답이 아직 없으면
       // (새로고침 직후) 작물 기준으로 만들고, 응답이 도착한 뒤 loadCultivars 쪽에서
       // 다시 맞춘다 - 여기서 기다리면 화면이 비어 있는 시간이 길어진다.
-      const adj = this.cultivarAdjustFor(mf, mf.cultivar);
-      const fresh = (mf.region && this.buildPlanFor(mf.crop, mf.region, adj)) || mf.plan;
+      const adj = this.cultivarAdjustFor(mf, mf.cultivar, mf.cultivationType);
+      const fresh = (mf.region && this.buildPlanFor(mf.crop, mf.region, adj, mf.cultivationType)) || mf.plan;
       if (fresh !== mf.plan) {
         mf = { ...mf, plan: fresh };
         try { window.localStorage.setItem(MYFARM_KEY, JSON.stringify(mf)); } catch (e) {}
@@ -4316,6 +4378,16 @@ class Component extends DCLogic {
     const next = { ...cur };
     if (next[k]) delete next[k]; else next[k] = true;
     this.setState({ planHowOpen: next });
+  }
+
+  // 품종·작형 카드의 추천 근거를 펼치거나 접는다. 근거를 전부 펼쳐 두면 카드 하나가
+  // 15~20줄이 되고 작형이 5개면 화면이 근거로만 가득 찬다. 머리줄(순위·이름·등급·
+  // 파종~수확)만 남기고 나머지는 눌러서 보게 한다. 체크리스트의 toggleHow와 같은 방식.
+  toggleCvDetail(k) {
+    const cur = this.state.cvDetailOpen || {};
+    const next = { ...cur };
+    if (next[k]) delete next[k]; else next[k] = true;
+    this.setState({ cvDetailOpen: next });
   }
 
   applyChecklistStatus(doneKey, status) {
@@ -4577,6 +4649,12 @@ class Component extends DCLogic {
           cautions: (data && data.cautions) || [],
           reliability: (data && data.reliability) || '',
           skipped: (data && data.skipped) || [],
+          // 이 응답이 품종 순위인지 작형 순위인지(breed.md §23). 이걸 담지 않으면 화면이
+          // 작형 목록에 "이 지역에 맞는 품종을 골라봤어요"라는 제목을 붙인다.
+          scoringMode: (data && data.scoring_mode) || '',
+          scoreLabel: (data && data.score_label) || '',
+          scoreNote: (data && data.score_note) || '',
+          tieNote: (data && data.tie_note) || '',
           error: (data && data.error) || '', loadedAt: Date.now()
         };
         const ls = { ...(this.state.cultivarLoadingSet || {}) }; delete ls[key];
@@ -4587,8 +4665,8 @@ class Component extends DCLogic {
         let extra = {};
         if (mf && mf.cultivar && mf.region && mf.crop === crop
             && (mf.region.fullName || '') === regionName) {
-          const adj = cultivarAdjustFrom(all[key], mf.cultivar);
-          const rebuilt = adj && this.buildPlanFor(mf.crop, mf.region, adj);
+          const adj = cultivarAdjustFrom(all[key], mf.cultivar, mf.cultivationType);
+          const rebuilt = adj && this.buildPlanFor(mf.crop, mf.region, adj, mf.cultivationType);
           if (rebuilt && (!mf.plan || mf.plan.cultivar !== mf.cultivar)) {
             const next = { ...mf, plan: rebuilt };
             try { window.localStorage.setItem(MYFARM_KEY, JSON.stringify(next)); } catch (e) {}
@@ -4613,8 +4691,8 @@ class Component extends DCLogic {
     if (!mf) return;
     const next = { ...mf, cultivar: cultivar, cultivationType: cultivationType || '', plantingDate: plantingDate || '' };
 
-    const adj = this.cultivarAdjustFor(mf, cultivar);
-    const plan = (mf.region && this.buildPlanFor(mf.crop, mf.region, adj)) || mf.plan;
+    const adj = this.cultivarAdjustFor(mf, cultivar, cultivationType);
+    const plan = (mf.region && this.buildPlanFor(mf.crop, mf.region, adj, cultivationType)) || mf.plan;
     next.plan = plan;
 
     try { window.localStorage.setItem(MYFARM_KEY, JSON.stringify(next)); } catch (e) {}
@@ -4626,12 +4704,12 @@ class Component extends DCLogic {
     this.cloudSave('my_farm', this.farmRow(next));
   }
 
-  // 저장된 품종의 보정 정보를 지금 받아 둔 품종 응답에서 뽑는다.
-  cultivarAdjustFor(mf, cultivar) {
-    if (!mf || !cultivar) return null;
+  // 저장된 품종·작형의 보정 정보를 지금 받아 둔 응답에서 뽑는다.
+  cultivarAdjustFor(mf, cultivar, cultivationType) {
+    if (!mf || !(cultivar || cultivationType)) return null;
     const label = (mf.region && mf.region.fullName) || '';
     const cvInfo = ((this.state.cultivarByKey || {})[label + '|' + mf.crop]) || null;
-    return cultivarAdjustFrom(cvInfo, cultivar);
+    return cultivarAdjustFrom(cvInfo, cultivar, cultivationType || mf.cultivationType);
   }
 
   // 앞으로 7일 예보(단기+중기). 지역 전체 이름(예 '충청북도 충주시 주덕읍') 단위로 캐시한다.
@@ -4685,14 +4763,27 @@ class Component extends DCLogic {
   // 캘린더를 만든다. region은 {province, sigungu, dong, code, zone, fullName}.
   // cvAdjust(선택) - 품종이 정해졌을 때 그 품종의 파종일·생육일수·수확기로 단계를
   // 옮긴다(breed.md §10.3, applyCultivarOffset). 없으면 작물 기준 일정 그대로다.
-  buildPlanFor(cropName, region, cvAdjust) {
+  buildPlanFor(cropName, region, cvAdjust, cultivationType) {
     const sched = CROP_SCHEDULE[cropName];
     if (!sched) return null;
     const today = getPlanToday();
 
     const zone = (region && region.zone) || (region ? PROVINCE_ZONE[region.province] : null);
 
-    const picked = pickSeasonInstance(sched.seasonsData, zone, today);
+    // 사용자가 작형을 직접 골랐으면(상추·오이 작형 순위) 그 작형의 일정을 쓴다.
+    // 기후대 자동 선택에 맡기면 "여름재배로 정하기"를 눌러도 캘린더는 기후대가 고른
+    // 다른 작형(예: 촉성재배)을 그대로 보여준다 - 고른 것과 보이는 것이 어긋난다.
+    // ⚠️ 이름을 그대로 비교하면 절대 안 맞는다. 화면 일정의 작형 이름에는 이모지가
+    //    붙어 있고(`🌱 시설 봄재배`) 서버가 주는 작형 이름은 순수 한글이다(`시설 봄재배`).
+    //    실제로 "여름재배로 정하기"를 눌렀는데 일지는 기후대가 고른 `🌱 시설 봄재배`로
+    //    만들어졌다 - 고른 것과 보이는 것이 어긋났다.
+    const seasonKey = (n) => (n || '').replace(/^[^가-힣]+/, '').trim();
+    const chosen = cultivationType
+      ? (sched.seasonsData || []).find(s => seasonKey(s.name) === seasonKey(cultivationType))
+      : null;
+    // 자동 선택 결과는 그대로 둔다 - 아래에서 matchedByZone(기후대가 골랐는지)을 쓴다.
+    const picked = chosen ? { season: chosen, matchedByZone: false }
+                          : pickSeasonInstance(sched.seasonsData, zone, today);
     const season = picked.season;
     if (!season) return null;
 
@@ -5199,7 +5290,11 @@ class Component extends DCLogic {
       // 그림카드에서 바로 보이도록 선택한 품종을 함께 넘긴다.
       cultivar: (myFarm && myFarm.cultivar) || '',
       hasCultivar: !!(myFarm && myFarm.cultivar),
-      cultivarLine: (myFarm && myFarm.cultivar) ? ('품종 ' + myFarm.cultivar) : '',
+      // 상추·오이는 작형까지 함께 고르므로 둘을 같이 보여준다("품종 청치마상추 · 여름재배").
+      cultivarLine: (myFarm && myFarm.cultivar)
+        ? ('품종 ' + myFarm.cultivar
+           + (myFarm.cultivationType ? ' · ' + myFarm.cultivationType : ''))
+        : '',
       // 그 품종 기준으로 일정에 무엇이 반영됐는지(applyCultivarOffset 결과)
       adjustNote: (myFarm && myFarm.plan && myFarm.plan.cultivarAdjust
                    && myFarm.plan.cultivarAdjust.note) || '',
@@ -5418,6 +5513,12 @@ class Component extends DCLogic {
       const cvLoading = !!(cvKey && (this.state.cultivarLoadingSet || {})[cvKey]);
       const savedCultivar = (this.state.myFarm && this.state.myFarm.crop === p.crop)
         ? (this.state.myFarm.cultivar || '') : '';
+      const savedSeason = (this.state.myFarm && this.state.myFarm.crop === p.crop)
+        ? (this.state.myFarm.cultivationType || '') : '';
+      // 작형 순위 응답인가(상추·오이). 한 줄이 품종이 아니라 작형이고, 품종은 그 줄 안에서
+      // 고른다. breed.md §23.
+      const cvIsSeason = !!(cvInfo && cvInfo.scoringMode === 'season');
+      const cvOpenSet = this.state.cvDetailOpen || {};
       // 'MM-DD' 권장 파종일을 실제 달력 날짜로 바꾼다(올해가 지났으면 내년).
       const mmddToDate = (mmdd) => {
         if (!mmdd || mmdd.length < 5) return '';
@@ -5429,34 +5530,63 @@ class Component extends DCLogic {
       const cvList = ((cvInfo && cvInfo.ranking) || []).map((r, i) => {
         const pw = r.planting_window || {};
         const plantDate = mmddToDate(pw.best);
-        const isPicked = savedCultivar === r.cultivar;
+        const isSeasonRow = (r.row_kind === 'season');
+        // 작형 줄은 그 작형이 저장돼 있는지로, 품종 줄은 품종이 저장돼 있는지로 본다.
+        const isPicked = isSeasonRow
+          ? (!!savedSeason && savedSeason === r.cultivation_type)
+          : (!!savedCultivar && savedCultivar === r.cultivar);
+        const rowName = isSeasonRow ? (r.name || r.cultivation_type || '') : r.cultivar;
+        // 근거를 접었는지. 카드가 길어지는 원인은 pros·cons·역병이라, 그 세 묶음만
+        // 접고 머리줄·파종창·차단사유는 항상 남긴다(차단 사유는 '심으면 실패하는' 정보다).
+        const detailKey = p.crop + '|' + rowName;
+        const detailOpen = !!cvOpenSet[detailKey];
+        const detailCount = (r.pros || []).length + (r.cons || []).length
+                            + (r.late_blight ? 1 : 0);
         return {
           rankLabel: (i + 1) + '위',
-          name: r.cultivar,
+          name: rowName,
           score: (typeof r.score === 'number') ? r.score.toFixed(1) : '',
           // 배지 문구를 한 조각으로 만든다. 예전에는 템플릿에서 '{{gradeLabel}} {{score}}'로
           // 이어 붙여, 점수가 없는 조건 모드 작물에서 "초보 추천 -"처럼 찍혔다.
           gradeText: (r.grade_label || '') + ((typeof r.score === 'number') ? ' ' + r.score.toFixed(1) : ''),
-          // 작형·숙기도 있는 것만 이어 붙인다(없으면 "반촉성재배 ·"로 점이 남았다).
-          metaText: [r.cultivation_type, r.maturity].filter(Boolean).join(' · '),
+          // 작형 줄은 이름에 이미 작형이 들어 있으니 재배 구조(노지/시설)를 곁들인다.
+          // 품종 줄은 예전처럼 작형·숙기를 이어 붙인다(없으면 "반촉성재배 ·"로 점이 남았다).
+          metaText: isSeasonRow
+            ? (r.structure || '')
+            : [r.cultivation_type, r.maturity].filter(Boolean).join(' · '),
           gradeLabel: r.grade_label || '',
           gradeStyle: { fontSize: 11, fontWeight: 700, color: '#fff', background: GRADE_COLOR[r.grade] || '#7A6A2F', borderRadius: 6, padding: '2px 7px' },
           season: r.cultivation_type || '',
           maturity: r.maturity || '',
           windowLine: (pw.from && pw.to)
-            ? ('파종 ' + pw.from.replace('-', '/') + '~' + pw.to.replace('-', '/')
+            ? ((isSeasonRow ? '파종기 ' : '파종 ') + pw.from.replace('-', '/') + '~' + pw.to.replace('-', '/')
                + ' → 수확 ' + (pw.harvest || '').replace('-', '/') + ' (' + (pw.days || '?') + '일)')
             : '',
           reason: (r.reasons || [])[0] || '',
+          // ── 접기/펼치기 ─────────────────────────────────────────────
+          // 열림 여부를 데이터로 처리한다(닫히면 목록을 비운다). 템플릿에 sc-if를 한 겹
+          // 더 두면 sc-for 안의 sc-if 안의 sc-for가 되어 중첩이 한 단 더 깊어진다.
+          hasDetailToggle: detailCount > 0,
+          detailBtnLabel: detailOpen ? '▲ 근거 접기' : ('❓ 추천 근거 보기 (' + detailCount + ')'),
+          detailToggle: () => this.toggleCvDetail(detailKey),
+          detailBtnStyle: {
+            alignSelf: 'flex-start', fontSize: 12, fontWeight: 700,
+            color: detailOpen ? '#5A5140' : '#2F6B44',
+            background: detailOpen ? '#F3EEE0' : '#EDF4EE',
+            border: '1px solid ' + (detailOpen ? '#DCD3B8' : '#BFD8C4'),
+            borderRadius: 8, padding: '6px 11px', cursor: 'pointer'
+          },
           // 추천 이유 / 고려할 점. 서버가 근거 출처(basis)를 함께 주므로 사용자가
           // "왜 그런지"를 확인할 수 있다 - 문장만 보여주면 납득이 아니라 신뢰 요구가 된다.
-          hasPros: (r.pros || []).length > 0,
-          pros: (r.pros || []).map(p => ({ text: p.text, basis: p.basis ? '· ' + p.basis : '' })),
-          hasCons: (r.cons || []).length > 0,
-          cons: (r.cons || []).map(c => ({ text: c.text, basis: c.basis ? '· ' + c.basis : '' })),
+          // 작형 줄에서 "이 품종을 추천하는 이유"라고 쓰면 작형 근거를 품종 근거로 읽게 된다.
+          prosTitle: isSeasonRow ? '이 작형을 추천하는 이유' : '이 품종을 추천하는 이유',
+          hasPros: detailOpen && (r.pros || []).length > 0,
+          pros: detailOpen ? (r.pros || []).map(x => ({ text: x.text, basis: x.basis ? '· ' + x.basis : '' })) : [],
+          hasCons: detailOpen && (r.cons || []).length > 0,
+          cons: detailOpen ? (r.cons || []).map(x => ({ text: x.text, basis: x.basis ? '· ' + x.basis : '' })) : [],
           // 역병. 위험도가 실제로 조사된 품종은 4개뿐이라(감자 수미·자영·대서, 사과 홍로)
           // 조사되지 않은 경우를 등급처럼 보여주지 않고 "자료 없음"을 그대로 밝힌다.
-          hasBlight: !!r.late_blight,
+          hasBlight: detailOpen && !!r.late_blight,
           blightAssessed: !!(r.late_blight && r.late_blight.assessed),
           // 배지에는 짧은 라벨만(위험 높음 / 관리 대상 / 자료 없음). 긴 설명은 아래 줄로.
           blightBadge: (r.late_blight && r.late_blight.badge_text) || '',
@@ -5475,9 +5605,45 @@ class Component extends DCLogic {
           blocker: (r.blockers || [])[0] || '',
           hasCaution: (r.cautions || []).length > 0,
           caution: (r.cautions || [])[0] || '',
-          hasBadge: (r.badges || []).length > 0,
+          hasBadge: detailOpen && (r.badges || []).length > 0,
           badge: (r.badges || [])[0] || '',
-          isPicked, notPicked: !isPicked,
+          // ── 작형 줄 안의 품종 고르기 ────────────────────────────────
+          // 상추·오이는 품종끼리 기후 점수가 갈리지 않아 순위를 매기지 않는다. 대신 작형을
+          // 고른 뒤 그 작형에 쓸 품종을 이 목록에서 고른다(자료에 근거가 있으면 함께 보여준다).
+          isSeasonRow,
+          hasVarieties: isSeasonRow && (r.varieties || []).length > 0,
+          // 버튼은 한 줄에 흘려 담는다. 전폭 버튼을 세로로 쌓으면 작형 하나가 버튼만으로
+          // 세 줄을 먹어, 작형 5개에서 화면이 초록 버튼으로 가득 찼다.
+          varieties: (r.varieties || []).map(v => {
+            const vPicked = savedCultivar === v.name && savedSeason === r.cultivation_type;
+            return {
+              name: v.name,
+              btnLabel: vPicked ? ('✅ ' + v.name) : (v.name + ' 선택'),
+              btnStyle: {
+                fontSize: 12.5, fontWeight: 700,
+                color: vPicked ? '#2F6B44' : '#fff',
+                background: vPicked ? '#F1F7F2' : '#2F6B44',
+                border: '1px solid ' + (vPicked ? '#9CC3A6' : '#2F6B44'),
+                borderRadius: 8, padding: '7px 12px', cursor: 'pointer', whiteSpace: 'nowrap'
+              },
+              pick: () => this.pickCultivar(v.name, r.cultivation_type, plantDate)
+            };
+          }),
+          // 품종 설명은 근거와 같이 접는다(버튼만 남기면 작형 한 줄이 14줄에서 8~10줄).
+          hasVarietyNotes: detailOpen && (r.varieties || []).some(v => v.headline || v.reason),
+          varietyNotes: detailOpen
+            ? (r.varieties || []).filter(v => v.headline || v.reason).map(v => ({
+                text: v.name + ' — ' + [v.headline, v.reason].filter(Boolean).join(' · '),
+                basis: v.basis ? '· ' + v.basis : ''
+              }))
+            : [],
+          hasVarietyHint: detailOpen && !!r.variety_hint,
+          varietyHint: r.variety_hint || '',
+          // 작형 줄에서는 줄 전체를 정하는 버튼을 쓰지 않는다(품종을 함께 골라야 하므로).
+          isPicked, notPicked: !isPicked && !isSeasonRow,
+          pickedNote: isPicked && isSeasonRow
+            ? ('✅ 이 작형으로 저장됨' + (savedCultivar ? ' · 품종 ' + savedCultivar : ''))
+            : '✅ 내 품종으로 저장됨',
           rowStyle: {
             background: isPicked ? '#F1F7F2' : '#FFFDF7',
             border: '1px solid ' + (isPicked ? '#9CC3A6' : '#E9E0CC'),
@@ -5499,18 +5665,48 @@ class Component extends DCLogic {
                          + (cvMetrics.years_used ? '(' + cvMetrics.years_used + '년 평년)' : ''));
       }
       const cvNote = cvNoteParts.join(' · ');
+      // 작형 모드에서는 제외된 작형(고랭지 작형을 평지에 권하지 않는 등)도 이유와 함께
+      // 밝힌다. 목록에서 조용히 빠지면 "왜 없지?"가 남는다.
+      const cvSkipped = ((cvInfo && cvInfo.skipped) || [])
+        .map(s => s.season + ' — ' + s.reason);
       const cultivarBox = {
         show: !!(cvKey && (cvLoading || cvList.length > 0 || (cvInfo && cvInfo.error))),
         loading: cvLoading && cvList.length === 0,
         hasList: cvList.length > 0,
         list: cvList,
         note: cvNote,
+        // 상추·오이는 줄 세운 것이 품종이 아니라 작형이므로 제목·설명이 달라야 한다.
+        // 응답이 오기 전에는 품종 순위인지 작형 순위인지 알 수 없다. 그때 '품종'으로
+        // 단정하면 상추·오이에서 제목이 '품종' → '작형'으로 깜빡인다.
+        title: (cvList.length === 0)
+          ? '🌱 이 지역에 맞는 것을 골라보고 있어요'
+          : (cvIsSeason ? '🌱 이 지역에 맞는 작형(재배 시기)을 골라봤어요'
+                        : '🌱 이 지역에 맞는 품종을 골라봤어요'),
+        // 일지 게이트 안내. 작형 모드에서는 고를 것이 '작형 + 그 작형에 쓸 품종'이라
+        // "이 품종으로 정하기를 누르세요"가 화면에 없는 버튼을 가리킨다.
+        gateTitle: cvIsSeason ? '작형과 품종을 고르면 농업일지를 만들어 드려요'
+                              : '품종을 고르면 농업일지를 만들어 드려요',
+        gateBody: cvIsSeason
+          ? '위 작형 카드에서 재배 시기를 고르고, 그 아래 품종 버튼을 누르세요. 작형마다 파종·수확 시기가 크게 달라서, 고른 작형 기준으로 일정을 맞춰 드립니다.'
+          : '위 품종 카드에서 «이 품종으로 정하기»를 누르세요. 품종마다 파종·수확 시기가 달라서, 고른 품종 기준으로 일정을 맞춰 드립니다.',
+        cardHint: cvIsSeason
+          ? '아래에서 작형과 품종을 고르면 그 작형 기준으로 농업일지가 만들어져요'
+          : '아래에서 품종을 고르면 그 품종 기준으로 농업일지가 만들어져요',
+        hasScoreNote: !!(cvInfo && cvInfo.scoreNote),
+        scoreNote: (cvInfo && cvInfo.scoreNote) || '',
+        hasTieNote: !!(cvInfo && cvInfo.tieNote),
+        tieNote: (cvInfo && cvInfo.tieNote) || '',
+        hasSkipped: cvSkipped.length > 0,
+        skipped: cvSkipped.map(text => ({ text })),
         hasError: !!(cvInfo && cvInfo.error && cvList.length === 0),
         error: (cvInfo && cvInfo.error) || '',
         hasHint: !!(cvInfo && (cvInfo.cautions || []).length),
         hint: (cvInfo && (cvInfo.cautions || [])[0]) || '',
-        hasPicked: !!savedCultivar,
-        pickedLine: savedCultivar ? ('저장한 품종: ' + savedCultivar) : ''
+        hasPicked: !!(savedCultivar || (cvIsSeason && savedSeason)),
+        pickedLine: cvIsSeason
+          ? [savedSeason && ('저장한 작형: ' + savedSeason),
+             savedCultivar && ('품종: ' + savedCultivar)].filter(Boolean).join(' · ')
+          : (savedCultivar ? ('저장한 품종: ' + savedCultivar) : '')
       };
 
       // fWarns(앞으로 7일 예보 기반)는 더 이상 여기 섞지 않는다 - "🌦 7일 예보를 보고 준비할 일을

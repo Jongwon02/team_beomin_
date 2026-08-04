@@ -93,6 +93,7 @@ _RISK_LEVEL_NORMALIZE = {
 # 근거 없는 축으로 순위를 만들면 화면에 "1위"가 뜨는데 그 1위에 이유가 없다.
 SCORING_CLIMATE = "climate"              # 파종일 스캔 (1년생) - cultivar_fit
 SCORING_CLIMATE_FRUIT = "climate_fruit"  # 수확기 앵커 (다년생 과수) - cultivar_fruit_fit
+SCORING_SEASON = "season"                # 작형 순위 (품종 수치 없음) - cultivar_season_fit
 SCORING_CONDITIONS = "conditions"        # 조건 매칭 - cultivar_conditions
 
 CROP_SCORING_MODE = {
@@ -101,11 +102,13 @@ CROP_SCORING_MODE = {
     # 그 구간의 평년 기상으로 점수가 갈린다(청송 착색기 후지 15.4℃ / 홍로 25.1℃).
     "사과": SCORING_CLIMATE_FRUIT,
     "배": SCORING_CLIMATE_FRUIT,
-    # 상추·오이는 기후 점수로 순위를 만들 수 없다(실측). 품종별로 다른 기후 수치가
-    # 있어야 순위에 이유가 붙는데, 상추 청치마·적축면은 생육일수(45~65)·적온(15~20)·
-    # 고온플래그가 완전히 같고 오이 3품종군도 전부 같다 - 무엇을 넣어도 동점이다.
-    "상추": SCORING_CONDITIONS,
-    "오이": SCORING_CONDITIONS,
+    # 상추·오이는 **품종** 순위를 만들 수 없다(실측). 품종별로 다른 기후 수치가 있어야
+    # 순위에 이유가 붙는데, 상추 청치마·적축면은 생육일수(45~65)·적온(15~20)·고온
+    # 플래그가 완전히 같고 오이 3품종군도 전부 같다 - 무엇을 넣어도 동점이다.
+    # 대신 **작형**은 파종기가 두 달씩 달라 작기 기상이 실제로 갈린다(정선 상추 작기
+    # 평균기온 고랭지 16.6℃ / 여름 18.9℃ / 가을 21.4℃). 그래서 작형을 줄 세운다.
+    "상추": SCORING_SEASON,
+    "오이": SCORING_SEASON,
 }
 
 # ── 데이터 제공자가 붙인 confidence 라벨 ──────────────────────────────────
