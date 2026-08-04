@@ -532,7 +532,11 @@ def _normalize_variety(crop, raw, std, common_env=None):
         "disorders": disorders,
         "harvest": harvest,
         "storage": storage,
-        "beginner_friendly": bool(raw.get("recommended_for_beginner")),
+        # 필드가 **없는 것**과 False를 구분한다. 사과·배에는 recommended_for_beginner가
+        # 아예 없어서 bool(None)=False로 두면 "초보자에게 손이 많이 간다"는 판정을
+        # 데이터 없이 지어내게 된다. 없으면 None으로 남기고 호출부가 판단을 미룬다.
+        "beginner_friendly": (None if raw.get("recommended_for_beginner") is None
+                              else bool(raw.get("recommended_for_beginner"))),
         "beginner_reason": raw.get("beginner_reason"),
         "selection_conditions": raw.get("selection_conditions") or [],
         "key_warnings": raw.get("key_warnings") or [],

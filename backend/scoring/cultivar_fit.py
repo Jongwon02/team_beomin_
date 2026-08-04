@@ -29,7 +29,9 @@ import logging
 from datetime import date
 from pathlib import Path
 
+import blight_data
 import cultivar_data
+import cultivar_reasons
 import reference_data
 import season_window
 from scoring_engine import _binary_range_score, _linear_interpolate_beyond  # noqa: F401 (재사용)
@@ -699,10 +701,26 @@ def score_cultivars(region_name, crop="감자", experience="beginner", years=sea
         best = max(per_season.values(), key=lambda c: c["score"])
         grade, grade_label = _grade_of(best["score"])
         badges = []
-        if experience == "beginner" and not v.get("beginner_friendly"):
+        if experience == "beginner" and v.get("beginner_friendly") is False:
             badges.append("초보자에겐 소규모 시험재배 권장")
         if v.get("beginner_friendly"):
             badges.append("초보자에게 무난")
+
+        # 화면의 '추천 이유 / 고려할 점'. 지역 근거를 맨 앞에 세운다 - 사용자가 궁금한
+        # 것은 "왜 **우리 동네에서** 이 품종인가"이고, 그 답이 이 엔진의 존재 이유다.
+        # 점수·breakdown 은 손대지 않는다(키만 추가한다).
+        ffd = climatology["frost"]["frost_free_days"]
+        region_pros = [(
+            f"이 지역에서 {cultivar_reasons.with_particle(best['season'])} "
+            f"{best['plant'].replace('-', '/')} 파종 → "
+            f"{best['harvest'].replace('-', '/')} 수확이 성립해요"
+            f" (무상기간 {ffd}일 / 필요 {best['days']}일)"
+        )]
+        blight = blight_data.blight_info(crop, v["name"])
+        pros, cons_list = cultivar_reasons.build(
+            v, region_pros=region_pros,
+            region_cons=list(best["blockers"]) + list(best["cautions"]),
+            blight=blight, experience=experience)
 
         ranking.append({
             "cultivar": v["name"],
@@ -731,6 +749,9 @@ def score_cultivars(region_name, crop="감자", experience="beginner", years=sea
             "cautions": best["cautions"],
             "variety_warnings": v.get("key_warnings", [])[:3],
             "badges": badges,
+            "pros": pros,
+            "cons": cons_list,
+            "late_blight": blight,
             "reasons": _reasons(v, best),
             "by_season": {
                 s: {"score": c["score"], "plant": c["plant"], "harvest": c["harvest"], "days": c["days"]}
@@ -839,7 +860,11 @@ def cultivar_profile(crop, name, topic=None):
         },
         "재배방법": {"씨감자관리": v["seed_potato"], "공통일정": common.get("pre_planting")},
         "생육관리": {"관리": v["cultivation_management"], "공통관리": common.get("tuber_bulking_stage")},
-        "주의점": {"핵심주의": v["key_warnings"], "병해충": v["diseases"], "생리장해": v["disorders"]},
+        # 역병은 별도 자료(data/late_blight.csv)에 위험 등급·증상·대처가 있다. 품종의
+        # disease_and_pest_risks 에 역병이 없는 품종도 많아서(추백은 감자바이러스Y만 기재)
+        # 그것만 보면 "역병 자료가 없다"는 사실 자체를 알려줄 수 없다.
+        "주의점": {"핵심주의": v["key_warnings"], "병해충": v["diseases"],
+                 "생리장해": v["disorders"], "역병": blight_data.blight_info(crop, v["name"])},
         "수확": {"수확": v["harvest"], "공통수확": common.get("maturity_and_harvest")},
         "저장판매": {"저장·판매": v["storage"]},
         "선택기준": {"이럴때선택": v["selection_conditions"]},

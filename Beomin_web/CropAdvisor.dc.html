@@ -1438,15 +1438,56 @@
                           <span style="font-size:12px;color:#6E6857;">{{ cv.season }} · {{ cv.maturity }}</span>
                         </div>
                         <span style="font-size:13px;font-weight:600;line-height:1.6;color:#2E3B2B;">{{ cv.windowLine }}</span>
-                        <sc-if value="{{ cv.reason }}">
-                          <span style="font-size:12.5px;line-height:1.7;color:#544E3E;">· {{ cv.reason }}</span>
+
+                        <!-- 추천 이유 / 고려할 점. 예전에는 reasons[0]·cautions[0] 한 줄씩만
+                             보여줘서 "왜 이 품종인지"가 전달되지 않았다. 서버가 근거 출처
+                             (basis)를 함께 주므로 사용자가 어느 자료에서 나온 말인지 확인할 수 있다. -->
+                        <sc-if value="{{ cv.hasPros }}">
+                          <div style="display:flex;flex-direction:column;gap:3px;">
+                            <span style="font-size:12px;font-weight:700;color:#2F6B44;">이 품종을 추천하는 이유</span>
+                            <sc-for list="{{ cv.pros }}" as="p" hint-placeholder-count="4">
+                              <span style="font-size:12.5px;line-height:1.65;color:#3C4A38;">✅ {{ p.text }} <span style="color:#9A9080;font-size:11px;">{{ p.basis }}</span></span>
+                            </sc-for>
+                          </div>
                         </sc-if>
+                        <sc-if value="{{ cv.hasCons }}">
+                          <div style="display:flex;flex-direction:column;gap:3px;">
+                            <span style="font-size:12px;font-weight:700;color:#A5642A;">고르기 전에 볼 점</span>
+                            <sc-for list="{{ cv.cons }}" as="c" hint-placeholder-count="4">
+                              <span style="font-size:12.5px;line-height:1.65;color:#5A5140;">⚠️ {{ c.text }} <span style="color:#9A9080;font-size:11px;">{{ c.basis }}</span></span>
+                            </sc-for>
+                          </div>
+                        </sc-if>
+
+                        <!-- 역병. 위험도가 실제로 조사된 품종은 4개뿐이라(감자 수미·자영·대서,
+                             사과 홍로) 나머지는 '자료 없음'을 그대로 밝힌다. 조사되지 않은 것을
+                             등급처럼 보여주면 조사하지 않은 위험을 판정한 것처럼 읽힌다. -->
+                        <sc-if value="{{ cv.hasBlight }}">
+                          <div style="border-top:1px dashed #E3D2A0;padding-top:8px;display:flex;flex-direction:column;gap:3px;">
+                            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                              <span style="font-size:12px;font-weight:700;color:#241F16;">역병</span>
+                              <span style="{{ cv.blightBadgeStyle }}">{{ cv.blightBadge }}</span>
+                            </div>
+                            <span style="font-size:12px;line-height:1.65;color:#5A5140;">{{ cv.blightStatus }}</span>
+                            <sc-if value="{{ cv.hasBlightSymptoms }}">
+                              <span style="font-size:12px;line-height:1.65;color:#5A5140;">증상 — {{ cv.blightSymptoms }}</span>
+                            </sc-if>
+                            <sc-if value="{{ cv.hasBlightManagement }}">
+                              <span style="font-size:12px;line-height:1.65;color:#3C4A38;">대처 — {{ cv.blightManagement }}</span>
+                            </sc-if>
+                            <sc-if value="{{ cv.hasBlightNote }}">
+                              <span style="font-size:11.5px;line-height:1.6;color:#9A9080;">{{ cv.blightNote }}</span>
+                            </sc-if>
+                          </div>
+                        </sc-if>
+
+                        <!-- 차단 사유는 '고르기 전에 볼 점'과 별개로 맨 아래 강조해 남긴다.
+                             재배기간 부족처럼 '심으면 실패하는' 사유는 다른 주의와 섞이면 안 된다. -->
                         <sc-if value="{{ cv.hasBlocker }}">
                           <span style="font-size:12.5px;font-weight:700;line-height:1.7;color:#9E3B2E;">⛔ {{ cv.blocker }}</span>
                         </sc-if>
-                        <sc-if value="{{ cv.hasCaution }}">
-                          <span style="font-size:12px;line-height:1.7;color:#A5642A;">⚠️ {{ cv.caution }}</span>
-                        </sc-if>
+                        <!-- cautions[0] 한 줄은 없앴다 - cons 목록이 같은 내용을 이미 담고 있어
+                             같은 문장이 두 번 나갔다. -->
                         <sc-if value="{{ cv.hasBadge }}">
                           <span style="font-size:11.5px;line-height:1.6;color:#8F856D;">{{ cv.badge }}</span>
                         </sc-if>
@@ -5199,6 +5240,29 @@ class Component extends DCLogic {
                + ' → 수확 ' + (pw.harvest || '').replace('-', '/') + ' (' + (pw.days || '?') + '일)')
             : '',
           reason: (r.reasons || [])[0] || '',
+          // 추천 이유 / 고려할 점. 서버가 근거 출처(basis)를 함께 주므로 사용자가
+          // "왜 그런지"를 확인할 수 있다 - 문장만 보여주면 납득이 아니라 신뢰 요구가 된다.
+          hasPros: (r.pros || []).length > 0,
+          pros: (r.pros || []).map(p => ({ text: p.text, basis: p.basis ? '· ' + p.basis : '' })),
+          hasCons: (r.cons || []).length > 0,
+          cons: (r.cons || []).map(c => ({ text: c.text, basis: c.basis ? '· ' + c.basis : '' })),
+          // 역병. 위험도가 실제로 조사된 품종은 4개뿐이라(감자 수미·자영·대서, 사과 홍로)
+          // 조사되지 않은 경우를 등급처럼 보여주지 않고 "자료 없음"을 그대로 밝힌다.
+          hasBlight: !!r.late_blight,
+          blightAssessed: !!(r.late_blight && r.late_blight.assessed),
+          // 배지에는 짧은 라벨만(위험 높음 / 관리 대상 / 자료 없음). 긴 설명은 아래 줄로.
+          blightBadge: (r.late_blight && r.late_blight.badge_text) || '',
+          blightStatus: (r.late_blight && r.late_blight.status_text) || '',
+          blightSymptoms: (r.late_blight && r.late_blight.symptoms) || '',
+          hasBlightSymptoms: !!(r.late_blight && r.late_blight.symptoms),
+          blightManagement: (r.late_blight && r.late_blight.management) || '',
+          hasBlightManagement: !!(r.late_blight && r.late_blight.management),
+          blightNote: (r.late_blight && r.late_blight.note) || '',
+          hasBlightNote: !!(r.late_blight && r.late_blight.note),
+          blightBadgeStyle: {
+            fontSize: 11, fontWeight: 700, color: '#fff', borderRadius: 6, padding: '2px 7px',
+            background: (r.late_blight && r.late_blight.assessed) ? '#9E3B2E' : '#9A9080'
+          },
           hasBlocker: (r.blockers || []).length > 0,
           blocker: (r.blockers || [])[0] || '',
           hasCaution: (r.cautions || []).length > 0,

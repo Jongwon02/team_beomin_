@@ -41,7 +41,9 @@
 import logging
 import re
 
+import blight_data
 import cultivar_data
+import cultivar_reasons
 import season_window
 
 logger = logging.getLogger(__name__)
@@ -393,14 +395,20 @@ def recommend(region_name, crop, experience="beginner", years=season_window.DEFA
         grade, grade_label = _grade_of(severity, v.get("beginner_friendly"))
 
         badges = []
-        if v.get("beginner_friendly"):
+        # beginner_friendly 가 None 이면 '데이터에 그 항목이 없다'는 뜻이다(사과·배).
+        # False 와 구분하지 않으면 근거 없이 '시험재배 권장' 배지가 붙는다.
+        if v.get("beginner_friendly") is True:
             badges.append("초보자에게 무난")
-        elif experience == "beginner":
+        elif v.get("beginner_friendly") is False and experience == "beginner":
             badges.append("초보자에겐 소규모 시험재배 권장")
         if payload["unit"] == "품종군":
             badges.append("개별 품종이 아니라 품종군이에요")
 
         win = harvest_window(v)
+        blight = blight_data.blight_info(crop, v["name"])
+        pros, cons_list = cultivar_reasons.build(
+            v, region_pros=region_reasons, region_cons=region_cautions_v,
+            blight=blight, experience=experience)
         ranking.append({
             "cultivar": v["name"],
             "aliases": v["aliases"],
@@ -423,6 +431,11 @@ def recommend(region_name, crop, experience="beginner", years=season_window.DEFA
             "cautions": cautions,
             "variety_warnings": (v.get("key_warnings") or [])[:3],
             "badges": badges,
+            # pros/cons 가 화면의 '추천 이유 / 고려할 점'이다. reasons·cautions 는
+            # 챗봇 축약과 기존 소비자를 위해 남겨 둔다(같은 내용의 평문 목록).
+            "pros": pros,
+            "cons": cons_list,
+            "late_blight": blight,
             "reasons": _reasons(v, region_reasons),
             "beginner_friendly": v.get("beginner_friendly"),
             "beginner_reason": v.get("beginner_reason"),

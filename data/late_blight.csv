@@ -1,0 +1,19 @@
+crop,crop_id,variety,variety_id,documented_in_dataset,risk_level,symptoms,management,confidence,source,note
+감자,potato,수미,sumi,Y,높음,"물에 젖은 듯한 잎 반점, 갈색 또는 검은색 병반","재식거리 확보, 통풍 개선, 배수로 정비, 병든 잎과 포기 제거, 등록 약제 사용",확실(데이터 기재),potato_varieties_structured.json,
+감자,potato,자영,jayeong,Y,관리 필요,"물에 젖은 듯한 잎 반점, 흑갈색 병반","통풍 확보, 배수 관리, 정기 예찰, 등록 약제의 안전사용기준 준수",확실(데이터 기재),potato_varieties_structured.json,
+감자,potato,대서,daeseo,Y,중간,데이터에 별도 증상 기재 없음,"정기 예찰, 배수 및 통풍 관리",확실(데이터 기재),potato_varieties_structured.json,
+감자,potato,추백,chubaek,N,공통주의(개별 위험 미기재),데이터에 없음,공통관리 원칙 적용: 괴경 비대기에 역병과 진딧물을 예찰한다,보통(공통관리 항목 근거),potato_varieties_structured.json (common_management.tuber_bulking_stage),품종 개별 위험으로는 감자바이러스Y가 대신 기재됨
+사과,apple,홍로,hongro,Y,명시(수치 등급 없음),데이터에 별도 증상 기재 없음,과다착과와 역병을 관리한다,확실(위험목록 기재) / 불확실(구체적 방제법),apple_varieties_structured.json,
+사과,apple,후지,fuji,N,공통관리 목록에만 포함,확인 불가,"나무 밑동에 흙·멀칭재가 닿지 않게 관리, 배수 개선으로 과습 방지, 등록 살균제(metalaxyl·cyazofamide·amisulbrome·cymoxanil·dimethomorph 등) 안전사용기준에 따라 사용","보통(일반 원칙, 웹검색 보강)",DBpia 사과 역병(Phytophthora cactorum) 살균제 방제효과 논문,품종별 위험으로는 데이터에 미기재
+사과,apple,시나노골드,shinano_gold,N,공통관리 목록에만 포함,확인 불가,"나무 밑동에 흙·멀칭재가 닿지 않게 관리, 배수 개선으로 과습 방지, 등록 살균제 사용","보통(일반 원칙, 웹검색 보강)",DBpia 사과 역병 살균제 방제효과 논문,품종별 위험으로는 데이터에 미기재
+사과,apple,감홍,gamhong,N,공통관리 목록에만 포함,확인 불가,"나무 밑동에 흙·멀칭재가 닿지 않게 관리, 배수 개선으로 과습 방지, 등록 살균제 사용","보통(일반 원칙, 웹검색 보강)",DBpia 사과 역병 살균제 방제효과 논문,품종별 위험으로는 데이터에 미기재
+사과,apple,쓰가루,tsugaru,N,공통관리 목록에만 포함,확인 불가,"나무 밑동에 흙·멀칭재가 닿지 않게 관리, 배수 개선으로 과습 방지, 등록 살균제 사용","보통(일반 원칙, 웹검색 보강)",DBpia 사과 역병 살균제 방제효과 논문,품종별 위험으로는 데이터에 미기재
+오이,cucumber,다다기오이,baekdadagi_cucumber,N,확인 불가(품종군별 자료 없음),확인 불가,"배수로 정비, 높은 두둑 조성, 과도한 밀식 회피, 병든 잎·포기 제거, 박과 작물 연작 회피",보통(오이 공통 예방원칙 준용),cucumber_varieties_structured.json (common_management.prevention_principles); 농사로 역병 방제 자료,국내 오이 재배에서 역병 자체는 존재가 확인되나 품종군별 데이터는 확보 못함
+오이,cucumber,취청오이,cheongjang_cucumber,N,확인 불가(품종군별 자료 없음),확인 불가,"배수로 정비, 높은 두둑 조성, 과도한 밀식 회피, 병든 잎·포기 제거, 박과 작물 연작 회피",보통(오이 공통 예방원칙 준용),cucumber_varieties_structured.json (common_management.prevention_principles); 농사로 역병 방제 자료,국내 오이 재배에서 역병 자체는 존재가 확인되나 품종군별 데이터는 확보 못함
+오이,cucumber,가시오이,spiny_cucumber,N,확인 불가(품종군별 자료 없음),확인 불가,"배수로 정비, 높은 두둑 조성, 과도한 밀식 회피, 병든 잎·포기 제거, 박과 작물 연작 회피",보통(오이 공통 예방원칙 준용),cucumber_varieties_structured.json (common_management.prevention_principles); 농사로 역병 방제 자료,국내 오이 재배에서 역병 자체는 존재가 확인되나 품종군별 데이터는 확보 못함
+상추,lettuce,청치마상추,green_chima_lettuce,N,확인 불가,확인 불가,"뿌리썩음병 예방법 준용: 배수 개선, 관수 조절, EC 점검",불확실(접속 제한으로 1차 자료 미확인),확인 불가,노균병·무름병·뿌리썩음병은 데이터에 있으나 역병(Phytophthora)과는 병원균이 다름
+상추,lettuce,적축면상추,red_crisped_leaf_lettuce,N,확인 불가,확인 불가,"뿌리썩음병 예방법 준용: 배수 개선, 관수 조절, EC 점검",불확실(접속 제한으로 1차 자료 미확인),확인 불가,노균병·무름병·뿌리썩음병은 데이터에 있으나 역병(Phytophthora)과는 병원균이 다름
+상추,lettuce,로메인상추,romaine_lettuce,N,확인 불가,확인 불가,"뿌리썩음병 예방법 준용: 배수 개선, 관수 조절, EC 점검",불확실(접속 제한으로 1차 자료 미확인),확인 불가,노균병·무름병·뿌리썩음병은 데이터에 있으나 역병(Phytophthora)과는 병원균이 다름
+배,pear,신고,niitaka,N,확인 불가,확인 불가,"일반 원칙: 배수 개선, 통풍 확보, 등록 살균제 사용",불확실(품종별 저항성 자료 미확보),확인 불가,검은무늬병·검은별무늬병은 데이터에 있으나 역병은 미기재
+배,pear,원황,wonwhang,N,확인 불가,확인 불가,"일반 원칙: 배수 개선, 통풍 확보, 등록 살균제 사용",불확실(품종별 저항성 자료 미확보),확인 불가,역병 관련 데이터 없음
+배,pear,신화,sinhwa,N,확인 불가,확인 불가,"일반 원칙: 배수 개선, 통풍 확보, 등록 살균제 사용",불확실(품종별 저항성 자료 미확보),확인 불가,역병 관련 데이터 없음
