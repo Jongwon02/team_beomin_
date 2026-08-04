@@ -1178,12 +1178,18 @@
             </sc-for>
           </div>
 
+          <!-- thead는 정적 HTML이라, fertilizer가 없는 작물에서는 제목·본문·비고가 모두
+               빈 채로 헤더 8칸만 남은 표가 그려졌다(resolvePath가 undefined를 돌려줌).
+               지금은 5개 작물 모두 데이터가 있지만, 작물이 추가될 때 같은 증상이
+               재발하지 않도록 hasFertilizer로 표 전체를 감싼다. -->
+          <sc-if value="{{ detail.hasFertilizer }}">
           <div style="background:#FFFDF7;border:1px solid #E4DCC8;border-radius:14px;padding:18px 20px;overflow-x:auto;margin-top:16px;">
             <div style="font-size:14.5px;font-weight:700;color:#241F16;margin-bottom:10px;">{{ detail.cultivationGuide.fertilizer.title }}</div>
             <table style="border-collapse:collapse;width:100%;font-size:13px;">
               <thead>
                 <tr>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">작형</th>
+                  <!-- 감자·상추·오이는 '작형'이지만 사과·배는 '생육단계'(성목)라 작물별로 받는다 -->
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">{{ detail.cultivationGuide.fertilizer.rowHeader }}</th>
                   <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">N</th>
                   <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">P</th>
                   <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">K</th>
@@ -1210,6 +1216,7 @@
             </table>
             <div style="font-size:11.5px;color:#9A9080;margin-top:10px;">{{ detail.cultivationGuide.fertilizer.note }}</div>
           </div>
+          </sc-if>
         </section>
       </sc-if>
 
@@ -1945,7 +1952,19 @@ const CROP_SCHEDULE = {
           '90% 이상 소실 → 단기저장용',
           '완전 소실 → 즉시판매용'
         ] }
-      ]
+      ],
+      // 출처: data/raw/crop_fertilizer_recommendations_nongsaro.csv (농사로 사과 성목 범위).
+      // 위 '비료 주기' 블록의 '성목 기준 N:P:K = 12~15 : 6~8 : 10~12'과 같은 값이다.
+      // 퇴비는 농사로 이 페이지에 정량이 없어 '—'로 두고 note에서 목표치로 안내한다.
+      fertilizer: {
+        title: '시비량 (kg/10a)',
+        unit: 'kg/10a',
+        rowHeader: '생육단계',
+        rows: [
+          { season: '성목', n: '12~15', p: '6~8', k: '10~12', urea: '26.1~32.6', fusedSuper: '30~40', kcl: '16.7~20', compost: '—' }
+        ],
+        note: '농사로가 제시한 성목 기준 범위예요. 이 표에는 정량 퇴비량이 없어서, 퇴비는 토양 유기물 3% 이상을 목표로 넣어주세요. 요소·용과린·염화가리는 성분량을 요소 46%·용성인비 20%·염화가리 60%로 환산한 값이에요.'
+      }
     }
   },
   // ── 배 ───────────────────────────────────────────────────────────────────
@@ -2026,7 +2045,21 @@ const CROP_SCHEDULE = {
           '중생종 — 수확 9월 중순~10월 중순 · 출하 9월 하순~10월 중순 · 성출하 10월 하순~2월 하순 · 저장출하 10월 중순~6월 중순',
           '만생종 — 수확 10월 중순~11월 상순 · 출하 10월 중순~11월 중순 · 성출하 10월 하순~2월 하순 · 저장출하 11월 중순~8월 중순'
         ] }
-      ]
+      ],
+      // 출처: data/raw/crop_fertilizer_recommendations_nongsaro.csv.
+      // ⚠️ 다른 4개 작물과 달리 이 수치만 농사로가 아니다. CSV의 출처구분이
+      // '보완자료(과거 원예연구소 표 재인용)'이고 출처_URL도 개인 블로그다.
+      // 페이지 상단 sourceLabel은 농사로라고 표기되므로, 오해하지 않도록
+      // note 첫머리에서 출처가 다르다는 점을 명시한다.
+      fertilizer: {
+        title: '시비량 (kg/10a)',
+        unit: 'kg/10a',
+        rowHeader: '생육단계',
+        rows: [
+          { season: '성목(20년 이상)', n: '20~25', p: '13~18', k: '18~23', urea: '43.5~54.3', fusedSuper: '65~90', kcl: '30~38.3', compost: '2,000' }
+        ],
+        note: '⚠️ 이 수치는 농사로 자료가 아니에요. 농사로 「배 농작업일정」에는 정량 NPK 표가 없어서, 과거 원예연구소의 수령별 표준시비량 표를 재인용한 보완자료를 썼어요. 비옥지~척박지를 아우르는 넓은 범위이니 반드시 토양검정 결과로 조정해주세요.'
+      }
     }
   },
   '감자': {
@@ -2129,9 +2162,12 @@ const CROP_SCHEDULE = {
           '여름재배·가을재배라면 검은색 비닐(PE 필름)로 멀칭해주세요.'
         ]
       },
+      // 출처: data/raw/crop_fertilizer_recommendations_nongsaro.csv (농사로 작형별 표준시비량).
+      // 네 작형 수치 모두 CSV와 일치한다(전량 밑거름 기준).
       fertilizer: {
         title: '시비량 (kg/10a)',
         unit: 'kg/10a',
+        rowHeader: '작형',
         rows: [
           { season: '봄재배', n: 10, p: 8.8, k: 13, urea: 22, fusedSuper: 44, kcl: 22, compost: '1,500~2,000' },
           { season: '여름재배', n: 13.7, p: 3.3, k: 11.4, urea: 30, fusedSuper: 16.5, kcl: 19, compost: '1,500~2,000' },
@@ -2250,7 +2286,20 @@ const CROP_SCHEDULE = {
           '돌려짓기와 유기물 시용으로 병해충 발생을 줄여주세요.',
           '농약안전사용기준을 지켜서 방제해주세요.'
         ] }
-      ]
+      ],
+      // 출처: data/raw/crop_fertilizer_recommendations_nongsaro.csv.
+      // 농사로 상추 페이지가 시설·기본 재배와 노지재배 수치를 따로 주므로 2행으로 넣었다.
+      // 위 '거름 주기' 블록의 밑거름 50% 안내와 같은 출처다.
+      fertilizer: {
+        title: '시비량 (kg/10a)',
+        unit: 'kg/10a',
+        rowHeader: '작형',
+        rows: [
+          { season: '시설·기본', n: 7, p: 3, k: 3.6, urea: 15.2, fusedSuper: 15, kcl: 6, compost: '1,500' },
+          { season: '노지재배', n: 20, p: 5.9, k: 12.8, urea: 43.5, fusedSuper: 29.5, kcl: 21.3, compost: '1,500' }
+        ],
+        note: '밑거름으로 전체의 50%를 넣고 인산·퇴비는 전량 밑거름으로, 웃거름은 약 10일 간격으로 나눠 주세요. 노지재배 수치는 농사로에 별도로 표기된 값이고, 토양검정과 재배기간에 따라 조정해주세요. 요소·용과린·염화가리는 성분량을 요소 46%·용성인비 20%·염화가리 60%로 환산한 값이에요.'
+      }
     }
   },
   // ── 오이 ─────────────────────────────────────────────────────────────────
@@ -2329,7 +2378,18 @@ const CROP_SCHEDULE = {
           '물은 점적관수를 이용하고, 오전에 주세요.',
           '받침대를 세우고 줄 유인을 해주세요.'
         ] }
-      ]
+      ],
+      // 출처: data/raw/crop_fertilizer_recommendations_nongsaro.csv (농사로 오이 총 시비량).
+      // 위 seedPrep의 '신토좌는 흡비력이 강하므로 비료를 감량' 안내와 함께 읽어야 한다.
+      fertilizer: {
+        title: '시비량 (kg/10a)',
+        unit: 'kg/10a',
+        rowHeader: '작형',
+        rows: [
+          { season: '일반 재배', n: 24, p: 16.4, k: 23.8, urea: 52.2, fusedSuper: 82, kcl: 39.7, compost: '2,000' }
+        ],
+        note: '농사로 총 시비량 기준이에요. 질소·칼리는 밑거름과 3회 웃거름으로 나눠 주고, 인산과 퇴비는 전량 밑거름으로 넣어주세요. 대목을 신토좌로 쓰면 흡비력이 강해서 비료를 줄여야 해요. 요소·용과린·염화가리는 성분량을 요소 46%·용성인비 20%·염화가리 60%로 환산한 값이에요.'
+      }
     }
   }
 };
@@ -4852,6 +4912,9 @@ class Component extends DCLogic {
         })) : [],
         pests: dsched ? dsched.pests : [],
         cultivationGuide: dsched ? dsched.cultivationGuide : null,
+        // 시비량 표를 그릴지 여부. 표의 thead가 정적 HTML이라 이 가드 없이는
+        // fertilizer 없는 작물에서 헤더만 남은 빈 표가 나온다.
+        hasFertilizer: !!(dsched && dsched.cultivationGuide && dsched.cultivationGuide.fertilizer),
         // 작물마다 안내 블록 구성이 다르다. 이름 있는 4개 키(씨앗 준비·심는거리·멀칭·
         // 수확저장 — 체크리스트가 이것들을 작업 단계에 맞춰 꺼내 쓴다)를 먼저 보여주고,
         // 그 틀에 안 맞는 나머지는 blocks 배열로 뒤에 붙인다. 둘 다 가진 작물(상추·오이)이
