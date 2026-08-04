@@ -14,16 +14,19 @@ data/cache/
 data/chat_usage.jsonl
 
 # 문서 · 분석 산출물 · 원본 이미지
+# ⚠️ 파일명만 쓰면 .gitignore처럼 '경로 무관'으로 매칭돼 하위 폴더의 동명 파일까지 지운다.
+#    실제로 chatbot_img.png 라고만 적었다가 Beomin_web/uploads/chatbot_img.png(챗봇 아이콘)
+#    까지 배포에서 빠져 사이트에서 404가 났다. 루트 파일만 빼려면 앞에 / 를 붙인다.
 *.pdf
 *.md
 !README.md
-chatbot_img.png
-plant_page_click.png
-국토교통부_법정동코드_20250805.csv
-출처.csv
-출처.txt
-coverage_analysis.csv
-Recommend_top3.csv
+/chatbot_img.png
+/plant_page_click.png
+/국토교통부_법정동코드_20250805.csv
+/출처.csv
+/출처.txt
+/coverage_analysis.csv
+/Recommend_top3.csv
 data/processed/elbow_plot.png
 
 # 파이썬 캐시 · 테스트

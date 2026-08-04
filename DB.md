@@ -934,8 +934,7 @@ pandas          # 기준 데이터 DB 이관 후 제거 검토 (§6.6)
       MCP SQL로 넣기엔 너무 커서 `psql \copy` 또는 Supabase CLI를 쓴다.
 - [ ] `SUPABASE_SERVICE_ROLE_KEY`를 대시보드에서 복사해 Vercel 환경변수로 등록
 - [ ] `backend/db.py` 작성 후 `cache_get`/`cache_put`/`bump_rate_limit` 연동 (§7 3단계)
-- [ ] 프런트에 supabase-js 부트스트랩 + write-through upsert + §5 마이그레이션 심기
-      (현재 배포판은 아직 localStorage만 쓴다 — DB는 준비됐지만 연결되지 않았다)
+- [x] 프런트에 supabase-js 부트스트랩 + write-through upsert + §5 마이그레이션 심기 → **완료 (§11)**
 
 ---
 
@@ -1015,3 +1014,97 @@ pandas          # 기준 데이터 DB 이관 후 제거 검토 (§6.6)
 - [ ] 네이버 지도 콘솔에 `team-beomin.vercel.app` 도메인 등록 — **안 하면 배포 사이트에서 지도가 안 뜬다**
 - [ ] GitHub 저장소를 Vercel에 연결해 push할 때 자동 배포되게 전환 (지금은 CLI 수동 배포)
 - [ ] §9.5의 DB 연동 작업(기준 데이터 적재 → `backend/db.py` → 프런트 supabase-js)
+
+---
+
+## 11. 프런트엔드 Supabase 연동 + 로그인/회원가입 (2026-08-04)
+
+`Beomin_web/CropAdvisor.dc.html` 하나에 모두 들어갔다. 이 파일은 `<script type="text/x-dc">`
+안의 코드를 support.js 런타임이 **Babel로 변환해** 실행하고, UI는 `{{ }}` / `sc-if` / `sc-for` /
+`onClick` 템플릿으로 그린다. 그래서 `async/await`는 쓰지 않고 기존 코드 스타일대로 Promise 체인만 썼다
+(regenerator 의존을 피하기 위해).
+
+### 11.1 인증 방식 — 익명 우선, 가입은 선택
+
+```
+첫 방문 → signInAnonymously()  →  익명 user_id로 모든 데이터 저장
+                                        │
+회원가입(같은 세션) → updateUser({email, password})
+                                        │  user_id 그대로 유지
+                                        ▼
+                          지금까지 저장한 데이터가 계정으로 그대로 승계
+```
+
+- **로그인을 강제하지 않는다.** 초보 귀농인 대상 서비스에서 가입 강제는 이탈 요인이다.
+- 회원가입은 `signUp`이 아니라 **`updateUser`** 로 처리한다 — 익명 사용자에 이메일·비밀번호를
+  붙이는 방식이라 `user_id`가 바뀌지 않아 데이터 이전 작업이 아예 필요 없다.
+- 로그아웃하면 다시 익명 세션을 발급해 사이트를 계속 쓸 수 있게 한다.
+- 로그인으로 사용자가 바뀌면 `clearLocalUserData()`로 이전 사용자의 localStorage·화면 상태를
+  먼저 비운 뒤 그 계정의 데이터를 서버에서 받아온다(남의 인적사항이 화면에 남으면 안 된다).
+
+### 11.2 저장 방식 — write-through (localStorage 먼저, 서버에 덧붙여)
+
+| 사용자 동작 | 메서드 | 서버 반영 |
+|---|---|---|
+| 지도에서 지역 선택 | `pushRegionLog` | `region_log` upsert (8개 상한은 DB 트리거가 정리) |
+| 지역 기록 지우기 | `clearRegionLog` | `region_log` 전체 delete |
+| 작물 선택(내 농장 확정) | `setMyCrop` | `my_farm` upsert (1인 1행이라 upsert가 곧 교체) |
+| 내 농장 해제 | `clearMyFarm` | `my_farm` delete |
+| 체크리스트 상태 변경 | `applyChecklistStatus` | 상태 있으면 upsert / '시작 전'이면 delete |
+| 예보 준비할 일 상태 변경 | `applyPrepStatus` | 같은 방식 |
+| 제안 다시 보기 | `resetPrepDismissed` | `prep_key like '플랜|prep|%' and status='dismissed'` delete |
+| 인적사항 입력 | `updatePI` | 0.8초 디바운스 후 `personal_info` 한 행 upsert |
+| 인적사항 초기화 | `resetPersonalInfo` | `personal_info` delete (민감정보는 실제로 지운다) |
+
+**localStorage는 계속 유지한다.** 서버 장애·오프라인에서도 앱이 그대로 동작해야 하고,
+서버에서 받아온 데이터도 localStorage에 다시 심어 다음 로딩을 빠르게 한다.
+
+불러오기는 `syncFromCloud()`가 5개 테이블을 병렬 조회해 상태로 되돌린다. 서버가 비어 있고
+아직 계정이 없는(익명) 사용자면, 기기에 쌓여 있던 기존 데이터를 `migrateLocalToCloud()`로
+1회 업로드한다(§5). 마이그레이션 완료 표시는 `beomin_migrated_v1:<user_id>`로 **사용자별**로
+남긴다 — 로그인으로 사용자가 바뀌었을 때 이전 사용자의 데이터를 새 계정에 올려버리면 안 된다.
+
+`my_farm`의 `plan`은 서버에도 저장하지만, 불러올 때는 `loadMyFarm()`이 **오늘 기준으로 다시
+계산**한다. 농사 계획은 '오늘'을 기준으로 캘린더를 채우므로 저장된 plan을 그대로 쓰면 날짜가 어긋난다.
+
+### 11.3 UI
+
+- 헤더 오른쪽: 로그인 전 `로그인` / 로그인 후 `👤 <이메일 아이디>`
+- 모달: 로그인·회원가입 탭 전환, 회원가입 탭에는 "지금까지 저장한 내용이 그대로 이 계정으로
+  넘어가요" 안내, 로그인 후에는 계정 정보 + 로그아웃
+- 엔터로 제출 / ESC로 닫기 — 입력창은 모달을 열고 닫을 때마다 사라졌다 생기므로
+  document 위임 리스너(챗봇 입력과 같은 방식)에서 함께 처리한다
+- 오류 문구는 Supabase 영문 메시지를 그대로 노출하지 않고 `authMsg()`에서 한국어로 바꾼다
+
+### 11.4 검증 (실제 브라우저 · Playwright + 배포 URL)
+
+| 항목 | 결과 |
+|---|---|
+| 익명 세션 자동 생성 | OK (`is_anonymous=true`) |
+| 익명 상태로 인적사항 저장 | OK |
+| 회원가입 후 `user_id` 유지 | **OK (데이터 승계 확인)** |
+| 로그아웃 → 새 익명 세션 복귀 | OK |
+| 로그아웃 후 이전 사용자 인적사항 노출 | **없음 (빈 칸)** |
+| 재로그인 후 데이터 복원 | OK ("복원확인농부" 그대로) |
+| localStorage를 비우고 새로고침 | 서버에서 복원됨 (localStorage에도 재기록) |
+| `region_log` 10개 저장 | 8개만 유지 (DB 트리거 작동) |
+| Supabase / 페이지 오류 | 0건 |
+
+REST 레벨에서도 프런트가 보내는 페이로드 그대로 5개 테이블 저장 → 회원가입 승계 →
+새 세션 로그인 조회까지 확인했다. 검증에 쓴 계정 12개는 모두 삭제해 현재 모든 테이블 0행이다.
+
+### 11.5 이번 작업에서 고친 것
+
+1. **`/uploads/chatbot_img.png` 404 (배포 자산 누락).**
+   `.vercelignore`에 루트 파일을 지우려고 `chatbot_img.png`라고만 적었는데, `.gitignore`처럼
+   **경로 무관 매칭**이라 `Beomin_web/uploads/`의 동명 파일(챗봇 아이콘)까지 배포에서 빠졌다.
+   `/chatbot_img.png`로 앵커를 붙여 해결. 페이지가 참조하는 자산 6개 전부 200 확인.
+2. **불필요한 민감정보 행 생성.** 화면을 떠날 때 인적사항을 무조건 저장하던 코드가, 폼을
+   건드리지 않은 사용자에게도 전부 `null`인 `personal_info` 행을 만들었다 → 저장 안 된 수정이
+   있을 때만 보내도록 고쳤다.
+
+### 11.6 남은 것
+
+- [ ] 서버 함수의 캐시·사용량 제한을 DB로 옮기기 (`backend/db.py` + §4.8 RPC) — 지금은 인메모리
+- [ ] 기준 데이터 적재 (§7 2단계) — 테이블은 아직 비어 있다
+- [ ] 이메일 인증(현재 꺼짐) · 비밀번호 재설정 메일 · 카카오/구글 소셜 로그인은 미구현
