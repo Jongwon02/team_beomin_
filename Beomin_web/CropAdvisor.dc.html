@@ -1123,13 +1123,17 @@
                 <tr>
                   <!-- 감자·상추·오이는 '작형'이지만 사과·배는 '생육단계'(성목)라 작물별로 받는다 -->
                   <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">{{ detail.cultivationGuide.fertilizer.rowHeader }}</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">N</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">P</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">K</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">요소</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">용과린</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">염화가리</th>
-                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">퇴비</th>
+                  <!-- 수치 칼럼 7개에 단위를 붙인다. 값 칸마다 'kg'을 넣으면 표가 지저분해지고,
+                       제목의 (kg/10a) 하나만으로는 어느 칼럼에 걸리는지 애매했다.
+                       단위 문자열은 하드코딩하지 않고 데이터의 unit 필드에서 받는다
+                       (5개 작물 모두 'kg/10a'. 그동안 정의만 되어 있고 안 쓰이던 필드다). -->
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">N<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">P<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">K<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">요소<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">용과린<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">염화가리<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
+                  <th style="text-align:left;padding:8px 12px;font-weight:700;color:#241F16;border-bottom:1px solid #E4DCC8;white-space:nowrap;">퇴비<span style="display:block;font-weight:500;font-size:10.5px;color:#9A9080;margin-top:1px;">{{ detail.cultivationGuide.fertilizer.unit }}</span></th>
                 </tr>
               </thead>
               <tbody>
