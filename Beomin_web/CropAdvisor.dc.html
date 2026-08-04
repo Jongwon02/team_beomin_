@@ -291,28 +291,36 @@
        때마다 컴포넌트 전체가 다시 그려진다. */
     /* row-reverse: DOM은 [버튼][말풍선] 순서로 두되 화면에는 말풍선이 왼쪽에 온다.
        키보드 포커스 시 인접 형제 선택자(+)로 말풍선을 띄우려면 이 순서가 필요하다. */
-    .anong-fab { position: fixed; right: 24px; bottom: 24px; z-index: 120;
-      display: flex; flex-direction: row-reverse; align-items: center; gap: 10px; }
+    .anong-fab { position: fixed; right: 20px; bottom: 16px; z-index: 120;
+      display: flex; flex-direction: row-reverse; align-items: flex-start; gap: 10px; }
+    /* 원형 배지에 캐릭터를 끼워넣지 않는다. uploads/chatbot_img.png는 배경이 완전히
+       투명하고(알파 실측: 네 꼭짓점 모두 a=0) 캐릭터가 프레임에 꽉 차 있어서,
+       원 + overflow:hidden + height:118% 로 감싸면 발끝이 잘리고 뒤에 깔린
+       크림/초록/갈색 3단 배경이 캐릭터 옆으로 삐져나온다.
+       그래서 배경·테두리·크롭을 다 없애고 PNG 자체를 버튼 모양으로 쓴다. */
     .anong-fab-btn {
-      width: 74px; height: 74px; border-radius: 50%; border: 2px solid #E4DCC8;
-      /* 카카오톡 원본 캐릭터 배지 참고: 크림(하늘) → 초록(들판) → 갈색(흙) 3단 배경.
-         경계는 그 배지 스크린샷을 실측한 비율(46%/62%)을 그대로 썼다. */
-      background: linear-gradient(to bottom, #F8F4EA 0%, #F8F4EA 46%, #4C7B52 46%, #4C7B52 62%, #564A32 62%, #564A32 100%);
-      padding: 0; cursor: pointer; overflow: hidden;
-      box-shadow: 0 6px 18px rgba(0,0,0,0.22);
-      display: flex; align-items: flex-end; justify-content: center;
-      transition: transform .18s ease, box-shadow .18s ease;
+      width: 104px; height: auto; padding: 0;
+      border: none; background: none; cursor: pointer; line-height: 0;
+      -webkit-tap-highlight-color: transparent;
+      /* box-shadow는 투명 PNG에서도 사각형으로 떠서 캐릭터 뒤에 네모가 생긴다.
+         알파 채널을 따라가는 drop-shadow로 바꿔야 캐릭터 실루엣만 그림자가 진다. */
+      filter: drop-shadow(0 6px 10px rgba(60,48,20,.30));
+      transition: transform .18s ease, filter .18s ease;
     }
     .anong-fab-btn img {
-      /* 캐릭터가 세로로 길어서, 원 안에서 아래쪽(발끝)을 살짝 잘라 얼굴이 크게 보이게 한다 */
-      width: 100%; height: 118%; object-fit: contain; object-position: center top;
-      display: block; pointer-events: none;
+      width: 100%; height: auto; display: block; pointer-events: none;
+      user-select: none; -webkit-user-drag: none;
     }
     .anong-fab:hover .anong-fab-btn,
-    .anong-fab-btn:focus-visible { transform: translateY(-2px) scale(1.05); box-shadow: 0 10px 24px rgba(0,0,0,0.26); }
+    .anong-fab-btn:focus-visible { transform: translateY(-4px) scale(1.05); filter: drop-shadow(0 12px 16px rgba(60,48,20,.36)); }
+    .anong-fab-btn:active { transform: translateY(-1px) scale(1.02); }
+    /* 배경이 없으니 기본 focus ring이 캐릭터에 묻힌다 - 눈에 보이는 테두리를 직접 준다 */
+    .anong-fab-btn:focus-visible { outline: 3px solid #2F5D42; outline-offset: 4px; border-radius: 12px; }
 
     .anong-fab-bubble {
-      position: relative; background: #FFFFFF; color: #2B2620; border: 1px solid #E4DCC8;
+      /* 캐릭터 키가 커졌으니 말풍선은 세로 중앙이 아니라 머리(모자) 높이에 맞춘다 */
+      position: relative; margin-top: 14px;
+      background: #FFFFFF; color: #2B2620; border: 1px solid #E4DCC8;
       border-radius: 14px; padding: 10px 14px; font-size: 14px; font-weight: 700;
       white-space: nowrap; box-shadow: 0 4px 14px rgba(60,48,20,.18);
       opacity: 0; transform: translateX(6px); pointer-events: none;
@@ -333,6 +341,12 @@
     .anong-fab-btn:focus-visible + .anong-fab-bubble { opacity: 1; transform: translateX(0); }
     @media (prefers-reduced-motion: reduce) {
       .anong-fab-btn, .anong-fab-bubble { transition: none; }
+    }
+    /* 좁은 화면에서는 캐릭터가 본문을 가린다 - 폭만 줄이면 비율은 height:auto가 맞춰준다 */
+    @media (max-width: 480px) {
+      .anong-fab { right: 12px; bottom: 12px; }
+      .anong-fab-btn { width: 78px; }
+      .anong-fab-bubble { display: none; }
     }
   </style>
 </helmet>
@@ -1596,7 +1610,9 @@
   </div>
 
   <sc-if value="{{ chatOpen }}">
-  <div style="position:fixed;right:24px;bottom:98px;z-index:121;width:390px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 150px);display:flex;flex-direction:column;background:#FBF7EF;border:1px solid #D9C9AE;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,0.24);overflow:hidden;">
+  <!-- bottom:150px - 버튼이 원형 74px에서 캐릭터 원본 비율(104×127)로 커졌으므로
+       패널 아래 여백도 버튼 높이(127) + 아래 여백(16) 위로 밀어야 겹치지 않는다. -->
+  <div style="position:fixed;right:24px;bottom:150px;z-index:121;width:390px;max-width:calc(100vw - 32px);height:560px;max-height:calc(100vh - 200px);display:flex;flex-direction:column;background:#FBF7EF;border:1px solid #D9C9AE;border-radius:16px;box-shadow:0 12px 32px rgba(0,0,0,0.24);overflow:hidden;">
 
     <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:12px 14px;background:#2F5D42;color:#FBF7EF;">
       <div>
