@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css">
+<link rel="icon" type="image/png" href="uploads/logo.png">
+<title>안농 · 홈 화면 (정적 스냅샷 · 지역 선택 후)</title>
+<style>
+  *{box-sizing:border-box;}
+  body{margin:0;}
+  ::selection{background:#D9EFE0;}
+</style>
+</head>
+<body>
+<div style="font-family:'Pretendard',sans-serif;background:#FBF7EF;color:#2B2620;min-height:100vh;display:flex;flex-direction:column;">
+
+  <!-- 헤더 -->
+  <header style="position:sticky;top:0;z-index:50;background:#FBF7EFEE;border-bottom:1px solid #E4DCC8;">
+    <div style="max-width:1180px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:16px 24px;gap:24px;">
+      <div style="display:flex;align-items:center;gap:10px;cursor:pointer;">
+        <img src="uploads/logo.png" alt="안농 로고" style="width:72px;height:72px;object-fit:contain;" />
+        <span style="font-family:'Gowun Batang',serif;font-size:24px;font-weight:700;color:#2F5D42;">안농</span>
+        <span style="font-size:12px;color:#9A9080;">초보 귀농인 작물 도우미</span>
+      </div>
+      <nav style="display:flex;gap:4px;flex-wrap:wrap;">
+        <button type="button" style="padding:10px 16px;border-radius:999px;font-size:14px;font-weight:700;color:#FFFFFF;background:#2F5D42;border:none;cursor:pointer;">홈</button>
+        <button type="button" style="padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;color:#2B2620;background:transparent;border:none;cursor:pointer;">작물 정보</button>
+        <button type="button" style="padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;color:#2B2620;background:transparent;border:none;cursor:pointer;">정책·지원금</button>
+        <button type="button" style="padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;color:#2B2620;background:transparent;border:none;cursor:pointer;">농업 소식</button>
+        <button type="button" style="padding:10px 16px;border-radius:999px;font-size:14px;font-weight:500;color:#2B2620;background:transparent;border:none;cursor:pointer;">프로필</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <!-- 히어로 -->
+    <section style="max-width:1180px;margin:0 auto;padding:56px 24px 28px;">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) 420px;gap:32px;align-items:center;">
+        <div style="padding-left:clamp(0px,8vw,60px);">
+          <p style="font-size:17px;font-weight:700;color:#2F5D42;letter-spacing:0.02em;margin:0 0 14px;">귀농 초보자와 함께하는 첫 걸음</p>
+          <h1 style="font-family:'Gowun Batang',serif;font-size:44px;line-height:1.35;font-weight:700;margin:0 0 20px;color:#2B2620;">어디서, 무엇을 심어야 할지<br/>막막하셨다면</h1>
+          <p style="font-size:17px;line-height:1.7;color:#5A5245;margin:0;">지도에서 관심 있는 지역을 클릭해보세요.<br/>기후와 토양에 맞는 오이·배·사과·감자·상추 재배 정보를 알려드릴게요.</p>
+        </div>
+        <img src="uploads/hero.png" alt="농작물을 수확하는 귀여운 농부 캐릭터" style="width:100%;height:auto;display:block;" />
+      </div>
+    </section>
+
+    <!-- 지역 선택 지도 -->
+    <section style="max-width:1600px;margin:0 auto;padding:0 24px 80px;">
+      <div style="position:relative;border-radius:16px;overflow:hidden;border:1px solid #E3DBC6;box-shadow:0 2px 12px rgba(60,48,20,.06);height:calc(100vh - 190px);min-height:680px;">
+        <iframe src="./RegionMap.html" title="지역 선택 지도" style="width:100%;height:100%;border:none;display:block;"></iframe>
+
+        <!-- 내가 찾아본 지역 기록 (샘플) -->
+        <div style="position:absolute;right:16px;top:70px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;">
+          <button type="button" title="내가 찾아본 지역 보기"
+            style="display:flex;align-items:center;gap:6px;background:#FBF7EFF7;border:1px solid #EDE3CC;border-radius:999px;box-shadow:0 3px 10px rgba(60,48,20,.16);font-size:13px;font-weight:700;color:#2B2620;padding:8px 13px;cursor:pointer;">
+            🔎 내가 찾아본 지역
+            <span style="min-width:19px;height:19px;padding:0 5px;border-radius:10px;background:#2F5D42;color:#FBF7EF;font-size:11px;display:flex;align-items:center;justify-content:center;">3</span>
+          </button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:13px;color:#9A9080;">
+        <span style="width:10px;height:10px;border-radius:50%;background:#2F5D42;display:inline-block;"></span> 선택 가능 지역
+        <span style="width:10px;height:10px;border-radius:50%;background:#D97B3A;display:inline-block;margin-left:12px;"></span> 선택된 지역
+      </div>
+
+      <!-- 선택한 지역 배너 -->
+      <div id="region-recommend" style="margin-top:32px;background:#FFFFFF;border:1px solid #EAE2CE;border-radius:18px;padding:24px 30px;box-shadow:0 2px 10px rgba(60,48,20,.05);display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;">
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <span style="font-size:13px;color:#9A9080;font-weight:500;">선택한 지역</span>
+          <span style="font-size:26px;font-weight:700;letter-spacing:-.01em;">서울특별시 종로구</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span style="font-size:14px;color:#6E6857;font-weight:500;">읍·면·동</span>
+          <div style="position:relative;">
+            <select style="appearance:none;font-size:15px;padding:11px 38px 11px 16px;border-radius:10px;border:1px solid #E4DCC8;background:#FBF7EF;color:#2B2620;cursor:pointer;">
+              <option>청운동</option>
+              <option>신교동</option>
+              <option>궁정동</option>
+              <option>명륜2가</option>
+              <option>창성동</option>
+            </select>
+            <span style="position:absolute;right:14px;top:50%;transform:translateY(-50%);pointer-events:none;font-size:10px;color:#8A8069;">▼</span>
+          </div>
+          <button type="button" style="background:#2F5D42;color:#fff;border:none;border-radius:10px;padding:12px 22px;font-size:15px;font-weight:700;cursor:pointer;">추천 결과 보기</button>
+        </div>
+      </div>
+
+      <!-- 추천 결과 -->
+      <div style="margin-top:48px;">
+        <div style="display:flex;flex-direction:column;gap:6px;margin:0 0 24px;">
+          <h2 style="font-size:24px;font-weight:700;letter-spacing:-.01em;margin:0;">서울특별시 종로구 청운동에 추천하는 작물</h2>
+          <span style="font-size:16px;line-height:1.6;color:#4A4432;">이 지역은 <b style="color:#22633C;font-size:19px;font-weight:800;">중남부저지대형</b>이라 사계절이 뚜렷하고 온화한 편이에요. 서울을 포함한 중남부 내륙·해안 저지대로, 다양한 작물이 두루 무난하게 자랄 수 있어요.</span>
+          <span style="font-size:14px;color:#6B6250;margin-top:8px;">*실측 기상·토양 데이터로 계산한 적합도 순이에요. 실제 재배 전에는 토양검정 등 현장 확인을 권장해요.</span>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(440px,1fr));gap:20px;">
+
+          <!-- 1위: 배 -->
+          <div style="background:#FFFFFF;border:1px solid #EAE2CE;border-radius:16px;padding:20px 22px 22px;box-shadow:0 2px 10px rgba(60,48,20,.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="flex:0 0 auto;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#F0C24B;color:#4A3410;border:1px solid #D9A62E;">1위</span>
+                <div style="position:relative;flex:0 0 auto;">
+                  <img src="uploads/crops/pear.png" alt="배 사진" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                  <span style="position:absolute;left:-11px;top:-11px;font-size:24px;line-height:1;background:#FFFDF8;border-radius:999px;padding:2px 3px;box-shadow:0 1px 4px rgba(74,53,30,0.28);" title="적합도 1위">🥇</span>
+                </div>
+                <h3 style="font-size:19px;font-weight:700;margin:0;">배</h3>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:700;color:#2F5D42;">적합도 92점</span>
+                <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#E7F0E4;color:#2F5D42;">우수</span>
+              </div>
+            </div>
+            <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">온화한 기후에 배수 좋은 저지대가 많아 배나무 뿌리내림이 좋고, 늦서리 피해도 비교적 적은 편이에요.</p>
+            <div style="display:grid;gap:6px;margin:0 0 14px;">
+              <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (작물별 가중치 반영)</p>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">온도</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:94%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">94점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">강수</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:89%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">89점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">일조</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:90%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">90점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">pH(산도)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">유기물</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">유효인산</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 토양검정정보 getSoilExamList 데이터 없음(429 재시도 소진)"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">EC(염류)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#2F5D42;color:#FBF7EF;border:none;cursor:pointer;">🌱 나의 작물로 선택</button>
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+            </div>
+          </div>
+
+          <!-- 2위: 감자 -->
+          <div style="background:#FFFFFF;border:1px solid #EAE2CE;border-radius:16px;padding:20px 22px 22px;box-shadow:0 2px 10px rgba(60,48,20,.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="flex:0 0 auto;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#D8DCE1;color:#454A50;border:1px solid #BFC5CC;">2위</span>
+                <div style="position:relative;flex:0 0 auto;">
+                  <img src="uploads/crops/potato.png" alt="감자 사진" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                  <span style="position:absolute;left:-11px;top:-11px;font-size:24px;line-height:1;background:#FFFDF8;border-radius:999px;padding:2px 3px;box-shadow:0 1px 4px rgba(74,53,30,0.28);" title="적합도 2위">🥈</span>
+                </div>
+                <h3 style="font-size:19px;font-weight:700;margin:0;">감자</h3>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:700;color:#2F5D42;">적합도 84점</span>
+                <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#E4F1E6;color:#2F7A44;">양호</span>
+              </div>
+            </div>
+            <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">배수가 양호하고 사계절이 뚜렷해 봄·가을 두 번 감자 농사가 가능해, 초보자가 시작하기에 부담이 적어요.</p>
+            <div style="display:grid;gap:6px;margin:0 0 14px;">
+              <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (작물별 가중치 반영)</p>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">온도</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:86%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">86점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">강수</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:80%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">80점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">일조</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:88%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">88점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">pH(산도)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:75%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">75점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">유기물</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:68%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">68점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">유효인산</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:72%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">72점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 토양검정정보 getSoilExamList 데이터 없음(429 재시도 소진)"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">EC(염류)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#2F5D42;color:#FBF7EF;border:none;cursor:pointer;">🌱 나의 작물로 선택</button>
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+            </div>
+          </div>
+
+          <!-- 3위: 상추 -->
+          <div style="background:#FFFFFF;border:1px solid #EAE2CE;border-radius:16px;padding:20px 22px 22px;box-shadow:0 2px 10px rgba(60,48,20,.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="flex:0 0 auto;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#D79A6A;color:#4A2E17;border:1px solid #BE8153;">3위</span>
+                <div style="position:relative;flex:0 0 auto;">
+                  <img src="uploads/crops/lettuce.png" alt="상추 사진" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                  <span style="position:absolute;left:-11px;top:-11px;font-size:24px;line-height:1;background:#FFFDF8;border-radius:999px;padding:2px 3px;box-shadow:0 1px 4px rgba(74,53,30,0.28);" title="적합도 3위">🥉</span>
+                </div>
+                <h3 style="font-size:19px;font-weight:700;margin:0;">상추</h3>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:700;color:#2F5D42;">적합도 78점</span>
+                <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#E4F1E6;color:#2F7A44;">양호</span>
+              </div>
+            </div>
+            <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">온화한 저지대 기후라 사계절 시설재배가 두루 가능해, 여러 지역 중에서도 무난하게 도전해볼 수 있어요.</p>
+            <div style="display:grid;gap:6px;margin:0 0 14px;">
+              <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (작물별 가중치 반영)</p>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">온도</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:80%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">80점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">강수</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:74%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">74점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">일조</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:82%;background:#2F7A44;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">82점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">pH(산도)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:65%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">65점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">유기물</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:60%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">60점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">유효인산</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:68%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">68점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 토양검정정보 getSoilExamList 데이터 없음(429 재시도 소진)"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">EC(염류)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#2F5D42;color:#FBF7EF;border:none;cursor:pointer;">🌱 나의 작물로 선택</button>
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+            </div>
+          </div>
+
+          <!-- 4위: 오이 -->
+          <div style="background:#FFFFFF;border:1px solid #EAE2CE;border-radius:16px;padding:20px 22px 22px;box-shadow:0 2px 10px rgba(60,48,20,.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="flex:0 0 auto;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#EFE7D5;color:#6B6250;border:1px solid #E4DCC8;">4위</span>
+                <div style="position:relative;flex:0 0 auto;">
+                  <img src="uploads/crops/cucumber.png" alt="오이 사진" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                </div>
+                <h3 style="font-size:19px;font-weight:700;margin:0;">오이</h3>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:700;color:#2F5D42;">적합도 68점</span>
+                <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#FBE8D6;color:#8A5A22;">주의</span>
+              </div>
+            </div>
+            <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">기준을 벗어난 강수량·부족한 유효인산 때문에 병해가 생기거나 생육이 더뎌지기 쉬워, 이 지역에서는 조금 더 세심한 관리가 필요한 작물이에요.</p>
+            <div style="display:grid;gap:6px;margin:0 0 14px;">
+              <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (작물별 가중치 반영)</p>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">온도</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:70%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">70점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">강수</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:55%;background:#C98A3A;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">55점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">일조</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:72%;background:#6FA361;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">72점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">pH(산도)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">유기물</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">유효인산</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:58%;background:#C98A3A;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">58점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 토양검정정보 getSoilExamList 데이터 없음(429 재시도 소진)"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">EC(염류)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#F3EEE0;color:#B3A98F;border:1px dashed #D8CDB0;cursor:not-allowed;">재배 일정 준비 중</button>
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+            </div>
+          </div>
+
+          <!-- 5위: 사과 -->
+          <div style="background:#FFFFFF;border:1px solid #EAE2CE;border-radius:16px;padding:20px 22px 22px;box-shadow:0 2px 10px rgba(60,48,20,.04);">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="flex:0 0 auto;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#EFE7D5;color:#6B6250;border:1px solid #E4DCC8;">5위</span>
+                <div style="position:relative;flex:0 0 auto;">
+                  <img src="uploads/crops/apple.png" alt="사과 사진" style="width:52px;height:52px;display:block;border-radius:12px;object-fit:contain;background:#F7F2E7;border:1px solid #EFE7D5;" />
+                </div>
+                <h3 style="font-size:19px;font-weight:700;margin:0;">사과</h3>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:13px;font-weight:700;color:#2F5D42;">적합도 54점</span>
+                <span style="font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:#F3E2DC;color:#B5482F;">위험</span>
+              </div>
+            </div>
+            <p style="font-size:14px;line-height:1.6;color:#5A5245;margin:0 0 12px;">기준을 벗어난 강수량·이 작물과 맞지 않는 기온 때문에 꽃눈이 상하거나 병해가 생기기 쉬워, 이 지역에서는 초보자에게 권하기 어려운 작물이에요.</p>
+            <div style="display:grid;gap:6px;margin:0 0 14px;">
+              <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (작물별 가중치 반영)</p>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">온도</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:56%;background:#C98A3A;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">56점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">강수</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:48%;background:#C15B3A;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">48점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;">일조</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:58%;background:#C98A3A;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">58점</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">pH(산도)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">유기물</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 흙토람 SoilExamStat API 데이터 없음"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">유효인산</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+              <div style="display:flex;align-items:center;gap:8px;" title="결측 사유: 토양검정정보 getSoilExamList 데이터 없음(429 재시도 소진)"><span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;border-bottom:1px dotted #B9B09A;cursor:help;">EC(염류)</span><div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;"><div style="height:100%;width:0%;background:#D8CDB0;border-radius:999px;"></div></div><span style="width:72px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">결측</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-top:12px;">
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#2F5D42;color:#FBF7EF;border:none;cursor:pointer;">🌱 나의 작물로 선택</button>
+              <button type="button" style="flex:1;padding:11px 12px;border-radius:10px;font-size:14px;font-weight:700;background:#FBF7EF;color:#2F5D42;border:1px solid #C9B896;cursor:pointer;">📖 작물 정보 보기</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+</body>
+</html>
