@@ -18,6 +18,7 @@
 """
 import datetime
 import logging
+from concurrent.futures import ThreadPoolExecutor
 
 from midfcst import get_mid_forecast, latest_tmFc  # noqa: E402
 from weather import get_short_term_forecast  # noqa: E402
@@ -124,34 +125,48 @@ def get_weekly_forecast(lat, lon, land_reg_id, ta_reg_id, days=DEFAULT_DAYS, ser
     merged = {}
 
     short_meta = mid_meta = None
-    # 단기예보는 간헐적으로 타임아웃이 난다(get_short_term_forecast는 예외 대신 None을 준다).
-    # 이게 실패하면 앞 4일이 통째로 비므로, 한 번은 다시 시도한다.
-    for attempt in (1, 2):
-        try:
-            short = get_short_term_forecast(lat, lon, service_key)
-        except Exception as e:                                    # noqa: BLE001
-            logger.error("[weekly] 단기예보 실패(%d회차): %s", attempt, e)
-            short = None
+
+    def _fetch_short():
+        # 단기예보는 간헐적으로 타임아웃이 난다(get_short_term_forecast는 예외 대신 None을 준다).
+        # 이게 실패하면 앞 4일이 통째로 비므로, 한 번은 다시 시도한다.
+        for attempt in (1, 2):
+            try:
+                short = get_short_term_forecast(lat, lon, service_key)
+            except Exception as e:                                # noqa: BLE001
+                logger.error("[weekly] 단기예보 실패(%d회차): %s", attempt, e)
+                short = None
+            if short:
+                return short
+            if attempt == 1:
+                logger.warning("[weekly] 단기예보가 비어 재시도합니다 (lat=%s, lon=%s)", lat, lon)
+        return None
+
+    # 단기예보(+재시도)와 중기예보는 서로 다른 API라 관계없이 동시에 요청한다 - 순차로
+    # 부르면 지역 하나 조회에 2~5초씩 걸려(각각 응답에 1~2초) 지역이 여러 개일 때 체감
+    # 지연이 커지고, 타임아웃까지 겹치면(단기 재시도 최대 20초 + 중기 최대 15초) 최악의
+    # 경우 안 불러와지는 것처럼 보일 정도로 길어졌다.
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        short_future = ex.submit(_fetch_short)
+        mid_future = ex.submit(get_mid_forecast, land_reg_id, ta_reg_id, service_key=service_key)
+
+        short = short_future.result()
         if short:
             short_meta = {"baseDate": short.get("base_date"), "baseTime": short.get("base_time"),
                           "nx": short.get("nx"), "ny": short.get("ny")}
             merged.update(_fold_short_term(short))
-            break
-        if attempt == 1:
-            logger.warning("[weekly] 단기예보가 비어 재시도합니다 (lat=%s, lon=%s)", lat, lon)
 
-    try:
-        mid = get_mid_forecast(land_reg_id, ta_reg_id, service_key=service_key)
-        mid_meta = {"tmFc": mid["tmFc"], "landRegId": mid["landRegId"], "taRegId": mid["taRegId"]}
-        for d in mid["days"]:
-            # 단기예보가 채운 날짜는 더 정밀하므로 그대로 두되, 경계일은 예외다.
-            # 단기예보의 마지막 날은 예보 구간이 새벽 몇 시간만 걸쳐 있어 오후가 비고
-            # 최저=최고 같은 잘린 값이 나온다. 그런 '불완전한 날'은 중기예보로 덮는다.
-            cur = merged.get(d["date"])
-            if cur is None or not _is_complete_day(cur):
-                merged[d["date"]] = dict(d, source="중기예보")
-    except Exception as e:                                        # noqa: BLE001
-        logger.error("[weekly] 중기예보 실패: %s", e)
+        try:
+            mid = mid_future.result()
+            mid_meta = {"tmFc": mid["tmFc"], "landRegId": mid["landRegId"], "taRegId": mid["taRegId"]}
+            for d in mid["days"]:
+                # 단기예보가 채운 날짜는 더 정밀하므로 그대로 두되, 경계일은 예외다.
+                # 단기예보의 마지막 날은 예보 구간이 새벽 몇 시간만 걸쳐 있어 오후가 비고
+                # 최저=최고 같은 잘린 값이 나온다. 그런 '불완전한 날'은 중기예보로 덮는다.
+                cur = merged.get(d["date"])
+                if cur is None or not _is_complete_day(cur):
+                    merged[d["date"]] = dict(d, source="중기예보")
+        except Exception as e:                                    # noqa: BLE001
+            logger.error("[weekly] 중기예보 실패: %s", e)
 
     out, missing = [], []
     for i, day in enumerate(wanted):

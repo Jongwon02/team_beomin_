@@ -1,5 +1,6 @@
 """사용자가 입력한 행정구역명(시군구/읍면동)을 가장 가까운 기상 관측소에 매핑한다."""
 
+import functools
 import json
 import logging
 import math
@@ -144,7 +145,11 @@ def _load_json(path):
         return json.load(f)
 
 
+@functools.lru_cache(maxsize=4)
 def _load_sigungu_records(path=SIGUNGU_COORDS_PATH):
+    # 이 파일이 1MB가 넘어서, 매 요청마다 다시 읽고 5천여 건을 정규화하면 예보 요청이
+    # 여러 지역에서 동시에 들어올 때 GIL 경합으로 전체가 느려진다. 내용이 바뀌지 않는
+    # 정적 데이터라 프로세스 생애주기 동안 한 번만 읽고 캐시한다.
     raw = _load_json(path)
     records = []
     for r in raw:
@@ -161,6 +166,7 @@ def _load_sigungu_records(path=SIGUNGU_COORDS_PATH):
     return records
 
 
+@functools.lru_cache(maxsize=4)
 def _load_stations(path=STATION_MAP_PATH):
     return _load_json(path)
 

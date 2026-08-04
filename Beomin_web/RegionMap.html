@@ -188,9 +188,17 @@
     ORDER.forEach(function (p) { if (TREE[p]) addBtn(p, 'province', function () { selectProvince(p); }); });
   }
 
+  // 세종특별자치시처럼 구/군이 없는 도 - sigungu가 도 이름과 같은 키 하나뿐이면
+  // "시/군/구를 선택하세요" 화면이 도 이름을 그대로 한 번 더 보여주는 것과 같으므로 건너뛴다.
+  function isFlatProvince(p) {
+    var keys = Object.keys(TREE[p].sigungu);
+    return keys.length === 1 && keys[0] === p;
+  }
+
   function selectProvince(p) {
     state.level = 'sigungu'; state.province = p; state.sigungu = null;
     focusAt(new naver.maps.LatLng(TREE[p].center[0], TREE[p].center[1]), 9, p, false);   // 도 확대
+    if (isFlatProvince(p)) { selectSigungu(p); return; }
     backEl.style.display = 'inline-block'; searchWrap.style.display = 'none';
     pathEl.innerHTML = '<b>' + p + '</b> · 시/군/구를 선택하세요';
     clearList();
@@ -232,7 +240,10 @@
   }
 
   backEl.addEventListener('click', function () {
-    if (state.level === 'dong') selectProvince(state.province);
+    if (state.level === 'dong') {
+      if (isFlatProvince(state.province)) renderProvince();
+      else selectProvince(state.province);
+    }
     else if (state.level === 'sigungu') renderProvince();
   });
 

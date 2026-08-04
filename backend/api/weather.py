@@ -17,7 +17,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 
-ENDPOINT = "http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
+ENDPOINT = "https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst"
 REQUEST_TIMEOUT_SECONDS = 10
 NUM_OF_ROWS = 1000  # totalCount가 보통 700~800이라 3일치를 한 번에 받으려면 크게 잡아야 함
 

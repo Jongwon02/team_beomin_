@@ -21,6 +21,7 @@ tmFc는 YYYYMMDDHHMM 형식이고 06:00/18:00 두 시각만 유효하며, 최근
 import datetime
 import logging
 import os
+from concurrent.futures import ThreadPoolExecutor
 
 import requests
 
@@ -118,8 +119,12 @@ def get_mid_forecast(land_reg_id, ta_reg_id, tm_fc=None, service_key=None):
         tm_fc, base = latest_tmFc()
     else:
         base = datetime.datetime.strptime(tm_fc, "%Y%m%d%H%M")
-    land = get_mid_land_fcst(land_reg_id, tm_fc, service_key)
-    ta = get_mid_ta(ta_reg_id, tm_fc, service_key)
+    # 육상예보/기온은 서로 독립적인 API 호출이라 동시에 보내 왕복 시간을 절반으로 줄인다.
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        land_future = ex.submit(get_mid_land_fcst, land_reg_id, tm_fc, service_key)
+        ta_future = ex.submit(get_mid_ta, ta_reg_id, tm_fc, service_key)
+        land = land_future.result()
+        ta = ta_future.result()
 
     day_min = MID_DAY_MIN_0600 if base.hour == 6 else MID_DAY_MIN_1800
     days = []

@@ -75,6 +75,12 @@ PROVINCE_STATION = {
     "전라북도": (146, "전주"), "전라남도": (156, "광주"),
     "경상북도": (136, "안동"), "경상남도": (192, "진주"),
     "제주도": (184, "제주"),
+    # 특별시/광역시/특별자치시 - 도(道)와 달리 도시 자체가 종관관측소를 갖고 있어
+    # 그 도시의 ASOS 지점을 그대로 쓴다. 실제 API로 지점번호-지점명이 일치함을 확인했다.
+    "서울특별시": (108, "서울"), "인천광역시": (112, "인천"),
+    "대전광역시": (133, "대전"), "대구광역시": (143, "대구"),
+    "광주광역시": (156, "광주"), "부산광역시": (159, "부산"),
+    "울산광역시": (152, "울산"), "세종특별자치시": (239, "세종"),
 }
 WEATHER_DAYS = 14          # 프런트 summarizeWeather()가 최근 14일 누적/극값을 본다
 WEATHER_TTL = 3 * 3600     # 일자료는 하루 1회만 갱신되므로 3시간 캐시(프런트도 3시간 캐시)
@@ -152,7 +158,9 @@ def fetch_weekly(region_name):
         return {"error": "지역을 찾지 못했어요: %s (%s)" % (region_name, m.get("status"))}
     reg = m["matched_region"]
 
-    data = get_weekly_forecast(reg["lat"], reg["lon"], codes["land"], codes["ta"], days=7)
+    # 화면은 항상 7일치만 보여주지만, 캘린더에서 오늘이 아닌 날짜를 골랐을 때도 그 날짜
+    # 기준 7일을 잘라 보여줘야 하므로 중기예보가 주는 최장 범위(+10일)까지 미리 받아둔다.
+    data = get_weekly_forecast(reg["lat"], reg["lon"], codes["land"], codes["ta"], days=11)
     data["region"] = region_name
     data["taVia"] = codes.get("taVia")        # 대표도시로 대체한 경우 어디 기준인지
     data["taKm"] = codes.get("taKm")
