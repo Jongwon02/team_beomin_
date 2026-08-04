@@ -1,0 +1,23 @@
+{
+  "buildCommand": "mkdir -p public && cp -r Beomin_web/. public/ && rm -f public/*.py public/*.bat public/.thumbnail",
+  "outputDirectory": "public",
+  "functions": {
+    "api/*.py": {
+      "maxDuration": 60,
+      "includeFiles": "{backend/**,Beomin_web/news_server.py,data/**}"
+    }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/CropAdvisor.dc.html" },
+    { "source": "/api/news/:crop", "destination": "/api/news?crop=:crop" },
+    { "source": "/api/weather/:province", "destination": "/api/weather?province=:province" },
+    { "source": "/api/weekly/:region", "destination": "/api/weekly?region=:region" },
+    { "source": "/api/crop-score/:crop", "destination": "/api/crop_score?crop=:crop" }
+  ],
+  "headers": [
+    {
+      "source": "/uploads/(.*)",
+      "headers": [{ "key": "Cache-Control", "value": "public, max-age=31536000, immutable" }]
+    }
+  ]
+}

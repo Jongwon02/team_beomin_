@@ -1630,9 +1630,14 @@ const MEDALS = [
   { icon: '🥈', bg: '#D8DCE1', fg: '#454A50', bd: '#BFC5CC' },   // 은
   { icon: '🥉', bg: '#D79A6A', fg: '#4A2E17', bd: '#BE8153' }    // 동
 ];
-const CROP_SCORE_API = 'http://localhost:8002';
+// 로컬 개발은 서버 4개를 각 포트로 띄우고, 배포(Vercel)에서는 같은 도메인의
+// 서버리스 함수(/api/...)를 쓴다. hostname으로 두 환경을 자동 구분한다 -
+// 상대경로로 통일해버리면 로컬에서 8000 한 곳만 보고 있어 API가 전부 404가 된다.
+const IS_LOCAL = ['localhost', '127.0.0.1', ''].indexOf(window.location.hostname) !== -1;
+const NEWS_API = IS_LOCAL ? 'http://localhost:8001' : '';
+const CROP_SCORE_API = IS_LOCAL ? 'http://localhost:8002' : '';
 // 챗봇 서버(backend/chat_server.py). Anthropic 키는 이 서버에만 있고 브라우저엔 없다.
-const CHAT_API = 'http://localhost:8003';
+const CHAT_API = IS_LOCAL ? 'http://localhost:8003' : '';
 const CHAT_SAMPLES = ['지금 뭐 해야 해요?', '여기 뭐 키우면 좋아요?', '요즘 날씨 어때요?'];
 const TOOL_LABEL = {
   get_crop_score: '🔍 적합도 계산 중…',
@@ -3468,7 +3473,7 @@ class Component extends DCLogic {
     if (cached && (Date.now() - cached.loadedAt) < 3 * 60 * 60 * 1000) return;
     if ((this.state.weeklyLoadingSet || {})[regionName]) return;
     this.setState({ weeklyLoadingSet: { ...(this.state.weeklyLoadingSet || {}), [regionName]: true } });
-    fetch('http://localhost:8001/api/weekly/' + encodeURIComponent(regionName))
+    fetch(NEWS_API + '/api/weekly/' + encodeURIComponent(regionName))
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         const all = { ...(this.state.weeklyByRegion || {}) };
@@ -3493,7 +3498,7 @@ class Component extends DCLogic {
     if (cached && (now - cached.loadedAt) < 3 * 60 * 60 * 1000) return;
     if ((this.state.weatherLoadingSet || {})[province]) return;
     this.setState({ weatherLoadingSet: { ...(this.state.weatherLoadingSet || {}), [province]: true } });
-    fetch('http://localhost:8001/api/weather/' + encodeURIComponent(province))
+    fetch(NEWS_API + '/api/weather/' + encodeURIComponent(province))
       .then(r => r.ok ? r.json() : [])
       .then(days => {
         const all = { ...(this.state.weatherByProvince || {}) };
@@ -3554,7 +3559,7 @@ class Component extends DCLogic {
     });
     window.scrollTo(0, 0);
     const todayStr = fmtDate(getPlanToday());
-    fetch('http://localhost:8001/api/news/' + encodeURIComponent(name))
+    fetch(NEWS_API + '/api/news/' + encodeURIComponent(name))
       .then(function (r) { return r.ok ? r.json() : []; })
       .then((items) => this.setState({ detailNews: filterRecentNews(items, todayStr), detailNewsLoading: false }))
       .catch(() => this.setState({ detailNews: [], detailNewsLoading: false }));
@@ -3565,7 +3570,7 @@ class Component extends DCLogic {
     if (this.state.newsLoading) return;
     if (this.state.newsLoaded && this.state.newsLoadedAt && (Date.now() - this.state.newsLoadedAt) < 20 * 60 * 1000) return;
     this.setState({ newsLoading: true });
-    var api = 'http://localhost:8001';
+    var api = NEWS_API;
     var todayStr = fmtDate(getPlanToday());
     Promise.all(CROPS.map(function (name) {
       return fetch(api + '/api/news/' + encodeURIComponent(name))

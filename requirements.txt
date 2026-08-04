@@ -1,0 +1,7 @@
+# Vercel 파이썬 서버리스 함수 런타임 의존성.
+# pandas는 backend/scoring/reading_guard.py(결측 방어처리)가 쓰므로 적합도 점수 경로에 필요하다.
+# 데이터 수집 스크립트(backend/scoring/fetch_*.py)는 배포에 포함되지 않는다.
+anthropic>=0.120.0
+pandas>=2.0
+requests>=2.31
+python-dotenv>=1.0

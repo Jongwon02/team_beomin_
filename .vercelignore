@@ -1,0 +1,37 @@
+# 런타임에 쓰지 않는 대용량 파일만 함수 번들에서 제외한다.
+#
+# 런타임에 실제로 읽는 데이터 파일은 6개다(전수 조사 결과) - 하나라도 빠지면
+# 점수가 조용히 망가진다(가중치 파일이 없으면 예외가 아니라 weight=0 → 총점 0이 된다):
+#   data/processed/final_weight_matrix.csv   reading_guard.py:31
+#   data/processed/region_cluster_map.json   region_mapper.py:14
+#   data/raw/sigungu_coordinates.json        region_mapper.py:13
+#   data/raw/bjd_code.csv                    bjd_lookup.py:26  (토양 API용 읍면동 코드)
+#   data/raw/apple_bloom_dates.csv           temperature_duration_rule.py:33
+#   data/raw/pear_bloom_dates.csv            temperature_duration_rule.py:32
+data/raw/hourly_temp_fruit_full.csv
+data/raw/hourly_temp_fruit.csv
+data/cache/
+data/chat_usage.jsonl
+
+# 문서 · 분석 산출물 · 원본 이미지
+*.pdf
+*.md
+!README.md
+chatbot_img.png
+plant_page_click.png
+국토교통부_법정동코드_20250805.csv
+출처.csv
+출처.txt
+coverage_analysis.csv
+Recommend_top3.csv
+data/processed/elbow_plot.png
+
+# 파이썬 캐시 · 테스트
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/**/test_*.py
+backend/test_*.py
+
+# 로컬 실행 스크립트
+Beomin_web/start_servers.bat

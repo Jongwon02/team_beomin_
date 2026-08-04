@@ -45,9 +45,15 @@ def load_env():
     return env
 
 ENV = load_env()
-CID = ENV.get("NAVER_NEWS_CLIENT_ID", "")
-CSECRET = ENV.get("NAVER_NEWS_CLIENT_SECRET", "")
-NEWS_URL = ENV.get("NAVER_NEWS_ENDPOINT", "https://openapi.naver.com/v1/search/news.json")
+
+def _env(key, default=""):
+    """로컬은 .env 파일에서, 배포 환경(Vercel 등)은 프로세스 환경변수에서 읽는다.
+    배포 환경에는 .env 파일이 없으므로 파일만 보면 키를 못 찾아 전부 500이 된다."""
+    return ENV.get(key) or os.environ.get(key) or default
+
+CID = _env("NAVER_NEWS_CLIENT_ID")
+CSECRET = _env("NAVER_NEWS_CLIENT_SECRET")
+NEWS_URL = _env("NAVER_NEWS_ENDPOINT", "https://openapi.naver.com/v1/search/news.json")
 
 # ---- 작물별 검색어 & 농업 필터 ----
 CROP_QUERY = {
@@ -68,7 +74,7 @@ _ctx = ssl.create_default_context(); _ctx.check_hostname = False; _ctx.verify_mo
 # 요청한다(저온·가뭄·장마·고온 경고 판정용). 도별 대표 종관관측소는
 # data/processed/region_cluster_map.json 에 실재하는 지점으로만 골랐다.
 ASOS_URL = "https://apis.data.go.kr/1360000/AsosDalyInfoService/getWthrDataList"
-ASOS_KEY = ENV.get("ASOS_DALY_SERVICE_KEY", "") or ENV.get("KMA_SERVICE_KEY", "")
+ASOS_KEY = _env("ASOS_DALY_SERVICE_KEY") or _env("KMA_SERVICE_KEY")
 PROVINCE_STATION = {
     "경기도": (203, "이천"), "강원도": (114, "원주"),
     "충청북도": (131, "청주"), "충청남도": (232, "천안"),

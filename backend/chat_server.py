@@ -44,8 +44,10 @@ SCHEDULE_CROPS_LABEL = "·".join(CROP_SCHEDULE.keys())
 CULTURE_CROPS_LABEL = "·".join(CROP_CULTURE.keys())
 
 PORT = 8003
-SCORE_API = "http://localhost:8002"
-NEWS_API = "http://localhost:8001"
+# 배포 환경에서는 같은 도메인의 서버리스 함수를 부르므로 환경변수로 갈아끼운다
+# (예: SCORE_API=https://team-beomin.vercel.app). 로컬은 기존 포트를 그대로 쓴다.
+SCORE_API = os.environ.get("SCORE_API") or "http://localhost:8002"
+NEWS_API = os.environ.get("NEWS_API") or "http://localhost:8001"
 
 MODEL = "claude-opus-5"
 MAX_TOKENS = 2500            # ⚠️ Opus 5는 thinking이 기본 ON → 사고+답변 합산 상한
