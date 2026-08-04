@@ -208,7 +208,7 @@ def fetch_news(crop):
         it = {"title": clean(i.get("title", "")), "desc": clean(i.get("description", "")),
               "link": i.get("link", ""), "date": fmt_date(i.get("pubDate", ""))}
         items.append(it)
-    agri = [{"title": i["title"], "link": i["link"], "date": i["date"]}
+    agri = [{"title": i["title"], "desc": i["desc"], "link": i["link"], "date": i["date"]}
             for i in items if relevant(i, crop)][:6]
     _cache[crop] = (now, agri)
     return agri
