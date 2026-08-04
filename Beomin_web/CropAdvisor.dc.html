@@ -384,7 +384,7 @@
         <button type="button" style="{{ navStyles.news }}" onClick="{{ goNews }}">농업 소식</button>
         <button type="button" style="{{ navStyles.favorites }}" onClick="{{ goFavorites }}">프로필<sc-if value="{{ hasMyFarm }}"> · {{ myFarm.cropEmoji }}{{ myFarm.crop }}</sc-if></button>
 
-        <!-- 로그인 상태 버튼. 로그인 전에는 '로그인', 후에는 이메일 아이디를 보여준다.
+        <!-- 로그인 상태 버튼. 로그인 전에는 '로그인', 후에는 내 아이디를 보여준다.
              회원가입을 강제하지 않는다 - 익명으로도 모든 기능을 쓸 수 있고, 가입하면
              그때까지 저장한 내용이 같은 계정으로 그대로 넘어간다. -->
         <sc-if value="{{ signedOut }}">
@@ -424,8 +424,8 @@
       <sc-if value="{{ signedIn }}">
         <div style="display:flex;flex-direction:column;gap:14px;">
           <div style="background:#FFFFFF;border:1px solid #EFE7D5;border-radius:12px;padding:14px 16px;">
-            <div style="font-size:12px;color:#9A9080;margin-bottom:4px;">로그인한 계정</div>
-            <div style="font-size:15px;font-weight:700;color:#2B2620;word-break:break-all;">{{ authEmail }}</div>
+            <div style="font-size:12px;color:#9A9080;margin-bottom:4px;">내 아이디</div>
+            <div style="font-size:15px;font-weight:700;color:#2B2620;word-break:break-all;">{{ myId }}</div>
           </div>
           <div style="font-size:13px;color:#8A7F65;line-height:1.6;">
             내 농장·체크리스트·인적사항이 이 계정에 저장돼요. 다른 기기에서 로그인하면 그대로 이어서 볼 수 있어요.
@@ -450,9 +450,10 @@
 
         <div style="display:flex;flex-direction:column;gap:12px;">
           <div>
-            <label style="display:block;font-size:13px;font-weight:700;color:#2B2620;margin-bottom:6px;">이메일</label>
-            <input id="anong-auth-email" type="email" autocomplete="email" value="{{ authEmailVal }}" onChange="{{ onAuthEmail }}"
-              placeholder="예: farmer@example.com"
+            <label style="display:block;font-size:13px;font-weight:700;color:#2B2620;margin-bottom:6px;">아이디</label>
+            <input id="anong-auth-id" type="text" autocomplete="username" autocapitalize="none" spellcheck="false"
+              value="{{ authIdVal }}" onChange="{{ onAuthId }}"
+              placeholder="영문 소문자·숫자 4~20자 (예: beomin123)"
               style="width:100%;font-size:14px;padding:11px 12px;border-radius:10px;border:1px solid #E4DCC8;background:#FFFFFF;color:#2B2620;box-sizing:border-box;" />
           </div>
           <div>
@@ -470,7 +471,8 @@
             style="width:100%;margin-top:2px;padding:14px;border-radius:10px;border:none;background:#1F5132;font-size:15px;font-weight:700;color:#FFFFFF;cursor:pointer;">{{ authSubmitLabel }}</button>
 
           <div style="font-size:12px;color:#9A9080;line-height:1.6;text-align:center;">
-            로그인하지 않아도 모든 기능을 쓸 수 있어요.<br />계정을 만들면 다른 기기에서도 이어서 볼 수 있어요.
+            이메일 없이 아이디만으로 가입해요 · 인증 메일도 없어요.<br />
+            로그인하지 않아도 모든 기능을 쓸 수 있고, 계정을 만들면 다른 기기에서도 이어서 볼 수 있어요.
           </div>
         </div>
       </sc-if>
@@ -1364,6 +1366,65 @@
                 <p style="font-size:12px;line-height:1.6;color:#8F856D;border-top:1px dashed #E3D2A0;padding-top:10px;margin:0;">✅ 수락한 {{ plan.prep.acceptedCount }}건은 아래 <b>지금 해야 할 일 체크리스트</b>에 들어가 있어요.</p>
               </sc-if>
             </div>
+
+            <!-- 이 지역에 맞는 품종 추천 (breed.md · /api/cultivar-score) -->
+            <sc-if value="{{ plan.cultivarBox.show }}">
+              <div style="border:1px solid #DCD3B8;background:#FBF7EA;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0;">
+                <div style="display:flex;flex-direction:column;gap:4px;">
+                  <span style="font-size:16px;font-weight:800;line-height:1.5;color:#241F16;">🌱 이 지역에 맞는 품종을 골라봤어요</span>
+                  <sc-if value="{{ plan.cultivarBox.note }}">
+                    <span style="font-size:12px;line-height:1.6;color:#8F856D;">{{ plan.cultivarBox.note }}</span>
+                  </sc-if>
+                  <sc-if value="{{ plan.cultivarBox.hasPicked }}">
+                    <span style="font-size:12px;font-weight:700;line-height:1.6;color:#2F6B44;">✅ {{ plan.cultivarBox.pickedLine }}</span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{ plan.cultivarBox.loading }}">
+                  <span style="font-size:13px;line-height:1.7;color:#786F5A;">과거 10년 기상자료로 품종을 맞춰보는 중이에요… (처음에는 조금 걸려요)</span>
+                </sc-if>
+                <sc-if value="{{ plan.cultivarBox.hasList }}">
+                  <div style="display:flex;flex-direction:column;gap:10px;min-width:0;">
+                    <sc-for list="{{ plan.cultivarBox.list }}" as="cv" hint-placeholder-count="4">
+                      <div style="{{ cv.rowStyle }}">
+                        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                          <span style="font-size:12px;font-weight:700;color:#9A9080;">{{ cv.rankLabel }}</span>
+                          <span style="font-size:15px;font-weight:800;color:#241F16;">{{ cv.name }}</span>
+                          <span style="{{ cv.gradeStyle }}">{{ cv.gradeLabel }} {{ cv.score }}</span>
+                          <span style="font-size:12px;color:#6E6857;">{{ cv.season }} · {{ cv.maturity }}</span>
+                        </div>
+                        <span style="font-size:13px;font-weight:600;line-height:1.6;color:#2E3B2B;">{{ cv.windowLine }}</span>
+                        <sc-if value="{{ cv.reason }}">
+                          <span style="font-size:12.5px;line-height:1.7;color:#544E3E;">· {{ cv.reason }}</span>
+                        </sc-if>
+                        <sc-if value="{{ cv.hasBlocker }}">
+                          <span style="font-size:12.5px;font-weight:700;line-height:1.7;color:#9E3B2E;">⛔ {{ cv.blocker }}</span>
+                        </sc-if>
+                        <sc-if value="{{ cv.hasCaution }}">
+                          <span style="font-size:12px;line-height:1.7;color:#A5642A;">⚠️ {{ cv.caution }}</span>
+                        </sc-if>
+                        <sc-if value="{{ cv.hasBadge }}">
+                          <span style="font-size:11.5px;line-height:1.6;color:#8F856D;">{{ cv.badge }}</span>
+                        </sc-if>
+                        <div style="display:flex;gap:8px;margin-top:2px;">
+                          <sc-if value="{{ cv.notPicked }}">
+                            <button type="button" onClick="{{ cv.pick }}" style="font-size:13px;font-weight:700;color:#fff;background:#2F6B44;border:none;border-radius:8px;padding:8px 13px;cursor:pointer;">이 품종으로 정하기</button>
+                          </sc-if>
+                          <sc-if value="{{ cv.isPicked }}">
+                            <span style="font-size:12.5px;font-weight:700;color:#2F6B44;padding:8px 0;">✅ 내 품종으로 저장됨</span>
+                          </sc-if>
+                        </div>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <sc-if value="{{ plan.cultivarBox.hasHint }}">
+                    <p style="font-size:11.5px;line-height:1.6;color:#9A9080;border-top:1px dashed #E3D2A0;padding-top:10px;margin:0;">ℹ️ {{ plan.cultivarBox.hint }}</p>
+                  </sc-if>
+                </sc-if>
+                <sc-if value="{{ plan.cultivarBox.hasError }}">
+                  <span style="font-size:13px;line-height:1.7;color:#A5642A;">{{ plan.cultivarBox.error }}</span>
+                </sc-if>
+              </div>
+            </sc-if>
             </div>
           </div>
 
@@ -3075,6 +3136,16 @@ const SB = (window.supabase && window.supabase.createClient)
 // 바뀌었을 때 이전 사용자의 localStorage를 새 계정에 올려버리면 안 된다.
 const MIGRATED_PREFIX = 'beomin_migrated_v1:';
 
+// ── 아이디 로그인 (실제 이메일은 받지 않는다) ─────────────────────────────
+// Supabase 비밀번호 인증은 email 필드를 요구하므로, 사용자가 입력한 아이디를
+// 내부에서만 <아이디>@anong.local 로 바꿔 쓴다. 실제 이메일 주소는 수집하지도,
+// 인증 메일을 보내지도 않는다(닿을 수 없는 도메인이라 애초에 발송 대상이 아니다).
+// ⚠️ 이 방식은 Supabase의 '이메일 인증(Confirm email)'이 꺼져 있어야 동작한다.
+const ID_DOMAIN = '@anong.local';
+const ID_RE = /^[a-z0-9_]{4,20}$/;
+const idToEmail = (id) => String(id || '').trim().toLowerCase() + ID_DOMAIN;
+const emailToId = (email) => String(email || '').replace(ID_DOMAIN, '');
+
 // PI_DEFAULTS(캐멀케이스) ↔ personal_info 테이블(스네이크케이스) 컬럼 대응.
 const PI_COLUMNS = {
   name: 'name', birth: 'birth', gender: 'gender',
@@ -3088,12 +3159,15 @@ const PI_COLUMNS = {
 class Component extends DCLogic {
   state = { activeTab: 'home', selectedRegion: null, selectedDong: '', showResults: false, expandedCrop: null, myFarm: null, personalInfo: {}, piResult: null, policies: null, piDiagnosing: false, policiesError: false, liveScores: {}, scoresLoading: false, detailCrop: null, detailRegionName: null, detailLiveScore: null, detailTipOpen: {}, newsByCrop: {}, newsLoaded: false, newsLoading: false, newsLoadedAt: null, detailNews: [], detailNewsLoading: false, farmPlans: {}, planViewMonth: null, planSelectedDay: {}, weatherByProvince: {}, weatherLoadingSet: {}, planChecklistStatus: {}, prepStatus: {},
     weeklyByRegion: {}, weeklyLoadingSet: {}, planHowOpen: {},
+    // 품종 추천(breed.md): '지역|작물' 키로 캐시한다. 서버가 ASOS 10년치를 디스크에
+    // 캐시하므로 두 번째 조회부터는 빠르지만, 첫 조회는 수십 초가 걸릴 수 있다.
+    cultivarByKey: {}, cultivarLoadingSet: {},
     chatOpen: false, chatMessages: [], chatStreaming: false,
     regionLog: [], regionLogOpen: false, metricTipKey: null,
     // ── 로그인/회원가입 ──
     // authUser: Supabase 사용자(익명 포함). authIsAnon이면 '아직 계정을 안 만든 상태'다.
     authUser: null, authIsAnon: true, authReady: false,
-    authOpen: false, authMode: 'login', authEmail: '', authPw: '',
+    authOpen: false, authMode: 'login', authId: '', authPw: '',
     authBusy: false, authError: '', authNotice: '', cloudSyncing: false };
 
   componentDidMount() {
@@ -3127,13 +3201,13 @@ class Component extends DCLogic {
       // 로그인/회원가입 칸에서 엔터를 치면 바로 제출한다. 입력창은 모달을 열고 닫을 때마다
       // 사라졌다 생기므로 여기(document 위임)에서 함께 처리한다.
       const id = (e.target && e.target.id) || '';
-      if (e.key === 'Enter' && (id === 'anong-auth-email' || id === 'anong-auth-pw')) {
+      if (e.key === 'Enter' && (id === 'anong-auth-id' || id === 'anong-auth-pw')) {
         e.preventDefault();
         // onChange가 blur 시점에만 반영되는 경우가 있어, 지금 화면의 값을 직접 읽어 넣는다.
-        const em = window.document.getElementById('anong-auth-email');
+        const idIn = window.document.getElementById('anong-auth-id');
         const pw = window.document.getElementById('anong-auth-pw');
         this.setState({
-          authEmail: em ? em.value : this.state.authEmail,
+          authId: idIn ? idIn.value : this.state.authId,
           authPw: pw ? pw.value : this.state.authPw
         }, () => this.authSubmit());
       }
@@ -3364,6 +3438,11 @@ class Component extends DCLogic {
     });
   }
 
+  // 화면에 보여줄 아이디. 저장된 값은 <아이디>@anong.local 이므로 앞부분만 쓴다.
+  displayId(u) {
+    return emailToId((u && u.email) || '');
+  }
+
   openAuth(mode) {
     this.setState({ authOpen: true, authMode: mode || 'login',
                     authError: '', authNotice: '', authPw: '' });
@@ -3371,17 +3450,20 @@ class Component extends DCLogic {
 
   closeAuth() { this.setState({ authOpen: false, authError: '' }); }
 
+  // Supabase의 영문 오류를 아이디 기준 한국어 안내로 바꾼다. 내부적으로는 이메일
+  // 필드를 쓰지만 사용자에게 '이메일'이라는 말이 새어나가지 않게 한다.
   authMsg(e) {
     const m = ((e && (e.message || e.error_description)) || '').toLowerCase();
     if (m.indexOf('invalid login') !== -1 || m.indexOf('invalid credentials') !== -1)
-      return '이메일 또는 비밀번호가 맞지 않아요.';
+      return '아이디 또는 비밀번호가 맞지 않아요.';
     if (m.indexOf('already registered') !== -1 || m.indexOf('already been registered') !== -1
-        || m.indexOf('already exists') !== -1 || m.indexOf('email_exists') !== -1)
-      return '이미 가입된 이메일이에요. 로그인 탭에서 로그인해 주세요.';
+        || m.indexOf('already exists') !== -1 || m.indexOf('email_exists') !== -1
+        || m.indexOf('user_already_exists') !== -1)
+      return '이미 쓰고 있는 아이디예요. 다른 아이디를 써주세요.';
     if (m.indexOf('password') !== -1 && m.indexOf('short') !== -1)
       return '비밀번호는 6자 이상이어야 해요.';
     if (m.indexOf('invalid') !== -1 && m.indexOf('email') !== -1)
-      return '이메일 형식이 올바르지 않아요.';
+      return '아이디에 쓸 수 없는 문자가 있어요. 영문 소문자·숫자·밑줄만 써주세요.';
     if (m.indexOf('rate limit') !== -1 || m.indexOf('too many') !== -1)
       return '요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
     return (e && e.message) ? e.message : '처리 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.';
@@ -3390,16 +3472,18 @@ class Component extends DCLogic {
   authSubmit() {
     if (!SB) { this.setState({ authError: '서버에 연결할 수 없어요. 잠시 후 다시 시도해주세요.' }); return; }
     // onChange가 blur 시점에만 오는 환경도 있어, 지금 화면에 적힌 값을 우선으로 읽는다.
-    const emEl = window.document.getElementById('anong-auth-email');
+    const idEl = window.document.getElementById('anong-auth-id');
     const pwEl = window.document.getElementById('anong-auth-pw');
-    const email = (((emEl && emEl.value) || this.state.authEmail) || '').trim();
+    const id = (((idEl && idEl.value) || this.state.authId) || '').trim().toLowerCase();
     const pw = ((pwEl && pwEl.value) || this.state.authPw) || '';
-    if (!email || email.indexOf('@') === -1) {
-      this.setState({ authError: '이메일을 정확히 입력해주세요.' }); return;
+    if (!ID_RE.test(id)) {
+      this.setState({ authError: '아이디는 영문 소문자·숫자·밑줄 4~20자로 적어주세요.' }); return;
     }
     if (pw.length < 6) {
       this.setState({ authError: '비밀번호는 6자 이상이어야 해요.' }); return;
     }
+    // 여기서만 내부용 주소로 바꾼다. 사용자는 이메일을 입력하지 않는다.
+    const email = idToEmail(id);
     this.setState({ authBusy: true, authError: '', authNotice: '' });
     const done = (msg) => this.setState({ authBusy: false, authOpen: false, authPw: '',
                                           authNotice: msg || '' });
@@ -3940,7 +4024,51 @@ class Component extends DCLogic {
     Object.keys(list).forEach(k => {
       if (list[k].province) this.loadWeather(list[k].province);
       if (list[k].regionLabel) this.loadWeekly(list[k].regionLabel);
+      if (list[k].regionLabel) this.loadCultivars(list[k].regionLabel, k);
     });
+  }
+
+  // 이 지역에 맞는 품종 순위(무상기간·작기 기온·토양 기반). 품종 데이터가 있는 작물만
+  // 응답이 온다(지금은 감자). 첫 조회는 서버가 ASOS 10년치를 받아오느라 느릴 수 있어
+  // 로딩 상태를 화면에 표시한다.
+  loadCultivars(regionName, crop) {
+    if (!regionName || !crop) return;
+    const key = regionName + '|' + crop;
+    const cached = (this.state.cultivarByKey || {})[key];
+    if (cached && (Date.now() - cached.loadedAt) < 12 * 60 * 60 * 1000) return;
+    if ((this.state.cultivarLoadingSet || {})[key]) return;
+    this.setState({ cultivarLoadingSet: { ...(this.state.cultivarLoadingSet || {}), [key]: true } });
+    fetch(CROP_SCORE_API + '/api/cultivar-score/' + encodeURIComponent(crop)
+          + '?region=' + encodeURIComponent(regionName))
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        const all = { ...(this.state.cultivarByKey || {}) };
+        all[key] = {
+          ranking: (data && Array.isArray(data.ranking)) ? data.ranking : [],
+          regionMetrics: (data && data.regionMetrics) || (data && data.region_metrics) || null,
+          cautions: (data && data.cautions) || [],
+          reliability: (data && data.reliability) || '',
+          skipped: (data && data.skipped) || [],
+          error: (data && data.error) || '', loadedAt: Date.now()
+        };
+        const ls = { ...(this.state.cultivarLoadingSet || {}) }; delete ls[key];
+        this.setState({ cultivarByKey: all, cultivarLoadingSet: ls });
+      })
+      .catch(() => {
+        const ls = { ...(this.state.cultivarLoadingSet || {}) }; delete ls[key];
+        this.setState({ cultivarLoadingSet: ls });
+      });
+  }
+
+  // 추천 카드에서 품종을 고르면 나의 농사 계획에 품종·작형·파종 예정일을 함께 저장한다.
+  // (Supabase my_farm에는 아직 품종 컬럼이 없어 farmRow는 그대로 두고 기기에만 남긴다 -
+  //  breed.md §9의 alter table이 적용되면 farmRow에 추가하면 된다.)
+  pickCultivar(cultivar, cultivationType, plantingDate) {
+    const mf = this.state.myFarm;
+    if (!mf) return;
+    const next = { ...mf, cultivar: cultivar, cultivationType: cultivationType || '', plantingDate: plantingDate || '' };
+    try { window.localStorage.setItem(MYFARM_KEY, JSON.stringify(next)); } catch (e) {}
+    this.setState({ myFarm: next });
   }
 
   // 앞으로 7일 예보(단기+중기). 지역 전체 이름(예 '충청북도 충주시 주덕읍') 단위로 캐시한다.
@@ -4080,6 +4208,9 @@ class Component extends DCLogic {
       focusCrop: this.state.detailCrop || (mf ? mf.crop : null),
       plans: Object.keys(plans).map((c) => ({
         crop: c,
+        // 저장된 품종·파종 예정일이 있으면 챗봇이 되묻지 않도록 함께 넘긴다.
+        cultivar: (mf && mf.crop === c && mf.cultivar) ? mf.cultivar : '',
+        plantingDate: (mf && mf.crop === c && mf.plantingDate) ? mf.plantingDate : '',
         todayTasks: (plans[c].events || [])
           .filter((e) => e.start <= today && today <= e.end)
           .map((e) => e.task)
@@ -4754,6 +4885,74 @@ class Component extends DCLogic {
            + (p.zoneLabel ? ' · ' + p.zoneLabel.split('—')[0].trim() : ''))
         : '';
 
+      // ── 이 지역에 맞는 품종 추천 (breed.md) ──────────────────────────────
+      // 서버가 무상기간·작기 기온·토양으로 매긴 순위를 그대로 카드로 만든다. 점수 계산은
+      // 하지 않는다(프런트에서 다시 계산하면 챗봇 답변과 숫자가 갈린다).
+      const cvKey = p.regionLabel ? (p.regionLabel + '|' + p.crop) : '';
+      const cvInfo = cvKey ? (this.state.cultivarByKey || {})[cvKey] : null;
+      const cvLoading = !!(cvKey && (this.state.cultivarLoadingSet || {})[cvKey]);
+      const savedCultivar = (this.state.myFarm && this.state.myFarm.crop === p.crop)
+        ? (this.state.myFarm.cultivar || '') : '';
+      // 'MM-DD' 권장 파종일을 실제 달력 날짜로 바꾼다(올해가 지났으면 내년).
+      const mmddToDate = (mmdd) => {
+        if (!mmdd || mmdd.length < 5) return '';
+        const y = new Date(todayStrForPlan + 'T00:00:00').getFullYear();
+        const iso = y + '-' + mmdd;
+        return (iso >= todayStrForPlan) ? iso : ((y + 1) + '-' + mmdd);
+      };
+      const GRADE_COLOR = { good: '#2F6B44', normal: '#7A6A2F', caution: '#A5642A', bad: '#9E3B2E' };
+      const cvList = ((cvInfo && cvInfo.ranking) || []).map((r, i) => {
+        const pw = r.planting_window || {};
+        const plantDate = mmddToDate(pw.best);
+        const isPicked = savedCultivar === r.cultivar;
+        return {
+          rankLabel: (i + 1) + '위',
+          name: r.cultivar,
+          score: (typeof r.score === 'number') ? r.score.toFixed(1) : '-',
+          gradeLabel: r.grade_label || '',
+          gradeStyle: { fontSize: 11, fontWeight: 700, color: '#fff', background: GRADE_COLOR[r.grade] || '#7A6A2F', borderRadius: 6, padding: '2px 7px' },
+          season: r.cultivation_type || '',
+          maturity: r.maturity || '',
+          windowLine: (pw.from && pw.to)
+            ? ('파종 ' + pw.from.replace('-', '/') + '~' + pw.to.replace('-', '/')
+               + ' → 수확 ' + (pw.harvest || '').replace('-', '/') + ' (' + (pw.days || '?') + '일)')
+            : '',
+          reason: (r.reasons || [])[0] || '',
+          hasBlocker: (r.blockers || []).length > 0,
+          blocker: (r.blockers || [])[0] || '',
+          hasCaution: (r.cautions || []).length > 0,
+          caution: (r.cautions || [])[0] || '',
+          hasBadge: (r.badges || []).length > 0,
+          badge: (r.badges || [])[0] || '',
+          isPicked, notPicked: !isPicked,
+          rowStyle: {
+            background: isPicked ? '#F1F7F2' : '#FFFDF7',
+            border: '1px solid ' + (isPicked ? '#9CC3A6' : '#E9E0CC'),
+            borderRadius: 10, padding: 13, display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0
+          },
+          pick: () => this.pickCultivar(r.cultivar, r.cultivation_type, plantDate)
+        };
+      });
+      const cvMetrics = (cvInfo && cvInfo.regionMetrics) || null;
+      const cvNote = cvMetrics
+        ? ('무상기간 ' + cvMetrics.frost_free_days + '일 · 늦서리 ' + (cvMetrics.last_spring_frost || '?')
+           + ' · 첫서리 ' + (cvMetrics.first_fall_frost || '?') + ' · 관측소 ' + (cvMetrics.station_name || '?')
+           + '(' + (cvMetrics.years_used || 0) + '년 평년)')
+        : '';
+      const cultivarBox = {
+        show: !!(cvKey && (cvLoading || cvList.length > 0 || (cvInfo && cvInfo.error))),
+        loading: cvLoading && cvList.length === 0,
+        hasList: cvList.length > 0,
+        list: cvList,
+        note: cvNote,
+        hasError: !!(cvInfo && cvInfo.error && cvList.length === 0),
+        error: (cvInfo && cvInfo.error) || '',
+        hasHint: !!(cvInfo && (cvInfo.cautions || []).length),
+        hint: (cvInfo && (cvInfo.cautions || [])[0]) || '',
+        hasPicked: !!savedCultivar,
+        pickedLine: savedCultivar ? ('저장한 품종: ' + savedCultivar) : ''
+      };
+
       // fWarns(앞으로 7일 예보 기반)는 더 이상 여기 섞지 않는다 - "🌦 7일 예보를 보고 준비할 일을
       // 골라봤어요" 카드(plan.prep)가 같은 데이터를 수락/보류 가능한 형태로 전담해서 보여준다.
       const liveInsights = [
@@ -4934,6 +5133,7 @@ class Component extends DCLogic {
         cells,
         hydration,
         prep,
+        cultivarBox,
         selectedDetail, hasSelectedDetail: !!selectedDetail, noSelectedDetail: !selectedDetail,
         prevArrowStyle: arrowStyle(hasPrevMonth), nextArrowStyle: arrowStyle(hasNextMonth),
         prevMonth: () => { if (monthIdx > 0) this.setState({ planViewMonth: monthKeys[monthIdx - 1] }); },
@@ -4947,9 +5147,7 @@ class Component extends DCLogic {
     // ── 로그인 / 회원가입 ──
     const authUser = this.state.authUser;
     const signedIn = !!(authUser && !this.state.authIsAnon);
-    const authEmailShort = signedIn
-      ? (authUser.email || '').split('@')[0]
-      : '';
+    const myId = signedIn ? this.displayId(authUser) : '';
     // 탭(로그인/회원가입) 스타일: 고른 쪽만 흰 알약으로 도드라지게 한다.
     const authTab = (on) => ({
       flex: 1, padding: '9px 12px', borderRadius: 999, border: 'none',
@@ -4960,11 +5158,11 @@ class Component extends DCLogic {
     });
 
     return {
-      // 헤더 버튼: 로그인 전에는 '로그인', 후에는 이메일 아이디 부분을 보여준다.
+      // 헤더 버튼: 로그인 전에는 '로그인', 후에는 내 아이디를 보여준다.
       signedIn: signedIn,
       signedOut: !signedIn,
-      authBtnLabel: signedIn ? ('👤 ' + authEmailShort) : '로그인',
-      authEmail: signedIn ? (authUser.email || '') : '',
+      authBtnLabel: signedIn ? ('👤 ' + myId) : '로그인',
+      myId: myId,
       authTabLoginStyle: authTab(this.state.authMode === 'login'),
       authTabSignupStyle: authTab(this.state.authMode === 'signup'),
       stopClick: (e) => { if (e && e.stopPropagation) e.stopPropagation(); },
@@ -4975,7 +5173,7 @@ class Component extends DCLogic {
       authSubmitLabel: this.state.authBusy
         ? '처리 중…'
         : (this.state.authMode === 'signup' ? '가입하고 이어서 쓰기' : '로그인'),
-      authEmailVal: this.state.authEmail,
+      authIdVal: this.state.authId,
       authPwVal: this.state.authPw,
       authError: this.state.authError,
       hasAuthError: !!this.state.authError,
@@ -4991,7 +5189,8 @@ class Component extends DCLogic {
       closeAuth: () => this.closeAuth(),
       switchToLogin: () => this.setState({ authMode: 'login', authError: '' }),
       switchToSignup: () => this.setState({ authMode: 'signup', authError: '' }),
-      onAuthEmail: (e) => this.setState({ authEmail: e.target.value }),
+      // 아이디는 대소문자를 구분하지 않게 소문자로 모아둔다(로그인 실패 원인 1위).
+      onAuthId: (e) => this.setState({ authId: (e.target.value || '').toLowerCase() }),
       onAuthPw: (e) => this.setState({ authPw: e.target.value }),
       submitAuth: () => this.authSubmit(),
       doLogout: () => this.authLogout(),
