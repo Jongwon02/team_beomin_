@@ -28,3 +28,6 @@ data/cache/
 data/chat_usage.jsonl
 .vercel
 .env*
+
+# Claude Code 로컬 설정 (인증키 등 로컬 값이 들어갈 수 있어 공유하지 않는다)
+.claude/

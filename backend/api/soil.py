@@ -22,9 +22,13 @@ https://www.data.go.kr/data/15144685/openapi.do
    중앙값 4.25). 이 부분만 근사이고, 나머지 닫힌 구간 경계는 원문 그대로다.
 """
 
+import json
 import logging
 import os
+import time
 import xml.etree.ElementTree as ET
+from datetime import datetime, timedelta
+from pathlib import Path
 
 import requests
 from dotenv import load_dotenv
@@ -45,6 +49,65 @@ OPERATIONS = {
 }
 FIELD_PREFIX = {"pH": "acid", "유기물": "om", "유효인산": "vldpha"}
 REQUEST_TIMEOUT_SECONDS = 10
+
+# ⚠️ 이 서비스키는 ASOS 일자료/흙토람 EC API와 하루 호출한도를 공유한다(soil_ec.py
+# 참고). 지역 하나에 pH·유기물·유효인산 3개 항목 × 시군구 안 법정동 코드 수만큼
+# 연속 호출하다 보니 순간적으로 초당 요청수 제한(429)에 걸리기 쉽고, soil_ec.py처럼
+# 재시도가 없으면 딱 한 번 걸린 항목만 통째로 결측 처리돼 pH는 성공, 유기물은 실패
+# 하는 식의 들쭉날쭉한 결과가 난다. soil_ec.py와 동일하게 짧은 재시도 + 디스크 캐시로
+# 대응한다(캐시는 stdg_cd 단위 원본 응답을 저장해 get_soil_variable과
+# get_soil_variable_with_fallback이 같은 캐시를 공유하게 한다).
+MAX_429_RETRIES = 2
+RETRY_BACKOFF_SECONDS = 1.5
+
+CACHE_PATH = Path(__file__).resolve().parents[2] / "data" / "cache" / "soil_stat_cache.json"
+SUCCESS_TTL = timedelta(hours=24)
+FAILURE_TTL = timedelta(hours=3)
+
+_disk_cache = None
+
+
+def _load_disk_cache():
+    global _disk_cache
+    if _disk_cache is not None:
+        return _disk_cache
+    if CACHE_PATH.exists():
+        try:
+            with open(CACHE_PATH, encoding="utf-8") as f:
+                _disk_cache = json.load(f)
+        except (OSError, json.JSONDecodeError) as e:
+            logger.warning("[soil] 캐시 파일을 읽지 못해 새로 시작합니다: %s", e)
+            _disk_cache = {}
+    else:
+        _disk_cache = {}
+    return _disk_cache
+
+
+def _save_disk_cache():
+    try:
+        CACHE_PATH.parent.mkdir(parents=True, exist_ok=True)
+        with open(CACHE_PATH, "w", encoding="utf-8") as f:
+            json.dump(_disk_cache, f, ensure_ascii=False, indent=2)
+    except OSError as e:
+        logger.warning("[soil] 캐시 파일 저장 실패(메모리 캐시로만 계속 동작): %s", e)
+
+
+def _read_cache_entry(cache_key):
+    cache = _load_disk_cache()
+    entry = cache.get(cache_key)
+    if entry is None:
+        return False, None
+    fetched_at = datetime.fromisoformat(entry["fetched_at"])
+    ttl = SUCCESS_TTL if entry["areas"] is not None else FAILURE_TTL
+    if datetime.now() - fetched_at > ttl:
+        return False, None
+    return True, entry["areas"]
+
+
+def _write_cache_entry(cache_key, areas):
+    cache = _load_disk_cache()
+    cache[cache_key] = {"areas": areas, "fetched_at": datetime.now().isoformat()}
+    _save_disk_cache()
 
 # 구간별 대표값(중앙값). 원문 구간 경계는 모듈 docstring 참고 - 개방구간(첫/마지막)만
 # 인접 구간과 같은 폭을 가정해 추정했고, 나머지는 원문 경계값 그대로 계산한 중앙값이다.
@@ -83,17 +146,37 @@ def _get_bin_midpoints(variable, category):
 
 
 def _fetch_operation(variable, stdg_cd, service_key):
+    cache_key = f"{variable}|{stdg_cd}"
+    hit, cached_areas = _read_cache_entry(cache_key)
+    if hit:
+        return cached_areas
+
+    areas = _fetch_operation_uncached(variable, stdg_cd, service_key)
+    _write_cache_entry(cache_key, areas)
+    return areas
+
+
+def _fetch_operation_uncached(variable, stdg_cd, service_key):
     url = BASE_URL + OPERATIONS[variable]
     params = {"serviceKey": service_key, "pageNo": "1", "numOfRows": "10", "STDG_CD": stdg_cd}
-    try:
-        resp = requests.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
-        resp.raise_for_status()
-    except requests.exceptions.Timeout:
-        logger.error("[soil] %s API 요청 타임아웃 (STDG_CD=%s)", variable, stdg_cd)
-        return None
-    except requests.exceptions.RequestException as e:
-        logger.error("[soil] %s API 요청 실패: %s", variable, e)
-        return None
+    resp = None
+    for attempt in range(MAX_429_RETRIES + 1):
+        try:
+            resp = requests.get(url, params=params, timeout=REQUEST_TIMEOUT_SECONDS)
+            if resp.status_code == 429:
+                if attempt < MAX_429_RETRIES:
+                    time.sleep(RETRY_BACKOFF_SECONDS * (attempt + 1))
+                    continue
+                logger.warning("[soil] %s 429 재시도 소진(STDG_CD=%s)", variable, stdg_cd)
+                return None
+            resp.raise_for_status()
+            break
+        except requests.exceptions.Timeout:
+            logger.error("[soil] %s API 요청 타임아웃 (STDG_CD=%s)", variable, stdg_cd)
+            return None
+        except requests.exceptions.RequestException as e:
+            logger.error("[soil] %s API 요청 실패: %s", variable, e)
+            return None
 
     try:
         root = ET.fromstring(resp.text)
@@ -166,6 +249,62 @@ def get_soil_variable(variable, sigungu_full_name, crop, service_key=None):
         return None
 
     return _weighted_average(combined_bins, _get_bin_midpoints(variable, category))
+
+
+# 지목별 한글 표시명 - 대체 조회 시 사용자에게 "무엇으로 대체됐는지" 보여주는 데 쓴다.
+LAND_USE_LABELS = {"Rfld": "논", "Pfld": "밭", "Fachs": "시설재배지", "Fruit": "과수원"}
+
+# 원래 지목에 등록된 필지가 없을 때 대신 시도할 지목 순서(밭이 가장 흔해 우선).
+DEFAULT_FALLBACK_ORDER = ("Pfld", "Fruit", "Fachs", "Rfld")
+
+
+def get_soil_variable_with_fallback(variable, sigungu_full_name, crop, service_key=None,
+                                     fallback_order=DEFAULT_FALLBACK_ORDER):
+    """get_soil_variable()과 같지만, crop의 원래 지목에 등록된 필지가 아예 없으면
+    (예: 오이=시설재배지인데 그 지역에 시설재배지 검정 자체가 없음) 다른 지목의
+    값으로 대체한다. _fetch_operation()이 애초에 지목 4개 면적을 한 번에 다
+    돌려주므로, 대체를 위해 API를 추가로 더 호출하지는 않는다.
+
+    반환: (value, used_category) - 실패 시 (None, None). used_category가
+    LAND_USE_CATEGORY[crop](원래 지목)과 다르면 대체된 값이라는 뜻이니, 호출부가
+    "이 값은 참고용 대체값"이라고 표시해야 한다.
+    """
+    service_key = service_key or os.environ.get("SOIL_EXAM_STAT_SERVICE_KEY")
+    if not service_key:
+        logger.error("[soil] SOIL_EXAM_STAT_SERVICE_KEY 환경변수가 설정되어 있지 않습니다.")
+        return None, None
+
+    candidates = get_stdg_candidates(sigungu_full_name)
+    stdg_codes = candidates["children"] or ([candidates["exact"]] if candidates["exact"] else [])
+    if not stdg_codes:
+        logger.warning("[soil] '%s'의 법정동코드를 찾을 수 없어 %s 조회를 건너뜁니다.", sigungu_full_name, variable)
+        return None, None
+
+    own_category = LAND_USE_CATEGORY.get(crop, "Pfld")
+    try_order = [own_category] + [c for c in fallback_order if c != own_category]
+    per_category_bins = {cat: [0.0] * 6 for cat in try_order}
+
+    got_any = False
+    for stdg_cd in stdg_codes:
+        areas = _fetch_operation(variable, stdg_cd, service_key)
+        if areas is None:
+            continue
+        got_any = True
+        for cat in try_order:
+            for i in range(6):
+                per_category_bins[cat][i] += areas[cat][i]
+
+    if not got_any:
+        return None, None
+
+    for cat in try_order:
+        bins = per_category_bins[cat]
+        if sum(bins) <= 0:
+            continue
+        value = _weighted_average(bins, _get_bin_midpoints(variable, cat))
+        if value is not None:
+            return value, cat
+    return None, None
 
 
 def get_soil_readings(sigungu_full_name, crop, service_key=None):

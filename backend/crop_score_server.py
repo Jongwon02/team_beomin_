@@ -21,12 +21,14 @@ os.chdir(PROJECT_DIR)
 
 from live_scoring import get_live_score  # noqa: E402
 from region_mapper import find_nearest_station  # noqa: E402
+from climate_normal_score import get_climate_normal_score  # noqa: E402
 import cultivar_api  # noqa: E402  (품종 추천 - breed.md §7)
 
 PORT = 8002
 CROPS = {"사과", "배", "오이", "감자", "상추"}
 CACHE_TTL = 600  # 10분
 _cache = {}      # (crop, region) -> (ts, payload)
+_normal_cache = {}  # (crop, region) -> (ts, payload) - climate-normal 전용 캐시
 
 # score → grade/grade_label (프론트 표시용 4단계, For_Frontend.md §3)
 def grade_of(score):
@@ -62,6 +64,21 @@ def build(crop, region):
         except Exception:
             pass
     _cache[key] = (now, result)
+    return result
+
+def build_normal(crop, region):
+    """실시간 예보/실측 대신 여러 해 평년 통계로 낸 안정적 적합도(climate_normal_score.py).
+    접속 시점에 따라 등급이 뒤바뀌지 않아야 하는 홈/상세페이지 "적합도" 표시에 쓴다."""
+    key = (crop, region)
+    now = time.time()
+    if key in _normal_cache and now - _normal_cache[key][0] < CACHE_TTL:
+        return _normal_cache[key][1]
+    result = get_climate_normal_score(region, crop)
+    if isinstance(result, dict) and result.get("status") == "matched":
+        g, gl = grade_of(result.get("total_score"))
+        result.setdefault("grade", g)
+        result.setdefault("grade_label", gl)
+    _normal_cache[key] = (now, result)
     return result
 
 def _json_safe(obj):
@@ -142,11 +159,26 @@ class Handler(BaseHTTPRequestHandler):
             except Exception as e:
                 return self._send(502, {"error": f"리포트 조회 실패: {e}"})
 
-        # ── 작물 적합도 점수 (기존) ──────────────────────────────────────
+        # ── 작물 적합도 점수 - 평년(기후 클러스터/다년 통계) 기준, 접속 시점과 무관 ──
+        m = re.match(r"^/api/crop-score-normal/(.+)$", path)
+        if m:
+            crop = urllib.parse.unquote(m.group(1))
+            region = (qs.get("region", [""])[0]).strip()
+            if crop not in CROPS:
+                return self._send(400, {"error": f"지원하지 않는 작물명입니다: '{crop}'"})
+            if not region:
+                return self._send(400, {"error": "region 파라미터가 필요합니다 (예: ?region=충주시)"})
+            try:
+                return self._send(200, build_normal(crop, region))
+            except Exception as e:
+                return self._send(502, {"error": f"점수 산출 실패: {e}"})
+
+        # ── 작물 적합도 점수 (실시간, 기존) ──────────────────────────────
         m = re.match(r"^/api/crop-score/(.+)$", path)
         if not m:
             return self._send(404, {"error": (
-                "use /api/crop-score/<crop>?region=<name> · /api/cultivar-score/<crop>?region=<name> · "
+                "use /api/crop-score/<crop>?region=<name> · /api/crop-score-normal/<crop>?region=<name> · "
+                "/api/cultivar-score/<crop>?region=<name> · "
                 "/api/cultivars/<crop> · /api/cultivar-profile/<crop>/<cultivar> · "
                 "/api/cultivar-report/<crop>/<cultivar>"
             )})
