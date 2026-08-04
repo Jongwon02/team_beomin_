@@ -1172,3 +1172,70 @@ supabase-js는 저장된 세션을 그대로 신뢰하므로, 앱이 스스로 �
 > 운영 주의: **익명 계정을 일괄 삭제하지 말 것.** 지금 사이트를 쓰고 있는 사람의 세션을
 > 끊어 이 오류를 만든다. 정리해야 한다면 `created_at`이 오래되고 딸린 데이터가 없는
 > 익명 계정만 골라 지운다.
+
+---
+
+## 12. heeyeon0804 UI 병합 (2026-08-04)
+
+`heeyeon0804` 브랜치의 UI·기능을 기준으로 삼고, 로그인/Supabase 계층을 그 위에 다시 심었다.
+
+### 12.1 왜 일반 merge를 쓰지 않았나
+
+두 브랜치는 **공통 조상이 없다**(`main` 루트 `de4f7e8` / `heeyeon0804` 루트 `cf29f04`).
+`git merge`는 `--allow-unrelated-histories` 없이는 거부하고, 강제하면 양쪽에 다 있는
+파일 102개가 전부 충돌로 잡힌다. 그래서 **파일 단위 이식**으로 병합했다.
+
+| 출처 | 가져온 것 |
+|---|---|
+| heeyeon0804 | `Beomin_web/CropAdvisor.dc.html`, `Beomin_web/RegionMap.html` 전체 |
+| main (유지) | 로그인/Supabase 계층, `api/` 함수 6개, `vercel.json`, `requirements.txt`, `.vercelignore`, `Beomin_web/news_server.py` |
+
+`news_server.py`는 heeyeon0804 버전이 `.env` 파일만 읽고 `fetch_weekly`도 없어서
+배포 함수(`api/news.py` 등)가 깨진다. `os.environ` 폴백이 있는 main 버전(상위 호환)을 유지했다.
+
+### 12.2 UI 저장 모델이 달라 테이블을 추가했다
+
+heeyeon0804는 **다중 저장 모델**이라 main의 `my_farm`(1인 1행)과 맞지 않는다.
+마이그레이션 `10_heeyeon_ui_multi_save_tables`로 3개를 추가했다.
+
+| localStorage 키 | 내용 | 테이블 |
+|---|---|---|
+| `gwinong_favorites` | 작물 즐겨찾기 (작물명 배열) | **`favorites`** (신규) |
+| `beomin_saved_regions` | 저장한 귀농 지역 최대 8곳 | **`saved_regions`** (신규, `raw` jsonb에 원본 항목 보존) |
+| `beomin_farm_plans` | 작물별 농사 계획 `{작물: plan}` | **`farm_plans`** (신규) |
+| `beomin_personal_info` | 인적사항 16개 항목 | `personal_info` (기존 재사용) |
+| `beomin_checklist_status` | 체크리스트 진행 상태 | `checklist_status` (기존 재사용) |
+
+`my_farm` · `prep_status` · `region_log`는 main의 단일 농장 UI 전용이라 이 UI에서는
+쓰지 않는다. 데이터가 없으므로 되돌릴 때를 대비해 남겨뒀다.
+
+### 12.3 부수 개선 — 체크리스트가 저장되지 않던 문제
+
+heeyeon0804 UI는 체크리스트 진행 상태를 `setState`만 하고 저장하지 않아 **새로고침하면
+사라졌다**. 서버 저장을 붙이는 김에 `applyChecklistStatus()`를 단일 통로로 만들어
+localStorage + `checklist_status` 테이블에 함께 남긴다.
+
+### 12.4 검증 (Playwright · 로컬 8000 + 실제 공공 API + 배포)
+
+| 항목 | 결과 |
+|---|---|
+| 귀농 가이드 탭 렌더 (heeyeon0804 UI 유지) | OK |
+| 익명 세션 자동 생성 | OK |
+| 익명 상태로 인적사항 저장 | OK |
+| 아이디 회원가입 시 `user_id` 승계 | OK (데이터 유지) |
+| 로그아웃 → 익명 복귀 | OK |
+| 로그아웃 후 이전 사용자 인적사항 노출 | 없음 (빈 칸) |
+| 재로그인 후 서버에서 복원 | OK |
+| 모달에 이메일 입력칸 | 0개 (아이디 방식) |
+| 배포 후 `/api/health` · news · weather · crop-score | 전부 200 |
+| Supabase / 페이지 오류 | 0건 |
+
+### 12.5 이 병합으로 사라진 기능 (main에만 있던 것)
+
+heeyeon0804 UI로 교체했으므로 아래는 화면에서 빠졌다. 코드는 `login` 브랜치와
+`919b6a1` 커밋에 그대로 남아 있다.
+
+- 챗봇 (`/api/chat` 함수와 `backend/chat_server.py`는 배포에 남아 있으나 UI 진입점이 없다)
+- 7일 예보 준비 체크리스트(`prep_status`), 6개 기후 클러스터 코멘트, 지역 방문 기록
+- 단일 귀농지역·작물 모델(`my_farm`)
+- 품종 UI(`loadCultivars`/`pickCultivar`) — 진행 중이던 별도 작업이라 이식하지 않았다
