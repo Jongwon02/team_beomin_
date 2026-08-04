@@ -926,15 +926,20 @@
         <p style="font-size:13px;color:#6B6250;margin:6px 0 14px;">평년 기후·토양 통계 기준 이 지역의 {{ detail.name }} 적합도예요.</p>
         <p style="font-size:14px;line-height:1.7;color:#3C3527;margin:0 0 14px;">{{ detail.regionReason }}</p>
         <sc-if value="{{ detail.hasRegionBreakdown }}">
-          <div style="display:grid;gap:6px;">
-            <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0 0 2px;">항목별 점수 (평년 통계 기준, 작물별 가중치 반영)</p>
+          <div style="display:grid;gap:14px;">
+            <p style="font-size:11px;font-weight:700;color:#8A7F65;margin:0;">항목별 점수 (평년 통계 기준, 작물별 가중치 반영)</p>
             <sc-for list="{{ detail.regionBreakdown }}" as="b" hint-placeholder-count="5">
-              <div style="display:flex;align-items:center;gap:8px;">
-                <span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;{{ b.labelStyle }}" title="{{ b.note }}">{{ b.label }}</span>
-                <div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;">
-                  <div style="{{ b.barStyle }}"></div>
+              <div style="display:flex;flex-direction:column;gap:6px;">
+                <div style="display:flex;align-items:center;gap:8px;">
+                  <span style="width:66px;flex:0 0 auto;font-size:12px;color:#6B6250;{{ b.labelStyle }}" title="{{ b.note }}">{{ b.label }}</span>
+                  <div style="flex:1;height:7px;background:#EFE7D5;border-radius:999px;overflow:hidden;">
+                    <div style="{{ b.barStyle }}"></div>
+                  </div>
+                  <span style="width:48px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">{{ b.scoreLabel }}</span>
                 </div>
-                <span style="width:48px;flex:0 0 auto;text-align:right;font-size:11px;color:#8A7F65;">{{ b.scoreLabel }}</span>
+                <sc-if value="{{ b.hasDesc }}">
+                  <p style="margin:0 0 0 74px;font-size:13px;line-height:1.65;color:#5A5245;">{{ b.desc }}</p>
+                </sc-if>
               </div>
             </sc-for>
           </div>
@@ -1652,13 +1657,16 @@ function normalGradeOf(score) {
 }
 // climate_normal_score.py의 breakdown({변수:{score,weight,source}})을 카드 막대용
 // 배열로 바꾼다. VAR_ORDER로 항상 같은 순서(온도→강수→일조→토양)로 보여준다.
+// clusterId·cropName을 주면(작물 상세페이지) 항목마다 "이 지역은 이런 기후고, 그래서
+// 이 작물엔 이렇게 하라"는 안내 문구(desc)까지 채운다 - varGuidanceOf() 참고.
 const NORMAL_VAR_ORDER = ['온도', '강수', '일조', 'pH', '유기물', '유효인산', 'EC'];
-function normalBreakdownOf(breakdown) {
+function normalBreakdownOf(breakdown, clusterId, cropName) {
   const colorFor = (s) => s >= 80 ? '#2F7A44' : (s >= 60 ? '#6FA361' : (s >= 40 ? '#C98A3A' : '#C15B3A'));
   return NORMAL_VAR_ORDER.filter((v) => breakdown && breakdown[v]).map((v) => {
     const entry = breakdown[v];
     const sc = Math.round(entry.score);
     const substituted = !!entry.note;
+    const desc = varGuidanceOf(v, entry.score, clusterId, cropName);
     return {
       label: LABELS[v] || v,
       scoreLabel: sc + '점',
@@ -1669,6 +1677,7 @@ function normalBreakdownOf(breakdown) {
       labelStyle: substituted
         ? 'border-bottom:1px dotted #B9B09A;cursor:help;'
         : '',
+      desc, hasDesc: !!desc,
     };
   });
 }
@@ -1688,6 +1697,113 @@ const CLUSTER_DESC = {
   4: '이라 강수량이 많고 기후가 온화해요. 부산·여수·거제 등 남해안 지역으로, 온화한 기후를 좋아하는 작물에 유리해요.',
   5: '이라 겨울은 따뜻하지만 일조량은 가장 적어요. 제주·울릉도 등 도서 지역으로, 겨울 월동재배는 유리하지만 일조가 중요한 작물은 다소 불리해요.'
 };
+
+// ── 작물 상세페이지 "지역 맞춤 정보"의 항목별(온도·강수·일조·pH·유기물·유효인산·EC)
+//    안내 문구 ────────────────────────────────────────────────────────────────
+// 문구 = [이 지역의 사실] + [이 작물 기준 조언] 두 조각을 이어붙여 만든다.
+//
+// CLUSTER_VAR_FACT(사실 조각)은 온도·강수·일조에만 있다. 이 셋은 기후 클러스터 단위로
+// 값이 정해져 있어 "이 지역이 실제로 어떤지"를 숫자로 말할 수 있기 때문이다(아래 수치는
+// data/raw/climate_clustering_final_v3.csv의 89개 관측소를 cluster_id로 묶어 실측 평균한
+// 값 - 2026-08-04 산출). 반면 pH·유기물·유효인산·EC는 흙토람에서 시군구 단위로 조회하는
+// 값이라 클러스터로 설명할 수 없고, 프론트가 원본 수치 없이 점수만 받으므로 조언 조각만 쓴다.
+//
+// tone은 "그 사실이 초보자에게 유리하게 들리는지(plus)/불리하게 들리는지(minus)"다(중립이면
+// 생략). 사실과 점수의 방향이 엇갈릴 때 연결어를 넣는 데 쓴다 - 없으면 "일조시간이 전국에서
+// 가장 적어요. 볕이 충분해요."처럼 앞뒤가 모순돼 보이는 문장이 나온다(절대량은 적어도 그
+// 작물 기준으론 충분하다는 뜻이라 논리는 맞지만, 그대로는 읽히지 않는다).
+const CLUSTER_VAR_FACT = {
+  0: { // 중산간내륙형 - 연평균 11.3℃ / 1월최저 -8.8℃ / 1276mm / 2181h / 고도 174m
+    '온도': { s: '연평균 11℃ 안팎에 1월 최저기온은 -9℃까지 내려가는, 여름은 선선하고 겨울 추위는 뚜렷한 산간 기후예요.', tone: 'minus' },
+    '강수': { s: '연 강수량이 1,276mm로 전국에서 적은 편이에요.', tone: 'minus' },
+    '일조': { s: '연 일조시간이 2,181시간으로 전국 중간 수준이에요.' }
+  },
+  1: { // 중남부저지대형 - 13.3℃ / -4.4℃ / 1362mm / 2200h / 고도 54m
+    '온도': { s: '연평균 13℃ 안팎에 1월 최저기온도 -4℃ 정도라, 사계절이 뚜렷하면서도 극단적인 추위·더위는 적은 편이에요.', tone: 'plus' },
+    '강수': { s: '연 강수량이 1,362mm로 전국 중간 수준이에요.' },
+    '일조': { s: '연 일조시간이 2,200시간으로 전국 중간 수준이에요.' }
+  },
+  2: { // 고랭지형 - 8.9℃ / -10.3℃ / 여름평균 21.6℃ / 1377mm / 2093h / 고도 600m
+    '온도': { s: '고도가 높아 연평균 8.9℃로 전국에서 가장 서늘하고 한여름 평균도 22℃ 수준이지만, 1월 최저기온은 -10℃ 아래로 내려가요.', tone: 'minus' },
+    '강수': { s: '연 강수량이 1,377mm로 전국 중간 수준이지만, 산지라 골짜기·비탈에 따라 편차가 있어요.' },
+    '일조': { s: '연 일조시간이 2,093시간으로 전국에서 적은 편이에요.', tone: 'minus' }
+  },
+  3: { // 중부내륙형 - 12.8℃ / -4.7℃ / 여름평균 24.9℃ / 1149mm(최저) / 2276h
+    '온도': { s: '연평균 12.8℃로 무난하지만 바다에서 먼 내륙이라, 여름은 덥고 겨울은 쌀쌀한 계절 간 기온차가 큰 편이에요.', tone: 'minus' },
+    '강수': { s: '연 강수량이 1,149mm로 전국에서 가장 적어요.', tone: 'minus' },
+    '일조': { s: '연 일조시간이 2,276시간으로 전국에서 많은 편이라 볕이 잘 들어요.', tone: 'plus' }
+  },
+  4: { // 남부해안형 - 14.7℃ / -1.3℃ / 1586mm(최다) / 2305h(최다)
+    '온도': { s: '연평균 14.7℃에 1월 최저기온도 -1℃ 수준이라, 겨울에도 강한 추위가 거의 없는 따뜻한 해안 기후예요.', tone: 'plus' },
+    '강수': { s: '연 강수량이 1,586mm로 전국에서 가장 많아요.' },
+    '일조': { s: '연 일조시간이 2,305시간으로 전국에서 볕이 가장 잘 드는 편이에요.', tone: 'plus' }
+  },
+  5: { // 도서형 - 15.0℃ / 2.0℃(최고) / 1549mm / 1990h(최저)
+    '온도': { s: '연평균 15℃로 전국에서 가장 따뜻하고 1월 최저기온도 영상 2℃라, 겨울에도 땅이 얼지 않는 날이 대부분이에요.', tone: 'plus' },
+    '강수': { s: '연 강수량이 1,549mm로 전국에서 많은 편이에요.' },
+    '일조': { s: '연 일조시간이 1,990시간으로 전국에서 가장 적어, 흐린 날이 많은 편이에요.', tone: 'minus' }
+  }
+};
+
+// 조언 조각. 항목 × 등급(우수/양호/주의/위험 - normalGradeOf와 같은 80/60/40 경계)마다
+// "그래서 이 작물을 키울 때 뭘 해야 하는지"를 한 문장으로 준다. {c}는 작물명 자리.
+// 5개 작물(사과·배·오이·감자·상추)이 모두 받침 없는 글자로 끝나서 조사는 '가/는/를'로 고정.
+const VAR_TIER_ADVICE = {
+  '온도': {
+    good: '{c} 재배에 잘 맞는 온도라, 온도 때문에 애먹을 일은 적어요.',
+    normal: '{c} 재배에 무난한 온도지만, 한파나 폭염이 오는 시기에는 보온·차광에 신경 써주세요.',
+    caution: '{c}가 좋아하는 온도와는 차이가 있어, 하우스나 보온재로 온도를 보완해주는 게 좋아요.',
+    bad: '{c}에게는 온도가 많이 불리해요. 시설재배로 온도를 직접 관리하지 않으면 키우기 어려울 수 있어요.'
+  },
+  '강수': {
+    good: '{c}에 필요한 물이 자연 강수로 대체로 채워지는 편이에요.',
+    normal: '{c} 재배에 무난한 강수량이에요. 비가 몰리거나 뜸한 시기에 배수·물주기만 챙겨주세요.',
+    caution: '{c}에 필요한 물 양과 차이가 있는 편이라, 물주기나 배수 계획을 미리 세워두면 좋아요.',
+    bad: '{c} 재배에 강수 조건이 잘 맞지 않아요. 관수 시설이나 배수로를 갖추는 걸 먼저 고려해보세요.'
+  },
+  '일조': {
+    good: '{c}가 자라는 데 필요한 볕이 충분해요.',
+    normal: '{c} 재배에 무난한 일조량이에요. 옆 나무나 시설물 때문에 그늘이 지지 않게만 신경 써주세요.',
+    caution: '{c}에 필요한 볕이 다소 부족할 수 있어, 심는 간격을 넓히거나 가지치기로 햇빛 길을 터주면 좋아요.',
+    bad: '{c} 재배에 볕이 많이 부족해요. 심는 간격을 넓히거나 보광(전등) 시설을 고려해보세요.'
+  },
+  'pH': {
+    good: '이 지역 흙의 산도(pH)가 {c}에 알맞은 범위예요.',
+    normal: '이 지역 흙의 산도(pH)는 {c}에 대체로 무난한 편이에요.',
+    caution: '이 지역 흙의 산도(pH)가 {c}에 맞는 범위에서 벗어난 편이라, 석회 등으로 조절해주면 좋아요.',
+    bad: '이 지역 흙의 산도(pH)가 {c}와 많이 맞지 않아요. 심기 전에 토양검정을 받고 석회 등으로 교정하세요.'
+  },
+  '유기물': {
+    good: '흙에 유기물(거름 성분)이 넉넉해 {c}가 뿌리내리기 좋아요.',
+    normal: '흙의 유기물(거름 성분)이 무난한 수준이에요. 퇴비를 꾸준히 넣어 지금 상태를 유지해주세요.',
+    caution: '흙의 유기물(거름 성분)이 부족한 편이라, 퇴비나 잘 썩은 두엄을 넉넉히 넣어주는 게 좋아요.',
+    bad: '흙의 유기물(거름 성분)이 많이 부족해요. 심기 전에 퇴비를 충분히 넣어 흙부터 살려주세요.'
+  },
+  '유효인산': {
+    good: '뿌리와 열매를 키우는 양분인 인산이 적정 범위에 들어 있어요.',
+    normal: '인산(뿌리·열매를 키우는 양분)이 무난한 수준이라, 밑거름만 챙기면 돼요.',
+    caution: '인산(뿌리·열매를 키우는 양분)이 적정 범위를 벗어난 편이에요. 토양검정 결과에 맞춰 거름 양을 조절하세요.',
+    bad: '인산(뿌리·열매를 키우는 양분)이 적정 범위에서 많이 벗어나 있어요. 토양검정을 받고 거름 계획을 세우는 걸 권해요.'
+  },
+  'EC': {
+    good: '흙에 쌓인 염류(EC)가 적어 {c} 뿌리가 상할 걱정이 적어요.',
+    normal: '염류(EC)가 무난한 수준이에요. 비료를 한꺼번에 많이 주지만 않으면 괜찮아요.',
+    caution: '흙에 염류(EC)가 다소 쌓인 편이에요. 비료를 줄이거나 물을 충분히 대어 씻어내면 좋아요.',
+    bad: '흙에 염류(EC)가 많이 쌓여 있어요. {c} 뿌리가 상할 수 있으니 물을 대어 씻어내고 비료를 줄이세요.'
+  }
+};
+
+// 항목 하나의 안내 문구를 만든다. clusterId나 cropName이 없으면(홈 카드처럼 작물·지역
+// 맥락 없이 막대만 그리는 경우) 빈 문자열 - 호출부가 그때는 문구를 안 그린다.
+function varGuidanceOf(varName, score, clusterId, cropName) {
+  if (!cropName) return '';
+  const advice = VAR_TIER_ADVICE[varName];
+  if (!advice) return '';
+  const fact = (typeof clusterId === 'number' && CLUSTER_VAR_FACT[clusterId])
+    ? (CLUSTER_VAR_FACT[clusterId][varName] || '') : '';
+  const tip = advice[normalGradeOf(score)].split('{c}').join(cropName);
+  return fact ? (fact + ' ' + tip) : tip;
+}
 
 // 클러스터(지역) × 작물 코멘트. CROP_ZONE(예전 5권역 방식, 실시간 점수가 없을 때만 쓰는
 // 정적 폴백)과 달리, 이건 실시간 점수가 있을 때도 카드에 "이 지역+이 작물" 맥락을
@@ -4470,7 +4586,7 @@ class Component extends DCLogic {
       const hasRegionInfo = hasNormalScore2 || !!regionCc;
       const regionGrade2 = hasNormalScore2 ? normalGradeOf(ns2.total_score) : null;
       const regionMeta = hasNormalScore2 ? NORMAL_GRADE_META[regionGrade2] : (regionCc ? LEVEL_META[regionCc.level] : null);
-      const regionBreakdown2 = hasNormalScore2 ? normalBreakdownOf(ns2.breakdown) : [];
+      const regionBreakdown2 = hasNormalScore2 ? normalBreakdownOf(ns2.breakdown, detailClusterId, dc) : [];
       detail = {
         hasRegionInfo,
         regionName: this.state.detailRegionName || '',
