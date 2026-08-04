@@ -38,6 +38,14 @@ if BASE_DIR not in sys.path:
 
 from chat_schedule import CROP_CULTURE, CROP_SCHEDULE, get_crop_schedule   # noqa: E402
 
+# 작물 일반 지식(농업기술길잡이 5권)은 로컬 JSON 읽기라 8002를 거치지 않고 직접 쓴다.
+# 품종 도구들은 실측 기상·토양을 타야 해서 HTTP로 8002를 부르지만, 이쪽은 파일 하나면
+# 끝나므로 서버 의존을 만들 이유가 없다(배포에서도 includeFiles로 data/**가 함께 실린다).
+_SCORING_DIR = os.path.join(BASE_DIR, "scoring")
+if _SCORING_DIR not in sys.path:
+    sys.path.insert(0, _SCORING_DIR)
+import crop_knowledge  # noqa: E402
+
 # 도구 설명에 박아 넣던 작물 목록이 데이터와 어긋나 있었다(오이·상추 일정이 있는데도
 # "사과·배·감자만 있다"고 안내). 다시 어긋나지 않도록 데이터에서 만든다.
 SCHEDULE_CROPS_LABEL = "·".join(CROP_SCHEDULE.keys())
@@ -72,6 +80,11 @@ CULTIVAR_CROPS = tuple(sorted(
 )) or ("감자",)
 CULTIVAR_CROPS_LABEL = "·".join(CULTIVAR_CROPS)
 CULTIVAR_TOPICS = ("개요", "재배환경", "재배방법", "생육관리", "주의점", "수확", "저장판매", "선택기준")
+
+# 작물 일반 지식(get_crop_info). 목록·토픽은 손으로 적지 않고 데이터에서 만든다.
+KNOWLEDGE_CROPS = tuple(crop_knowledge.available_crops()) or CROPS
+KNOWLEDGE_CROPS_LABEL = "·".join(KNOWLEDGE_CROPS)
+KNOWLEDGE_TOPICS = crop_knowledge.TOPICS
 
 USAGE_LOG = os.path.join(PROJECT_DIR, "data", "chat_usage.jsonl")
 
@@ -131,8 +144,9 @@ SYSTEM_PROMPT = """당신은 '안농'이라는 귀농 도우미 웹앱의 상담
 # 다루는 작물
 사과, 배, 오이, 감자, 상추 — 이 5종만 앱 데이터가 있습니다. 다른 작물을 물으면
 "안농은 아직 이 5가지만 다뤄요"라고 안내합니다.
-재배 일정(캘린더)은 5종 모두 있습니다. 오이·상추는 비료량(kg/10a)·생육온도·
-토양산도·생리 특성까지 있어서, 물·비료를 얼마나 주는지도 답할 수 있습니다.
+5종 모두 재배 일정(캘린더), 작물 재배 지식(온도·토양·일조·물·재배관리·병해충·
+생리장해·수확저장), 품종 자료를 갖고 있습니다. 작물 재배 지식은 농촌진흥청
+농업기술길잡이 원문이 근거이고, 출처 문서명을 함께 밝힐 수 있습니다.
 
 # 도구 사용
 - 지역·작물의 적합도나 점수를 물으면 get_crop_score
@@ -142,12 +156,31 @@ SYSTEM_PROMPT = """당신은 '안농'이라는 귀농 도우미 웹앱의 상담
   set_checklist_status
 - "어떤 품종", "품종 추천", "A랑 B 중에 뭐가 나아요"를 물으면 get_cultivar_candidates
 - 품종 하나의 특성·주의점·저장·수확을 물으면 get_cultivar_profile
+- 품종이 아니라 **작물 수준**의 재배 지식(생육 온도, 토양산도, 일조, 물주기, 재배관리,
+  병해충, 생리장해, 수확·저장 판단)을 물으면 get_crop_info
 - 화면 맥락에 이미 답이 있으면 도구를 부르지 않습니다.
 
+# get_crop_info 와 다른 도구의 구분
+- "감자는 몇 도에서 자라요" → get_crop_info(감자, 재배환경). 작물 전체의 성질입니다.
+- "추백은 몇 도에서 자라요" → get_cultivar_profile. 품종 하나의 값입니다.
+- "8월에 뭐 해요" → get_crop_schedule. 월별 작업입니다.
+- get_crop_info 응답에 '생략된건수'가 있으면 자료를 일부만 받은 것입니다. 받은 것만
+  말하고 "자료가 더 있어요, 어떤 걸 자세히 볼까요?"처럼 되물으세요. 받은 게 전부인
+  것처럼 답하지 않습니다.
+- get_crop_info 응답의 '출처'(농업기술길잡이 문서명)는 사용자가 근거를 물을 때 밝힙니다.
+
 # 품종 안내 규칙
-- 품종 정보는 위 두 도구로만 답합니다. 도구에 없는 품종을 물으면 "안농에는 아직 그
-  품종 자료가 없어요"라고 말하고, 있는 품종을 알려줍니다. 기억으로 품종을 설명하지
-  않습니다.
+- 품종 정보는 get_cultivar_candidates / get_cultivar_profile 두 도구로만 답합니다.
+  도구에 없는 품종을 물으면 "안농에는 아직 그 품종 자료가 없어요"라고 말하고, 있는
+  품종을 알려줍니다. 기억으로 품종을 설명하지 않습니다.
+- **품종을 추천하거나 목록으로 답할 때는 위 두 도구가 준 품종만 씁니다.** 기억에서
+  끌어오지도, 다른 도구 응답에 섞인 품종명을 가져오지도 않습니다. 안농이 특성을 검수한
+  품종만 권해야 합니다.
+- get_crop_info 응답 **본문에 품종 이름이 섞여 있을 수 있습니다**(예: 배 수확저장 항목에
+  "황금배 9월 중순, 만풍배 9월 중하순" 같은 품종별 수확기 표). 그건 작물 자료의 참고
+  서술이지 안농이 다루는 품종 목록이 아닙니다. 사용자가 그 품종을 직접 묻지 않았다면
+  이름을 옮기지 말고, 다루는 품종으로 답하세요. 사용자가 그 이름을 물으면
+  "안농에는 그 품종 자료가 없어요"라고 말하고 있는 품종을 안내합니다.
 - '막는요인'(blockers)이 있으면 점수보다 먼저 말합니다. 재배기간이 부족한 품종을
   "심어도 괜찮다"고 답하지 않습니다.
 - 점수를 말할 때는 근거를 1~2개 함께 말합니다.
@@ -310,6 +343,34 @@ TOOLS = [
                           "description": "생략하면 개요."},
             },
             "required": ["crop", "cultivar"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "get_crop_info",
+        "description": (
+            "작물 자체의 재배 지식입니다(농촌진흥청 농업기술길잡이 원문 기반). "
+            "'감자는 어떤 온도에서 자라요', '오이 생리장해가 뭐예요', '사과 병해충', "
+            "'배 토양산도', '상추가 왜 웃자라요', '수확은 어떻게 판단해요' 같은 "
+            "**품종이 아니라 작물 수준**의 질문에 씁니다. "
+            "품종을 고르거나 비교하는 질문은 get_cultivar_candidates를 쓰세요. "
+            "월별 해야 할 작업은 get_crop_schedule입니다. "
+            f"작물: {KNOWLEDGE_CROPS_LABEL}. topic을 생략하면 개요와 토픽 목록을 줍니다."
+        ),
+        "strict": True,
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "crop": {"type": "string", "enum": list(KNOWLEDGE_CROPS)},
+                "topic": {
+                    "type": "string", "enum": list(KNOWLEDGE_TOPICS),
+                    "description": ("재배환경=온도·토양·일조·물, 생육특성=뿌리·줄기·잎의 성질, "
+                                    "재배관리=심기·비료·물주기 등 관리법, 병해충, 생리장해, "
+                                    "수확저장, 작형캘린더=작형별 파종·수확 시기, 기타. "
+                                    "생략하면 개요."),
+                },
+            },
+            "required": ["crop"],
             "additionalProperties": False,
         },
     },
@@ -544,6 +605,8 @@ def run_tool(name, args, ctx=None):
         return tool_get_cultivar_candidates(args["crop"], args["region"], args.get("experience"))
     if name == "get_cultivar_profile":
         return tool_get_cultivar_profile(args["crop"], args["cultivar"], args.get("topic"))
+    if name == "get_crop_info":
+        return crop_knowledge.crop_info(args["crop"], args.get("topic"))
     return {"조회실패": f"알 수 없는 도구: {name}"}
 
 
