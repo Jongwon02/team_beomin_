@@ -3238,13 +3238,41 @@ class Component extends DCLogic {
   // 첫 방문자도 회원가입 없이 바로 쓸 수 있어야 하므로, 계정이 없으면 익명 로그인을 한다.
   // 나중에 회원가입하면 updateUser로 '같은 user_id'에 이메일을 붙이기 때문에
   // 익명으로 저장해둔 데이터가 그대로 계정으로 승계된다.
+  // 브라우저에 남은 토큰이 서버에는 없는 사용자를 가리킬 수 있다(계정 삭제·프로젝트
+  // 초기화 후). 그 상태로 요청하면 GoTrue가
+  //   "User from sub claim in JWT does not exist"
+  // 를 돌려주고, 사용자는 회원가입도 저장도 못 하는 막힌 상태에 빠진다.
+  // 판별해서 로컬 세션을 버리고 새 익명 세션으로 스스로 회복한다.
+  isStaleSession(e) {
+    const m = ((e && (e.message || e.error_description)) || '').toLowerCase();
+    return m.indexOf('sub claim') !== -1
+        || m.indexOf('user_not_found') !== -1
+        || m.indexOf('user not found') !== -1
+        || m.indexOf('session_not_found') !== -1
+        || m.indexOf('session from session_id claim in jwt does not exist') !== -1;
+  }
+
+  // 쓸 수 없는 세션을 버리고 새 익명 세션을 발급받는다.
+  // scope:'local'로 서버 호출 없이 로컬 토큰만 지운다 - 이미 없는 사용자로
+  // 서버 로그아웃을 시도하면 또 같은 오류가 난다.
+  resetToAnon() {
+    return SB.auth.signOut({ scope: 'local' })
+      .catch(() => {})
+      .then(() => SB.auth.signInAnonymously());
+  }
+
   initAuth() {
     if (!SB) { this.setState({ authReady: true }); return; }
     SB.auth.getSession()
       .then((r) => {
         const s = (r && r.data) ? r.data.session : null;
-        if (s && s.user) return { data: { user: s.user } };
-        return SB.auth.signInAnonymously();
+        if (!s || !s.user) return SB.auth.signInAnonymously();
+        // 저장된 토큰이 서버에서도 유효한지 한 번 확인한다(getUser는 서버까지 간다).
+        // 여기서 걸러두지 않으면 이후 모든 저장이 조용히 실패한다.
+        return SB.auth.getUser().then((g) => {
+          if (g && g.error) return this.resetToAnon();
+          return (g && g.data && g.data.user) ? g : { data: { user: s.user } };
+        });
       })
       .then((r) => {
         const u = (r && r.data) ? r.data.user : null;
@@ -3466,6 +3494,9 @@ class Component extends DCLogic {
       return '아이디에 쓸 수 없는 문자가 있어요. 영문 소문자·숫자·밑줄만 써주세요.';
     if (m.indexOf('rate limit') !== -1 || m.indexOf('too many') !== -1)
       return '요청이 너무 많아요. 잠시 후 다시 시도해주세요.';
+    // 회복(resetToAnon + 재시도)까지 실패한 경우에만 여기까지 온다.
+    if (this.isStaleSession(e))
+      return '로그인 정보가 만료됐어요. 새로고침 후 다시 시도해주세요.';
     return (e && e.message) ? e.message : '처리 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.';
   }
 
@@ -3492,12 +3523,24 @@ class Component extends DCLogic {
     if (this.state.authMode === 'signup') {
       const u = this.state.authUser;
       if (u && (u.is_anonymous === true || !u.email)) {
-        // 익명으로 쓰던 중이면 같은 계정에 이메일·비밀번호를 붙인다 → user_id가 그대로여서
+        // 익명으로 쓰던 중이면 같은 계정에 아이디·비밀번호를 붙인다 → user_id가 그대로여서
         // 지금까지 저장한 농장·체크리스트·인적사항을 하나도 잃지 않는다.
-        SB.auth.updateUser({ email: email, password: pw })
+        const link = () => SB.auth.updateUser({ email: email, password: pw })
           .then((r) => {
             if (r && r.error) throw r.error;
             return SB.auth.getUser();
+          });
+        link()
+          .catch((e) => {
+            // 토큰이 서버에 없는 사용자를 가리키면("...sub claim in JWT does not exist")
+            // 새 익명 세션을 만들어 한 번 더 시도한다. 이 경우 이전 익명 데이터는
+            // 이미 서버에서 사라진 상태이므로 되살릴 수 있는 것이 없다.
+            if (!this.isStaleSession(e)) throw e;
+            return this.resetToAnon()
+              .then((r2) => {
+                this.applyAuthUser((r2 && r2.data) ? r2.data.user : null);
+                return link();
+              });
           })
           .then((r) => {
             this.applyAuthUser((r && r.data) ? r.data.user : null);
