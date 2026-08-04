@@ -21,6 +21,7 @@ os.chdir(PROJECT_DIR)
 
 from live_scoring import get_live_score  # noqa: E402
 from region_mapper import find_nearest_station  # noqa: E402
+import cultivar_api  # noqa: E402  (품종 추천 - breed.md §7)
 
 PORT = 8002
 CROPS = {"사과", "배", "오이", "감자", "상추"}
@@ -86,11 +87,70 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         parsed = urllib.parse.urlparse(self.path)
-        m = re.match(r"^/api/crop-score/(.+)$", parsed.path)
-        if not m:
-            return self._send(404, {"error": "use /api/crop-score/<crop>?region=<name>"})
-        crop = urllib.parse.unquote(m.group(1))
         qs = urllib.parse.parse_qs(parsed.query)
+        path = parsed.path
+
+        # ── 품종 추천 (breed.md §7) ──────────────────────────────────────
+        m = re.match(r"^/api/cultivars/(.+)$", path)
+        if m:
+            crop = urllib.parse.unquote(m.group(1))
+            if crop not in CROPS:
+                return self._send(400, {"error": f"지원하지 않는 작물명입니다: '{crop}'"})
+            try:
+                return self._send(200, cultivar_api.cultivars_payload(crop))
+            except Exception as e:
+                return self._send(502, {"error": f"품종 목록 조회 실패: {e}"})
+
+        m = re.match(r"^/api/cultivar-score/(.+)$", path)
+        if m:
+            crop = urllib.parse.unquote(m.group(1))
+            region = (qs.get("region", [""])[0]).strip()
+            experience = (qs.get("experience", ["beginner"])[0]).strip() or "beginner"
+            if crop not in CROPS:
+                return self._send(400, {"error": f"지원하지 않는 작물명입니다: '{crop}'"})
+            if not region:
+                return self._send(400, {"error": "region 파라미터가 필요합니다 (예: ?region=충주시)"})
+            try:
+                # 작물 점수는 이미 캐시에 있을 때만 함께 싣는다(새로 계산하면 수초 더 걸린다).
+                cached = _cache.get((crop, region))
+                crop_score = None
+                if cached and time.time() - cached[0] < CACHE_TTL:
+                    crop_score = {"score": cached[1].get("score"),
+                                  "grade_label": cached[1].get("grade_label")}
+                return self._send(200, cultivar_api.score_payload(
+                    crop, region, experience=experience, crop_score=crop_score))
+            except Exception as e:
+                return self._send(502, {"error": f"품종 점수 산출 실패: {e}"})
+
+        m = re.match(r"^/api/cultivar-profile/([^/]+)/(.+)$", path)
+        if m:
+            crop = urllib.parse.unquote(m.group(1))
+            name = urllib.parse.unquote(m.group(2))
+            topic = (qs.get("topic", [""])[0]).strip() or None
+            try:
+                return self._send(200, cultivar_api.profile_payload(crop, name, topic))
+            except Exception as e:
+                return self._send(502, {"error": f"품종 상세 조회 실패: {e}"})
+
+        m = re.match(r"^/api/cultivar-report/([^/]+)/(.+)$", path)
+        if m:
+            crop = urllib.parse.unquote(m.group(1))
+            name = urllib.parse.unquote(m.group(2))
+            section = (qs.get("section", [""])[0]).strip() or None
+            try:
+                return self._send(200, cultivar_api.report_payload(crop, name, section))
+            except Exception as e:
+                return self._send(502, {"error": f"리포트 조회 실패: {e}"})
+
+        # ── 작물 적합도 점수 (기존) ──────────────────────────────────────
+        m = re.match(r"^/api/crop-score/(.+)$", path)
+        if not m:
+            return self._send(404, {"error": (
+                "use /api/crop-score/<crop>?region=<name> · /api/cultivar-score/<crop>?region=<name> · "
+                "/api/cultivars/<crop> · /api/cultivar-profile/<crop>/<cultivar> · "
+                "/api/cultivar-report/<crop>/<cultivar>"
+            )})
+        crop = urllib.parse.unquote(m.group(1))
         region = (qs.get("region", [""])[0]).strip()
         if crop not in CROPS:
             return self._send(400, {"error": f"지원하지 않는 작물명입니다: '{crop}'"})

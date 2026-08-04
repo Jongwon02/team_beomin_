@@ -1,0 +1,722 @@
+{
+  "dataset": {
+    "title": "감자 품종별 특성 및 재배관리 데이터",
+    "language": "ko",
+    "purpose": "LLM 지식 제공 및 품종별 재배정보 검색",
+    "source_scope": "사용자가 제공한 추백·자영·수미·대서 재배 리포트",
+    "caution": [
+      "정확한 파종일과 시비량은 지역, 고도, 토양 및 재배 작형에 따라 달라질 수 있다.",
+      "실제 재배 전 토양검정과 관할 농업기술센터의 지역별 기준을 확인한다.",
+      "농약은 해당 작물과 병해충에 등록된 제품을 안전사용기준에 따라 사용한다."
+    ]
+  },
+  "common_management": {
+    "pre_planting": [
+      "재배 목적과 판매 방식을 결정한다.",
+      "검증된 무병 씨감자를 확보한다.",
+      "토양검정을 실시한다.",
+      "밭의 배수 상태를 확인한다.",
+      "파종 전에 씨감자를 싹틔운다.",
+      "씨감자 절단 시 도구를 소독하고 절단면을 치유한다."
+    ],
+    "emergence_and_vegetative_stage": [
+      "싹이 고르게 출현하는지 확인한다.",
+      "진딧물과 바이러스 증상을 관찰한다.",
+      "잡초를 제거하고 북주기를 실시한다.",
+      "질소 과다와 병든 포기를 확인한다."
+    ],
+    "tuber_bulking_stage": [
+      "토양수분이 급격히 변하지 않도록 관리한다.",
+      "장마 전 배수로를 정비한다.",
+      "괴경이 흙 밖으로 노출되지 않도록 추가 북주기를 실시한다.",
+      "역병과 진딧물을 예찰한다.",
+      "품종별 고온 피해와 생리장해를 점검한다."
+    ],
+    "maturity_and_harvest": [
+      "잎과 줄기의 황변을 확인한다.",
+      "수확 전 관수량을 줄인다.",
+      "일부 포기를 시험 수확한다.",
+      "괴경 크기, 껍질 성숙도 및 내부 품질을 확인한다.",
+      "비가 온 직후에는 가능한 한 수확하지 않는다.",
+      "상처나 부패가 있는 감자를 분리한다."
+    ],
+    "common_beginner_mistakes": [
+      "식용 감자를 씨감자로 사용하는 것",
+      "배수가 불량하거나 지나치게 젖은 밭에 파종하는 것",
+      "씨감자 절단면이 치유되기 전에 파종하는 것",
+      "토양검정 없이 비료를 과다하게 사용하는 것",
+      "진딧물과 바이러스 증상을 방치하는 것",
+      "품종별 적정 생육기간을 고려하지 않는 것",
+      "시험 수확 없이 외관만 보고 수확하거나 출하하는 것"
+    ]
+  },
+  "varieties": [
+    {
+      "id": "chubaek",
+      "name_ko": "추백",
+      "name_en": null,
+      "category": [
+        "식용",
+        "조기출하용"
+      ],
+      "maturity": "극조생",
+      "growth_period_days": {
+        "min": 80,
+        "max": 90,
+        "note": "재배환경에 따라 달라질 수 있음"
+      },
+      "primary_use": [
+        "봄철 햇감자 조기 출하",
+        "수확 직후 판매",
+        "감자전",
+        "볶음",
+        "조림"
+      ],
+      "tuber_characteristics": {
+        "skin_color": null,
+        "flesh_color": null,
+        "shape": null,
+        "eye_depth": null,
+        "texture": "수분감이 많고 점성이 있는 점질형",
+        "dry_matter": "비교적 낮음",
+        "special_component": null
+      },
+      "recommended_environment": {
+        "growth_temperature_c": {
+          "min": 14,
+          "max": 23
+        },
+        "tuber_bulking_temperature_c": {
+          "min": 14,
+          "max": 18
+        },
+        "soil_ph": {
+          "min": 5.0,
+          "max": 6.0
+        },
+        "soil_type": [
+          "배수가 좋은 모래참흙",
+          "배수가 좋은 참흙"
+        ],
+        "recommended_season": [
+          "서늘한 봄철 조기재배"
+        ],
+        "regional_notes": "장마와 고온이 본격화되기 전에 수확하는 방식이 유리함"
+      },
+      "seed_potato_management": {
+        "use_certified_seed": true,
+        "sprouting_days_before_planting": {
+          "min": 20,
+          "max": 30
+        },
+        "sprouting_temperature_c": {
+          "min": 15,
+          "max": 20
+        },
+        "sprout_length_cm": {
+          "min": 1,
+          "max": 2
+        },
+        "cut_piece_weight_g": {
+          "min": 30,
+          "max": 50
+        },
+        "eyes_per_piece": {
+          "min": 2
+        },
+        "notes": [
+          "직사광선을 피하고 통풍이 되는 곳에서 싹틔운다.",
+          "절단 도구를 소독한다.",
+          "절단면이 마르고 보호조직이 형성된 뒤 파종한다."
+        ]
+      },
+      "cultivation_management": [
+        "배수가 나쁜 밭은 높은 두둑과 배수로를 조성한다.",
+        "출현기와 괴경 비대기에 토양수분을 안정적으로 유지한다.",
+        "줄기가 약 10cm 자랐을 때 첫 북주기를 실시한다.",
+        "멀칭하지 않은 밭은 생육 중 1~2회 북주기를 실시할 수 있다."
+      ],
+      "disease_and_pest_risks": [
+        {
+          "name": "감자바이러스Y",
+          "risk_level": "높음",
+          "symptoms": [
+            "모자이크 무늬",
+            "잎 오그라듦",
+            "생육 위축"
+          ],
+          "management": [
+            "무병 씨감자 사용",
+            "진딧물 관찰",
+            "감염 의심 포기 제거"
+          ]
+        }
+      ],
+      "physiological_disorders": [],
+      "harvest": {
+        "recommended_timing": "파종 후 약 80~90일을 기준으로 시험 수확 후 결정",
+        "decision_factors": [
+          "괴경 크기",
+          "껍질 성숙도",
+          "장마 및 고온 시기",
+          "지상부 상태"
+        ],
+        "avoid": [
+          "수확을 지나치게 늦추는 것",
+          "젖은 토양에서의 수확"
+        ]
+      },
+      "storage_and_sales": {
+        "dormancy_days": null,
+        "storage_ability": "낮음",
+        "recommended_strategy": "수확 후 빠르게 선별하여 판매",
+        "risks": [
+          "실온 저장 중 빠른 발아",
+          "수분 손실",
+          "장기저장 손실"
+        ]
+      },
+      "recommended_for_beginner": true,
+      "beginner_reason": "생육기간이 짧고 조기 출하 목적이 명확하지만 바이러스와 저장 관리가 필요함",
+      "selection_conditions": [
+        "짧은 재배기간을 원하는 경우",
+        "봄철 조기 출하를 목표로 하는 경우",
+        "수확 직후 판매가 가능한 경우"
+      ],
+      "key_warnings": [
+        "감자바이러스Y에 약함",
+        "장마와 고온 전에 적기 수확 필요",
+        "장기저장에 부적합"
+      ]
+    },
+    {
+      "id": "jayeong",
+      "name_ko": "자영",
+      "name_en": null,
+      "category": [
+        "식용",
+        "기능성",
+        "컬러감자"
+      ],
+      "maturity": "만생",
+      "growth_period_days": {
+        "min": 110,
+        "max": null,
+        "note": "110일 이상의 생육기간 확보 필요"
+      },
+      "primary_use": [
+        "기능성 농산물",
+        "컬러감자",
+        "직거래",
+        "로컬푸드",
+        "체험농장",
+        "프리미엄 상품"
+      ],
+      "tuber_characteristics": {
+        "skin_color": "짙은 자주색",
+        "flesh_color": "짙은 자주색",
+        "shape": null,
+        "eye_depth": null,
+        "texture": "비교적 단단하고 색이 뚜렷한 편",
+        "dry_matter": null,
+        "special_component": "안토시아닌"
+      },
+      "recommended_environment": {
+        "growth_temperature_c": {
+          "min": 14,
+          "max": 23
+        },
+        "tuber_bulking_temperature_c": {
+          "min": 14,
+          "max": 18
+        },
+        "soil_ph": null,
+        "soil_type": [
+          "배수가 좋은 토양"
+        ],
+        "recommended_season": [
+          "서늘한 봄재배",
+          "생육 후반이 서늘한 가을재배",
+          "준고랭지·고랭지 재배"
+        ],
+        "regional_notes": "괴경 비대 후반의 온도가 낮을수록 안토시아닌 축적에 유리한 경향이 있으나 첫서리가 빠른 지역에서는 생육기간 부족에 주의"
+      },
+      "seed_potato_management": {
+        "use_certified_seed": true,
+        "sprouting_days_before_planting": null,
+        "sprouting_temperature_c": null,
+        "sprout_length_cm": null,
+        "cut_piece_weight_g": null,
+        "eyes_per_piece": null,
+        "notes": [
+          "기본적인 씨감자 점검, 싹틔우기, 절단면 치유 방법은 다른 감자 품종과 동일하게 적용한다.",
+          "예상 수확일로부터 역산하여 110일 이상의 생육기간을 확보한다."
+        ]
+      },
+      "cultivation_management": [
+        "괴경 비대기가 한여름 고온과 겹치지 않도록 파종일을 조절한다.",
+        "질소비료는 토양검정 결과를 기준으로 사용한다.",
+        "토양수분의 급격한 변화를 줄이고 배수를 확보한다.",
+        "괴경의 자주색 발달과 병해 발생 여부를 정기적으로 확인한다."
+      ],
+      "disease_and_pest_risks": [
+        {
+          "name": "역병",
+          "risk_level": "관리 필요",
+          "symptoms": [
+            "물에 젖은 듯한 잎 반점",
+            "흑갈색 병반"
+          ],
+          "management": [
+            "통풍 확보",
+            "배수 관리",
+            "정기 예찰",
+            "등록 약제의 안전사용기준 준수"
+          ]
+        },
+        {
+          "name": "바이러스병",
+          "risk_level": "관리 필요",
+          "symptoms": [],
+          "management": [
+            "무병 씨감자 사용",
+            "진딧물 관찰",
+            "이상 포기 제거"
+          ]
+        }
+      ],
+      "physiological_disorders": [
+        {
+          "name": "자주색 발현 저하",
+          "causes": [
+            "괴경 비대기의 고온",
+            "부적절한 수확 시기",
+            "품종 혼입",
+            "배수 불량",
+            "질소비료 과다"
+          ],
+          "management": [
+            "생육 후반이 서늘하도록 작기 조정",
+            "토양검정 기반 시비",
+            "품종별 구획 관리"
+          ]
+        }
+      ],
+      "harvest": {
+        "recommended_timing": "110일 이상의 생육기간과 괴경 성숙도를 확인한 뒤 결정",
+        "decision_factors": [
+          "괴경 크기",
+          "속살의 자주색",
+          "껍질 성숙도",
+          "서리",
+          "장마",
+          "역병 위험"
+        ],
+        "avoid": [
+          "추백이나 수미와 같은 시기에 일률적으로 수확하는 것",
+          "서리나 역병 위험을 무시한 과도한 수확 지연"
+        ]
+      },
+      "storage_and_sales": {
+        "dormancy_days": null,
+        "storage_ability": "추백보다 휴면이 길지만 장기저장 전 품질 점검 필요",
+        "recommended_strategy": "일반 감자와 분리 선별하고 절단면 사진이나 샘플로 색을 안내",
+        "risks": [
+          "저장 중 싹 발생",
+          "부패",
+          "수분 손실",
+          "근거 없는 기능성 효능 표시"
+        ]
+      },
+      "recommended_for_beginner": false,
+      "beginner_reason": "재배기간이 길고 색과 기능성 성분이 환경의 영향을 받으므로 소규모 시험재배가 권장됨",
+      "selection_conditions": [
+        "110일 이상의 생육기간을 확보할 수 있는 경우",
+        "생육 후반이 서늘한 경우",
+        "컬러·기능성 감자 판매처가 있는 경우"
+      ],
+      "key_warnings": [
+        "재배기간 부족에 주의",
+        "괴경 비대기 고온 회피",
+        "질소비료 과다 금지",
+        "안토시아닌 함량을 검사 없이 구체적으로 표시하지 않기"
+      ]
+    },
+    {
+      "id": "sumi",
+      "name_ko": "수미",
+      "name_en": "Superior",
+      "category": [
+        "식용",
+        "1기작"
+      ],
+      "maturity": "국내 재배에서 조생~중조생 성격",
+      "growth_period_days": {
+        "min": 90,
+        "max": 100,
+        "note": "미국에서는 중만생으로 분류되나 국내에서는 비교적 숙기가 빠름"
+      },
+      "primary_use": [
+        "일반 식용",
+        "직거래",
+        "시장 출하",
+        "급식용"
+      ],
+      "tuber_characteristics": {
+        "skin_color": "담황색",
+        "flesh_color": "흰색",
+        "shape": "편원형",
+        "eye_depth": "얕음",
+        "texture": "건물함량이 높아 적당히 포슬포슬한 편",
+        "dry_matter": "높은 편",
+        "special_component": null,
+        "surface": "그물 모양 줄무늬",
+        "tuber_number": "남작보다 적은 편",
+        "average_tuber_weight": "큰 편"
+      },
+      "recommended_environment": {
+        "growth_temperature_c": null,
+        "tuber_bulking_temperature_c": null,
+        "soil_ph": null,
+        "soil_type": [
+          "전국 재배 가능",
+          "과습 토양에서도 피목비대가 비교적 적음"
+        ],
+        "recommended_season": [
+          "봄재배",
+          "고랭지 여름재배",
+          "조기재배",
+          "다수확 재배"
+        ],
+        "not_recommended_season": [
+          "가을재배"
+        ],
+        "regional_notes": "전국적으로 재배할 수 있으나 가을재배에는 적합하지 않음"
+      },
+      "seed_potato_management": {
+        "use_certified_seed": true,
+        "sprouting_days_before_planting": null,
+        "sprouting_temperature_c": {
+          "min": 18,
+          "max": 23
+        },
+        "sprout_length_cm": null,
+        "cut_piece_weight_g": null,
+        "eyes_per_piece": {
+          "min": 1,
+          "max": 2
+        },
+        "notes": [
+          "초기생육이 다소 늦어 파종 전 싹틔우기가 유리하다.",
+          "낮은 온도에서는 싹이 2차 휴면에 들어갈 수 있다.",
+          "절단면을 충분히 치유한 후 파종한다.",
+          "겨울재배용 씨감자는 고랭지 여름재배에서 채종된 것을 사용하는 것이 싹 발생에 유리하다."
+        ]
+      },
+      "cultivation_management": [
+        "싹틔우기와 초기 육묘 시 18~23℃를 유지한다.",
+        "파종 직후 과도한 관수를 피한다.",
+        "괴경 비대기에는 토양이 지나치게 마르지 않도록 한다.",
+        "가뭄과 과습의 반복을 줄인다.",
+        "줄기 생장 후 북주기를 실시한다."
+      ],
+      "disease_and_pest_risks": [
+        {
+          "name": "감자잎말림바이러스",
+          "risk_level": "높음",
+          "symptoms": [
+            "잎이 위로 말림",
+            "잎이 두껍고 뻣뻣해짐",
+            "생육 위축",
+            "수량 감소"
+          ],
+          "management": [
+            "무병 씨감자 사용",
+            "진딧물 방제",
+            "병든 포기 제거",
+            "감염 포기의 괴경을 씨감자로 사용하지 않기"
+          ]
+        },
+        {
+          "name": "역병",
+          "risk_level": "높음",
+          "symptoms": [
+            "물에 젖은 듯한 잎 반점",
+            "갈색 또는 검은색 병반"
+          ],
+          "management": [
+            "재식거리 확보",
+            "통풍 개선",
+            "배수로 정비",
+            "병든 잎과 포기 제거",
+            "등록 약제 사용"
+          ]
+        },
+        {
+          "name": "모자이크바이러스",
+          "risk_level": "중간",
+          "symptoms": [],
+          "management": [
+            "무병 씨감자 사용",
+            "진딧물 관리"
+          ]
+        },
+        {
+          "name": "더뎅이병",
+          "risk_level": "낮음",
+          "resistance": "매우 강한 편",
+          "symptoms": [],
+          "management": []
+        }
+      ],
+      "physiological_disorders": [
+        {
+          "name": "2차 휴면",
+          "causes": [
+            "싹틔우기 및 육묘 중 낮은 온도"
+          ],
+          "management": [
+            "18~23℃ 유지",
+            "냉기가 심한 창고나 야외 방치 금지"
+          ]
+        },
+        {
+          "name": "절단 씨감자 부패",
+          "causes": [
+            "절단면 미치유",
+            "젖은 토양",
+            "오염된 절단 도구"
+          ],
+          "management": [
+            "칼 소독",
+            "절단면 건조 및 치유",
+            "젖은 밭 파종 회피"
+          ]
+        }
+      ],
+      "harvest": {
+        "recommended_timing": "파종 후 약 90~100일을 기준으로 시험 수확 후 결정",
+        "decision_factors": [
+          "괴경 크기",
+          "껍질 성숙도",
+          "녹색화 여부",
+          "썩음",
+          "갈라짐",
+          "지상부 노화"
+        ],
+        "avoid": [
+          "젖은 토양에서의 수확",
+          "껍질이 굳지 않은 상태에서의 장기저장"
+        ]
+      },
+      "storage_and_sales": {
+        "dormancy_days": {
+          "min": 80,
+          "max": 90
+        },
+        "storage_ability": "약한 편",
+        "recommended_strategy": "수확 상처를 치유하고 어둡고 서늘한 곳에 저장",
+        "risks": [
+          "상처 부위 부패",
+          "저장 중 품질 저하"
+        ]
+      },
+      "recommended_for_beginner": true,
+      "beginner_reason": "전국 재배가 가능하고 식용 판매처가 넓지만 초기 온도와 역병·바이러스 관리가 필요함",
+      "selection_conditions": [
+        "일반 식용감자를 생산하려는 경우",
+        "봄 또는 고랭지 여름재배를 계획하는 경우",
+        "시장·직거래·급식 판매를 목표로 하는 경우"
+      ],
+      "key_warnings": [
+        "가을재배에 부적합",
+        "초기 저온으로 인한 2차 휴면 주의",
+        "감자잎말림바이러스와 역병에 약함",
+        "절단면 치유 후 파종"
+      ]
+    },
+    {
+      "id": "daeseo",
+      "name_ko": "대서",
+      "alternative_name": "선농",
+      "name_en": "Atlantic",
+      "category": [
+        "가공용",
+        "감자칩용"
+      ],
+      "maturity": "봄재배 조생, 여름재배 중생",
+      "growth_period_days": {
+        "spring": {
+          "min": 90,
+          "max": 100
+        },
+        "summer": {
+          "min": 110,
+          "max": 110
+        }
+      },
+      "primary_use": [
+        "감자칩 원료",
+        "가공업체 계약재배"
+      ],
+      "tuber_characteristics": {
+        "skin_color": "완숙 시 갈색으로 코르크화",
+        "flesh_color": "흰색",
+        "shape": "원형",
+        "eye_depth": "얕음",
+        "texture": null,
+        "dry_matter": "높음",
+        "reducing_sugar": "낮음",
+        "processing_quality": "감자칩 가공 적성이 매우 높음",
+        "external_defects": "기형과 열개 발생이 비교적 적음"
+      },
+      "recommended_environment": {
+        "growth_temperature_c": null,
+        "tuber_bulking_temperature_c": null,
+        "soil_ph": null,
+        "soil_type": [
+          "배수가 좋은 토양"
+        ],
+        "caution_soil": [
+          "모래 함량이 지나치게 높은 토양",
+          "질소가 많거나 지나치게 비옥한 토양"
+        ],
+        "recommended_season": [
+          "봄재배",
+          "여름재배"
+        ],
+        "regional_notes": "괴경 비대기의 고온을 피하고 토양수분을 일정하게 관리할 수 있는 환경이 적합함"
+      },
+      "seed_potato_management": {
+        "use_certified_seed": true,
+        "sprouting_days_before_planting": null,
+        "sprouting_temperature_c": null,
+        "sprout_length_cm": null,
+        "cut_piece_weight_g": null,
+        "eyes_per_piece": null,
+        "notes": [
+          "모자이크바이러스 검사를 거친 무병 씨감자를 사용한다.",
+          "싹틔우기 후 절단면을 충분히 치유한다.",
+          "절단 도구를 정기적으로 소독한다."
+        ]
+      },
+      "cultivation_management": [
+        "파종 전 가공업체의 납품 규격과 저장 기준을 확인한다.",
+        "지상부 생육이 왕성하므로 지나치게 촘촘하게 심지 않는다.",
+        "토양검정에 따라 질소비료량을 조절한다.",
+        "괴경 비대기에는 토양수분과 토양온도를 일정하게 관리한다.",
+        "목표 규격에 도달하면 수확을 지나치게 늦추지 않는다."
+      ],
+      "disease_and_pest_risks": [
+        {
+          "name": "모자이크바이러스",
+          "risk_level": "높음",
+          "symptoms": [
+            "연한 녹색과 짙은 녹색이 섞인 모자이크 무늬",
+            "생육 저하"
+          ],
+          "management": [
+            "무병 씨감자 사용",
+            "진딧물 정기 관찰",
+            "병든 포기 제거",
+            "채종재배 시 등록 약제로 진딧물 방제"
+          ]
+        },
+        {
+          "name": "역병",
+          "risk_level": "중간",
+          "symptoms": [],
+          "management": [
+            "정기 예찰",
+            "배수 및 통풍 관리"
+          ]
+        },
+        {
+          "name": "더뎅이병",
+          "risk_level": "중간",
+          "symptoms": [],
+          "management": []
+        }
+      ],
+      "physiological_disorders": [
+        {
+          "name": "중심공동",
+          "causes": [
+            "질소비료 과다",
+            "높은 토양 비옥도",
+            "급격한 괴경 비대",
+            "과도하게 큰 괴경",
+            "불규칙한 수분 공급"
+          ],
+          "management": [
+            "질소 과다 금지",
+            "토양검정 기반 시비",
+            "수분 일정 유지",
+            "적기 수확",
+            "출하 전 절단 검사"
+          ]
+        },
+        {
+          "name": "내부갈변",
+          "causes": [
+            "괴경 비대기의 고온",
+            "모래땅",
+            "토양수분 부족",
+            "높은 토양온도",
+            "고온기에 PE필름 유지"
+          ],
+          "management": [
+            "토양온도와 수분 점검",
+            "고온기 회피",
+            "모래땅에서 PE필름 사용 신중",
+            "출하 전 내부 검사"
+          ]
+        }
+      ],
+      "harvest": {
+        "recommended_timing": "봄재배 90~100일, 여름재배 약 110일을 기준으로 품질 검사 후 결정",
+        "decision_factors": [
+          "껍질 성숙도",
+          "괴경의 원형과 균일성",
+          "중심공동",
+          "내부갈변",
+          "납품 규격",
+          "건물함량"
+        ],
+        "avoid": [
+          "외관만 보고 출하하는 것",
+          "과도하게 큰 괴경 생산",
+          "고온 피해를 확인하지 않고 수확하는 것"
+        ]
+      },
+      "storage_and_sales": {
+        "dormancy_days": {
+          "min": 90,
+          "max": 100
+        },
+        "storage_ability": "중간",
+        "recommended_strategy": "가공업체의 저장온도와 납품 기준에 맞추어 저장",
+        "risks": [
+          "지나치게 낮은 저장온도에서 환원당 증가",
+          "튀김색의 흑변",
+          "상처 부위 부패"
+        ]
+      },
+      "recommended_for_beginner": false,
+      "beginner_reason": "판매처 확보와 질소·수분·토양온도·내부품질 관리가 필요하므로 소규모 시험재배가 권장됨",
+      "selection_conditions": [
+        "감자칩 가공업체에 납품하려는 경우",
+        "계약재배가 가능한 경우",
+        "질소와 수분, 토양온도를 세밀하게 관리할 수 있는 경우",
+        "중심공동과 내부갈변을 검사할 수 있는 경우"
+      ],
+      "key_warnings": [
+        "모자이크바이러스에 약함",
+        "질소 과다 시 중심공동 위험 증가",
+        "괴경 비대기 고온 시 내부갈변 위험",
+        "PE필름 사용 시 토양온도 상승 주의",
+        "출하 전 내부 품질 검사 필요"
+      ]
+    }
+  ]
+}

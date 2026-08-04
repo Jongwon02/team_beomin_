@@ -63,6 +63,16 @@ CROPS = ("사과", "배", "오이", "감자", "상추")
 PROVINCES = ("경기도", "강원도", "충청북도", "충청남도", "전라북도",
              "전라남도", "경상북도", "경상남도", "제주도")
 
+# 품종 데이터가 있는 작물. 도구 설명·enum을 손으로 적으면 데이터와 어긋나므로
+# (SCHEDULE_CROPS_LABEL과 같은 이유) data/cultivars/<작물>.json 파일 목록에서 만든다.
+import glob as _glob                                                     # noqa: E402
+CULTIVAR_CROPS = tuple(sorted(
+    os.path.splitext(os.path.basename(p))[0]
+    for p in _glob.glob(os.path.join(PROJECT_DIR, "data", "cultivars", "*.json"))
+)) or ("감자",)
+CULTIVAR_CROPS_LABEL = "·".join(CULTIVAR_CROPS)
+CULTIVAR_TOPICS = ("개요", "재배환경", "재배방법", "생육관리", "주의점", "수확", "저장판매", "선택기준")
+
 USAGE_LOG = os.path.join(PROJECT_DIR, "data", "chat_usage.jsonl")
 
 
@@ -130,7 +140,24 @@ SYSTEM_PROMPT = """당신은 '안농'이라는 귀농 도우미 웹앱의 상담
 - "언제 뭘 해요", "이번 달 작업"을 물으면 get_crop_schedule
 - 사용자가 "~ 다 했어", "완료 표시해줘", "아직 하는 중" 처럼 진행 상황을 말하면
   set_checklist_status
+- "어떤 품종", "품종 추천", "A랑 B 중에 뭐가 나아요"를 물으면 get_cultivar_candidates
+- 품종 하나의 특성·주의점·저장·수확을 물으면 get_cultivar_profile
 - 화면 맥락에 이미 답이 있으면 도구를 부르지 않습니다.
+
+# 품종 안내 규칙
+- 품종 정보는 위 두 도구로만 답합니다. 도구에 없는 품종을 물으면 "안농에는 아직 그
+  품종 자료가 없어요"라고 말하고, 있는 품종을 알려줍니다. 기억으로 품종을 설명하지
+  않습니다.
+- '막는요인'(blockers)이 있으면 점수보다 먼저 말합니다. 재배기간이 부족한 품종을
+  "심어도 괜찮다"고 답하지 않습니다.
+- 점수를 말할 때는 근거를 1~2개 함께 말합니다.
+  예: "무상기간이 183일이라 110일 걸리는 자영도 가능해요."
+- 파종 시기는 도구가 준 '권장파종' 값만 말하고, 관측소 기준이라는 점과 토양검정·
+  관할 농업기술센터 확인을 함께 안내합니다.
+- 안토시아닌 같은 성분 함량이나 건강 효능을 수치로 말하지 않습니다. "재배환경에 따라
+  달라진다"까지만 말하고, 판매 문구로 쓰려면 성분검사가 필요하다고 알려줍니다.
+- 씨감자·묘목의 판매처나 상호를 추천하지 않습니다. "검정을 거친 보급종·무병 씨감자를
+  쓰세요"라는 원칙만 안내합니다.
 
 # 체크리스트 조작 규칙
 - 화면 맥락의 체크리스트에 번호로 나열된 항목만 바꿀 수 있습니다. 목록에 없는 일을
@@ -238,6 +265,54 @@ TOOLS = [
             "additionalProperties": False,
         },
     },
+    {
+        "name": "get_cultivar_candidates",
+        "description": (
+            "특정 지역에서 어떤 품종이 잘 맞는지, 실측 기상(무상기간·작기 기온)과 토양으로 "
+            "비교해 순위·권장 파종시기와 함께 돌려줍니다. '어떤 품종 심어요', "
+            "'추백이랑 자영 중에 뭐가 나아요', '우리 동네에 맞는 감자 품종', "
+            "'자영 심어도 돼요' 같은 질문에 호출하세요. "
+            f"품종 데이터가 있는 작물: {CULTIVAR_CROPS_LABEL}."
+        ),
+        "strict": True,
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "crop": {"type": "string", "enum": list(CULTIVAR_CROPS)},
+                "region": {
+                    "type": "string",
+                    "description": "시군구 또는 '도 시군구 읍면동'. 예: '충청북도 충주시 주덕읍'",
+                },
+                "experience": {
+                    "type": "string", "enum": ["beginner", "experienced"],
+                    "description": "생략하면 beginner(초보). 배지·동점 정렬에만 영향합니다.",
+                },
+            },
+            "required": ["crop", "region"],
+            "additionalProperties": False,
+        },
+    },
+    {
+        "name": "get_cultivar_profile",
+        "description": (
+            "품종 하나의 특성·재배환경·재배방법·주의점·수확·저장판매 정보입니다. "
+            "'자영은 어떤 감자예요', '추백 저장 잘 돼요', '대서는 뭐가 달라요', "
+            "'수미 심을 때 조심할 점' 같은 질문에 씁니다. 지역과 무관한 품종 자체의 정보입니다."
+        ),
+        "strict": True,
+        "input_schema": {
+            "type": "object",
+            "properties": {
+                "crop": {"type": "string", "enum": list(CULTIVAR_CROPS)},
+                "cultivar": {"type": "string",
+                             "description": "품종명. 예: 추백, 자영, 수미, 대서"},
+                "topic": {"type": "string", "enum": list(CULTIVAR_TOPICS),
+                          "description": "생략하면 개요."},
+            },
+            "required": ["crop", "cultivar"],
+            "additionalProperties": False,
+        },
+    },
 ]
 
 
@@ -313,6 +388,103 @@ def tool_get_weather(province):
     }
 
 
+def tool_get_cultivar_candidates(crop, region, experience=None):
+    """8002 품종 응답(1,000토큰 이상)을 상위 3품종 × 6줄로 축약한다.
+
+    ⚠️ blockers(재배기간 부족 등 '심으면 실패하는' 사유)는 어떤 경우에도 빼지 않는다 -
+       이걸 빠뜨리면 모델이 점수만 보고 "심어도 괜찮다"고 답한다.
+    """
+    url = (f"{SCORE_API}/api/cultivar-score/{urllib.parse.quote(crop)}"
+           f"?region={urllib.parse.quote(region)}")
+    if experience:
+        url += f"&experience={urllib.parse.quote(experience)}"
+    d = _get_json(url, SCORE_TIMEOUT)
+
+    if d.get("error"):
+        return {"조회실패": d["error"]}
+    if d.get("status") != "matched":
+        return {"조회실패": "이 지역은 품종 판정을 할 수 없어요.",
+                "사유": d.get("error") or d.get("status")}
+
+    rm = d.get("region_metrics") or {}
+    out = {
+        "작물": d.get("crop"), "지역": d.get("region"),
+        "지역요약": {
+            "기후대": rm.get("cluster_name"),
+            "관측소": rm.get("station_name"),
+            "표고m": rm.get("elevation_m"),
+            "무상기간일": rm.get("frost_free_days"),
+            "마지막봄서리": rm.get("last_spring_frost"),
+            "첫가을서리": rm.get("first_fall_frost"),
+        },
+        "품종": [],
+        "신뢰도": d.get("reliability"),
+    }
+    if d.get("crop_score"):
+        out["작물점수"] = d["crop_score"].get("score")
+    if d.get("reliability_reason"):
+        out["신뢰도_사유"] = d["reliability_reason"]
+
+    for r in (d.get("ranking") or [])[:3]:
+        pw = r.get("planting_window") or {}
+        item = {
+            "이름": r.get("cultivar"), "점수": r.get("score"), "등급": r.get("grade_label"),
+            "작형": r.get("cultivation_type"),
+            "권장파종": f'{pw.get("from")}~{pw.get("to")}',
+            "예상수확": pw.get("harvest"), "생육일수": pw.get("days"),
+            "이유": (r.get("reasons") or [])[:2],
+        }
+        if r.get("blockers"):
+            item["막는요인"] = r["blockers"]
+        if r.get("cautions"):
+            item["이지역주의"] = r["cautions"][:2]        # 이 지역·이 파종일이라서 생긴 주의
+        if r.get("variety_warnings"):
+            item["품종일반주의"] = r["variety_warnings"][:1]   # 품종 자체의 주의사항
+        # '초보자에게 무난' 같은 긍정 배지는 점수·등급에서 이미 드러나므로 넣지 않는다.
+        risky = [b for b in (r.get("badges") or []) if "시험재배" in b]
+        if risky:
+            item["배지"] = risky
+        out["품종"].append(item)
+
+    if d.get("skipped"):
+        out["이지역에서제외된품종"] = [{"이름": s.get("cultivar"), "사유": s.get("reason")}
+                              for s in d["skipped"][:3]]
+    # 데이터 제공자가 붙인 주의문 중 첫 줄(관측소 거리 등)만 싣는다.
+    if d.get("cautions"):
+        out["안내"] = d["cautions"][0]
+    return out
+
+
+def tool_get_cultivar_profile(crop, cultivar, topic=None):
+    """품종 상세를 topic 한 섹션으로 좁혀 돌려준다(리포트 전문은 넣지 않는다)."""
+    url = (f"{SCORE_API}/api/cultivar-profile/{urllib.parse.quote(crop)}"
+           f"/{urllib.parse.quote(cultivar)}")
+    if topic:
+        url += f"?topic={urllib.parse.quote(topic)}"
+    d = _get_json(url, WEATHER_TIMEOUT)
+
+    if d.get("error"):
+        return {"조회실패": d["error"], "있는품종": d.get("available")}
+
+    sections = d.get("sections") or {}
+    # 응답이 커지지 않게 문자열 리스트는 앞 4개까지만 남긴다(원문 전달용이 아니라 근거용).
+    def _trim(v, depth=0):
+        if isinstance(v, list):
+            return [_trim(x, depth + 1) for x in v[:4]]
+        if isinstance(v, dict):
+            return {k: _trim(x, depth + 1) for k, x in v.items() if x not in (None, [], {}, "")}
+        if isinstance(v, str) and len(v) > 300:
+            return v[:300] + "…"
+        return v
+
+    return {
+        "작물": d.get("crop"), "품종": d.get("cultivar"),
+        "내용": _trim(sections),
+        "리포트있음": bool(d.get("report")),
+        "안내": (d.get("cautions") or [None])[0],
+    }
+
+
 STATUS_CODE = {"완료": "done", "하는 중": "doing", "시작 전": None}
 
 
@@ -368,6 +540,10 @@ def run_tool(name, args, ctx=None):
         return get_crop_schedule(args["crop"], args.get("month"))
     if name == "set_checklist_status":
         return tool_set_checklist_status(args["item_id"], args["status"], ctx)
+    if name == "get_cultivar_candidates":
+        return tool_get_cultivar_candidates(args["crop"], args["region"], args.get("experience"))
+    if name == "get_cultivar_profile":
+        return tool_get_cultivar_profile(args["crop"], args["cultivar"], args.get("topic"))
     return {"조회실패": f"알 수 없는 도구: {name}"}
 
 
@@ -407,10 +583,15 @@ def render_context(ctx):
     for p in (ctx.get("plans") or [])[:5]:
         crop = p.get("crop")
         tasks = [t for t in (p.get("todayTasks") or []) if t][:6]
+        # 사용자가 이미 품종을 골라 저장했으면 되묻지 않게 함께 싣는다.
+        cultivar = p.get("cultivar")
+        label = f"{crop} '{cultivar}'" if (crop and cultivar) else crop
         if crop and tasks:
-            lines.append(f"{crop} 계획의 오늘 작업: {', '.join(tasks)}")
+            lines.append(f"{label} 계획의 오늘 작업: {', '.join(tasks)}")
         elif crop:
-            lines.append(f"{crop} 계획 있음 (오늘 예정 작업 없음)")
+            lines.append(f"{label} 계획 있음 (오늘 예정 작업 없음)")
+        if crop and cultivar and p.get("plantingDate"):
+            lines.append(f"{crop} '{cultivar}' 파종 예정일: {p['plantingDate']}")
 
     items = ctx.get("checklist") or []
     if items:

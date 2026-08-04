@@ -1175,14 +1175,85 @@ supabase-js는 저장된 세션을 그대로 신뢰하므로, 앱이 스스로 �
 
 ---
 
-## 12. heeyeon2026 UI 병합 (2026-08-04)
+## 12. heeyeon0804 UI 병합 (2026-08-04)
+
+`heeyeon0804` 브랜치의 UI·기능을 기준으로 삼고, 로그인/Supabase 계층을 그 위에 다시 심었다.
+
+### 12.1 왜 일반 merge를 쓰지 않았나
+
+두 브랜치는 **공통 조상이 없다**(`main` 루트 `de4f7e8` / `heeyeon0804` 루트 `cf29f04`).
+`git merge`는 `--allow-unrelated-histories` 없이는 거부하고, 강제하면 양쪽에 다 있는
+파일 102개가 전부 충돌로 잡힌다. 그래서 **파일 단위 이식**으로 병합했다.
+
+| 출처 | 가져온 것 |
+|---|---|
+| heeyeon0804 | `Beomin_web/CropAdvisor.dc.html`, `Beomin_web/RegionMap.html` 전체 |
+| main (유지) | 로그인/Supabase 계층, `api/` 함수 6개, `vercel.json`, `requirements.txt`, `.vercelignore`, `Beomin_web/news_server.py` |
+
+`news_server.py`는 heeyeon0804 버전이 `.env` 파일만 읽고 `fetch_weekly`도 없어서
+배포 함수(`api/news.py` 등)가 깨진다. `os.environ` 폴백이 있는 main 버전(상위 호환)을 유지했다.
+
+### 12.2 UI 저장 모델이 달라 테이블을 추가했다
+
+heeyeon0804는 **다중 저장 모델**이라 main의 `my_farm`(1인 1행)과 맞지 않는다.
+마이그레이션 `10_heeyeon_ui_multi_save_tables`로 3개를 추가했다.
+
+| localStorage 키 | 내용 | 테이블 |
+|---|---|---|
+| `gwinong_favorites` | 작물 즐겨찾기 (작물명 배열) | **`favorites`** (신규) |
+| `beomin_saved_regions` | 저장한 귀농 지역 최대 8곳 | **`saved_regions`** (신규, `raw` jsonb에 원본 항목 보존) |
+| `beomin_farm_plans` | 작물별 농사 계획 `{작물: plan}` | **`farm_plans`** (신규) |
+| `beomin_personal_info` | 인적사항 16개 항목 | `personal_info` (기존 재사용) |
+| `beomin_checklist_status` | 체크리스트 진행 상태 | `checklist_status` (기존 재사용) |
+
+`my_farm` · `prep_status` · `region_log`는 main의 단일 농장 UI 전용이라 이 UI에서는
+쓰지 않는다. 데이터가 없으므로 되돌릴 때를 대비해 남겨뒀다.
+
+### 12.3 부수 개선 — 체크리스트가 저장되지 않던 문제
+
+heeyeon0804 UI는 체크리스트 진행 상태를 `setState`만 하고 저장하지 않아 **새로고침하면
+사라졌다**. 서버 저장을 붙이는 김에 `applyChecklistStatus()`를 단일 통로로 만들어
+localStorage + `checklist_status` 테이블에 함께 남긴다.
+
+### 12.4 검증 (Playwright · 로컬 8000 + 실제 공공 API + 배포)
+
+| 항목 | 결과 |
+|---|---|
+| 귀농 가이드 탭 렌더 (heeyeon0804 UI 유지) | OK |
+| 익명 세션 자동 생성 | OK |
+| 익명 상태로 인적사항 저장 | OK |
+| 아이디 회원가입 시 `user_id` 승계 | OK (데이터 유지) |
+| 로그아웃 → 익명 복귀 | OK |
+| 로그아웃 후 이전 사용자 인적사항 노출 | 없음 (빈 칸) |
+| 재로그인 후 서버에서 복원 | OK |
+| 모달에 이메일 입력칸 | 0개 (아이디 방식) |
+| 배포 후 `/api/health` · news · weather · crop-score | 전부 200 |
+| Supabase / 페이지 오류 | 0건 |
+
+### 12.5 이 병합으로 사라진 기능 (main에만 있던 것)
+
+heeyeon0804 UI로 교체했으므로 아래는 화면에서 빠졌다. 코드는 `login` 브랜치와
+`919b6a1` 커밋에 그대로 남아 있다.
+
+- 챗봇 (`/api/chat` 함수와 `backend/chat_server.py`는 배포에 남아 있으나 UI 진입점이 없다)
+- 7일 예보 준비 체크리스트(`prep_status`), 6개 기후 클러스터 코멘트, 지역 방문 기록
+- 단일 귀농지역·작물 모델(`my_farm`)
+- 품종 UI(`loadCultivars`/`pickCultivar`) — 진행 중이던 별도 작업이라 이식하지 않았다
+
+---
+
+## 13. heeyeon2026 UI 병합 (2026-08-04, §12의 UI를 대체)
 
 `heeyeon2026` 브랜치의 UI·기능을 기준으로 삼고, `login` 브랜치의 Supabase·Vercel
 서버 계층을 그 위에 얹었다. 병합 커밋 `0edd7b4`.
 
-### 12.1 진짜 `git merge`를 쓸 수 있었다
+이 병합이 §12(heeyeon0804 UI)를 화면에서 대체한다. 단 §12 이후 main에 들어온 품종
+추천 백엔드(`37ccf24`)는 그대로 유지한다 — `CropAdvisor.dc.html`을 전혀 건드리지
+않는 백엔드·데이터 파일뿐이라 UI 교체와 충돌하지 않는다.
 
-`heeyeon0804`(§12 이전 병합)와 달리 **두 브랜치는 공통 조상이 있다** — `1966000`
+### 13.1 진짜 `git merge`를 쓸 수 있었다
+
+`heeyeon0804`(§12)와 달리 **두 브랜치는 공통 조상이 있다** — `1966000`
 ("데이터 출처 목록 추가"). 양쪽 모두 그 지점에서 갈라져 나왔다.
 
 ```
@@ -1201,7 +1272,7 @@ supabase-js는 저장된 세션을 그대로 신뢰하므로, 앱이 스스로 �
 `MEDALS`·`CROP_PHOTO`는 heeyeon2026이 UI 리디자인으로 참조를 없앤 상수라 되살리지
 않았다(병합본 전체에서 참조 0건 확인).
 
-### 12.2 스키마 변경이 필요 없다
+### 13.2 스키마 변경이 필요 없다
 
 heeyeon2026은 **단일 농장 모델**(`my_farm` 1인 1행)을 그대로 유지한다. §4.3의 기존
 테이블이 그대로 맞아, heeyeon0804 병합 때 추가했던 `favorites`·`saved_regions`·
@@ -1215,7 +1286,7 @@ heeyeon2026은 **단일 농장 모델**(`my_farm` 1인 1행)을 그대로 유지
 | `beomin_prep_suggestions` | `prep_status` | 기존 재사용 |
 | `beomin_region_log` | `region_log` | 기존 재사용 |
 
-### 12.3 heeyeon2026의 백엔드 개선이 배포 경로에도 자동 반영된다
+### 13.3 heeyeon2026의 백엔드 개선이 배포 경로에도 자동 반영된다
 
 `api/*.py`는 `news_server.fetch_*`를 얇게 감싸는 래퍼다(§6.2). heeyeon2026이 고친
 아래 파일들은 그 호출 경로 안쪽에 있어, 함수 코드를 손대지 않아도 배포에 함께 실린다.
@@ -1226,7 +1297,7 @@ heeyeon2026은 **단일 농장 모델**(`my_farm` 1인 1행)을 그대로 유지
 
 `vercel.json`의 `includeFiles`가 이미 `backend/**`를 통째로 포함하므로 설정 변경도 없다.
 
-### 12.4 검증
+### 13.4 검증
 
 | 항목 | 결과 |
 |---|---|
@@ -1239,12 +1310,62 @@ heeyeon2026은 **단일 농장 모델**(`my_farm` 1인 1행)을 그대로 유지
 | `api/` 함수 6개 import | 전부 OK |
 | Supabase 테이블 5개 존재·RLS | 전부 존재, RLS 켜짐 |
 
-### 12.5 알려진 제약 (이번 병합이 만든 것은 아님)
+### 13.5 알려진 제약 (이번 병합이 만든 것은 아님)
 
-- **품종 추천 UI**(`loadCultivars`/`pickCultivar`, `/api/cultivar-score`)는 `login`
-  브랜치에서 온 진행 중 작업으로, **서버 구현이 아직 없다**(로컬 8002·`api/`·
-  `vercel.json` 어디에도 해당 엔드포인트가 없다). 응답이 없으면
-  `cultivarBox.show`가 `false`가 되어 카드 자체가 렌더되지 않으므로 화면에는
-  드러나지 않는다. 살릴 때는 `backend/crop_score_server.py`에 라우트를 추가하고
-  `api/` 함수와 `vercel.json` rewrite를 함께 넣어야 한다.
+- **품종 추천 UI**(`loadCultivars`/`pickCultivar`, `/api/cultivar-score`)는 아직
+  배포 경로에서 동작하지 않는다. 이 병합으로 **서버 구현 자체는 들어왔다**(`37ccf24`의
+  `backend/api/cultivar_api.py`·`backend/scoring/cultivar_fit.py`·`data/cultivars/감자.json`).
+  그러나 `api/`에 대응 함수가 없고 `vercel.json`에 rewrite도 없어 Vercel에서는
+  엔드포인트에 도달할 수 없다. 응답이 없으면 `cultivarBox.show`가 `false`가 되어
+  카드 자체가 렌더되지 않으므로 화면에는 드러나지 않는다. 살릴 때는 `api/`
+  함수와 `vercel.json` rewrite만 추가하면 된다(백엔드는 이미 있다).
 - 로컬 실행에는 `.env`가 필요하다(`.env.example` 복사). 배포는 Vercel 환경변수(§6.5).
+
+---
+
+## 14. origin/main 통합 병합 (2026-08-04)
+
+`merge_login_heeyeon2026`을 main에 올리기 위해 `origin/main`(`37ccf24`)을 브랜치로
+머지했다. 브랜치가 `919b6a1`에서 갈라진 뒤 main에 커밋 3개가 더 쌓여 있어
+non-fast-forward 상태였다.
+
+### 14.1 main 쪽 커밋을 성격별로 갈랐다
+
+| 커밋 | 건드린 파일 | 처리 |
+|---|---|---|
+| `d427184` heeyeon0804 UI 병합 | `CropAdvisor.dc.html`, `RegionMap.html` **둘뿐** | **폐기** — §13이 heeyeon2026 UI를 기준으로 삼는다 |
+| `2d8b91b` DB.md §12 | `DB.md` | 유지 (§12로 보존) |
+| `37ccf24` 품종 추천 백엔드 | `backend/**`, `breed.md`, `data/cultivars/**` | **유지** (자동머지) |
+
+`37ccf24`는 `CropAdvisor.dc.html`을 전혀 건드리지 않는다. 그래서 "heeyeon2026 UI를
+쓰면서 품종 백엔드도 갖는다"가 타협 없이 성립한다.
+
+### 14.2 HTML 두 개를 브랜치판으로 되돌렸다 (의도된 결정)
+
+- `CropAdvisor.dc.html` — 충돌 21곳 전부 `d427184`발 heeyeon0804 UI. `--ours` 채택.
+  브랜치판이 품종·`cultivar` 참조를 69건 가져 main판(14건)보다 많으므로 잃는 것이 없다.
+- `RegionMap.html` — **충돌 없이 자동머지됐지만 결과가 heeyeon0804판이었다.** 브랜치는
+  이 파일을 손대지 않았고(merge-base 그대로) main만 바꿨으니 git이 main 쪽을 그대로
+  적용한 것이다. 그 결과 heeyeon0804의 "내 귀농지역으로도 저장" 체크박스가 되살아났는데,
+  이는 §13.2가 쓰지 않는다고 못박은 다중 저장 모델(`saved_regions`)용이다.
+  단일 농장 모델과 어긋나므로 `HEAD` 판으로 되돌렸다.
+
+> 교훈: 자동머지가 조용히 성공한 파일도 확인해야 한다. UI 기준을 한쪽으로 정한
+> 병합에서는 "충돌 0건"이 "올바르게 병합됨"을 뜻하지 않는다.
+
+### 14.3 DB.md 충돌
+
+양쪽이 각각 다른 병합을 `## 12.`로 기록해 충돌했다. 어느 쪽도 버릴 수 없으므로
+main의 heeyeon0804 기록을 §12로 두고 브랜치의 heeyeon2026 기록을 §13으로 올렸다.
+§13.5의 품종 항목은 "서버 구현이 아직 없다"였는데, 이 병합으로 백엔드가 들어왔으므로
+"백엔드는 있고 `api/`·`vercel.json` 노출만 없다"로 교정했다.
+
+### 14.4 검증
+
+| 항목 | 결과 |
+|---|---|
+| 충돌 마커 잔존 | 0건 |
+| `CropAdvisor.dc.html` · `RegionMap.html` 이 브랜치판과 동일 | 바이트 일치 |
+| 머지로 들어온/변경된 Python 8개 `py_compile` | OK |
+| `api/` 서버리스 함수 6개 import | 6/6 OK |
+| DB.md 섹션 번호 | §12 → §13 → §14 정상 |
