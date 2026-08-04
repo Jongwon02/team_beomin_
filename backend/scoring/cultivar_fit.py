@@ -566,6 +566,117 @@ def _best_for_season(variety, season, clim, region, soil_readings):
 # 5. 근거 문장 (LLM 아님 - 계산값으로 만든다)
 # ═══════════════════════════════════════════════════════════════
 
+def _axis_reasons(variety, best, station_name, years_used):
+    """채점 축마다 (수치 · 비교기준 · 출처)를 담은 근거 한 줄씩. -> (pros, cons)
+
+    왜 축마다 만드나
+      점수는 7개 항목의 가중합인데 예전에는 근거가 '재배기간이 성립한다' 한 줄뿐이었다.
+      88점이 어디서 나왔는지 사용자가 확인할 수 없었고, 비대온도 65.1점처럼 **점수를 깎은
+      항목이 화면에 아무 흔적도 남기지 않았다**. 상추·오이 작형 모델(§23)과 같은 방식으로
+      맞춘다 - 축 하나에 문장 하나, 문장마다 어디서 나온 수치인지.
+
+    basis에 관측소와 연수를 적는다. '지역 기상'만 적으면 어느 관측소의 몇 년치인지
+    확인할 방법이 없다.
+    """
+    d, m = best["detail"], best["metrics"]
+    pros, cons = [], []
+    weather = f"{station_name} 평년 {years_used}년" if station_name else "평년 기상"
+
+    def add(bucket, text, basis):
+        if text:
+            bucket.append({"text": text, "basis": basis})
+
+    # ① 재배기간 — 무상기간이 이 품종의 생육일수를 감당하는가(가중치 최대 28)
+    period = d.get("재배기간") or {}
+    margin = period.get("여유일수")
+    if margin is not None:
+        line = (f"무상기간 {period.get('무상기간일')}일로 {variety['name']}에 필요한 "
+                f"{best['days']}일을 여유 {margin}일로 넘겨요")
+        if margin >= 0:
+            add(pros, line, f"{weather} · 서리일은 일 최저 0℃ 기준")
+        else:
+            add(cons, f"무상기간 {period.get('무상기간일')}일이 {variety['name']}에 필요한 "
+                      f"{best['days']}일보다 {abs(margin)}일 짧아요",
+                f"{weather} · 서리일은 일 최저 0℃ 기준")
+    slack = period.get("첫서리까지여유일")
+    if slack is not None and slack < 20:
+        add(cons, f"수확 예정일({(best.get('harvest') or '').replace('-', '/')})이 첫서리까지 "
+                  f"{slack}일밖에 안 남아요", weather)
+
+    # ② 파종출현 — 씨감자가 땅속에 있는 20일
+    emerge = d.get("파종출현") or {}
+    if emerge.get("출현기평균기온") is not None:
+        t = emerge["출현기평균기온"]
+        if (best["items"].get("파종출현") or 0) >= 85:
+            add(pros, f"파종 후 20일 평균기온이 {t}℃로 출현에 무리 없는 범위예요",
+                f"{weather} · 적정 {emerge.get('적정')}")
+        else:
+            add(cons, f"파종 후 20일 평균기온이 {t}℃예요", f"{weather} · 적정 {emerge.get('적정')}")
+
+    # ③ 비대온도 — 괴경이 커지는 구간. 품질이 여기서 갈린다
+    bulk = d.get("비대온도") or {}
+    if bulk.get("비대기평균") is not None:
+        t, rng = bulk["비대기평균"], bulk.get("적온범위")
+        if (best["items"].get("비대온도") or 0) >= 85:
+            add(pros, f"비대기 평균기온이 {t}℃로 이 품종의 비대 적온({rng})에 들어요",
+                f"{weather} · 품종자료 비대적온")
+        else:
+            hi = rng and t > float(str(rng).split("~")[-1].rstrip("℃"))
+            add(cons, f"비대기 평균기온이 {t}℃로 비대 적온({rng})보다 "
+                      f"{'높아 비대가 둔해질 수 있어요' if hi else '낮아 비대가 느려질 수 있어요'}",
+                f"{weather} · 품종자료 비대적온")
+        if (bulk.get("30℃초과일수") or 0) >= 1:
+            add(cons, f"비대기에 최고 30℃를 넘는 날이 평년 {bulk['30℃초과일수']}일 있어요",
+                f"{weather} · 작물표준 감자 high_temp_risk")
+
+    # ④ 강수
+    rain = d.get("강수") or {}
+    if rain.get("작기강수mm") is not None:
+        mm, heavy = rain["작기강수mm"], rain.get("집중강수일수") or 0
+        if (best["items"].get("강수") or 0) >= 75:
+            add(pros, f"작기 강수가 평년 {mm:,.0f}mm로 무리 없는 편이에요",
+                f"{weather} · 기준작형 {rain.get('기준작형')}")
+        else:
+            add(cons, f"작기 강수가 평년 {mm:,.0f}mm이고 하루 50mm 넘는 집중강수가 "
+                      f"{heavy:.1f}일이에요. 배수로와 두둑을 미리 잡아 두세요",
+                f"{weather} · 기준작형 {rain.get('기준작형')}")
+
+    # ⑤ 병해 — 이 지역 습도·강수 조건에서의 발생 위험
+    dis = d.get("병해") or {}
+    if (dis.get("감점") or 0) > 0 and dis.get("대상"):
+        add(cons, f"이 지역 습도·강수 조건에서 {', '.join(dis['대상'][:2])} 발생 위험을 "
+                  f"{dis['감점']:.0f}점 감점했어요",
+            f"{weather} · 품종자료 병해충")
+
+    # ⑥ 토양 — 하위 항목 중 나쁜 것을 그대로 밝힌다(총점만 보면 무엇이 문제인지 모른다)
+    soil = d.get("토양") or {}
+    bad = [(k, v) for k, v in soil.items()
+           if isinstance(v, dict) and (v.get("점수") or 100) < 60]
+    good = [(k, v) for k, v in soil.items()
+            if isinstance(v, dict) and (v.get("점수") or 0) >= 100]
+    if bad:
+        k, v = bad[0]
+        add(cons, f"토양 {cultivar_reasons.with_subject(k)} 기준({v.get('기준')})에서 "
+                  f"벗어나요 (측정 {v.get('값')})", "흙토람 토양검정")
+    elif good:
+        k, v = good[0]
+        add(pros, f"토양 {cultivar_reasons.with_subject(k)} 감자 기준({v.get('기준')})에 "
+                  f"들어요 (측정 {v.get('값')})", "흙토람 토양검정")
+
+    # ⑦ 출하시기 — 조기 출하를 노리는 품종에만 의미가 있다.
+    # 날짜에 조사를 붙이지 않는다 - '06/16로'인지 '06/16으로'인지는 숫자를 어떻게 읽느냐에
+    # 달려 있어(십육일→'로', 십육→'으로') 규칙으로 정할 수 없다. 괄호로 뺀다.
+    ship = d.get("출하시기") or {}
+    if ship.get("수확예정") and variety.get("early_market_preferred"):
+        early = ship["수확예정"] <= "06-20"
+        add(pros if early else cons,
+            ("수확 시기가 조기 출하 구간에 들어와요" if early
+             else "수확 시기가 조기 출하 구간보다 늦어요")
+            + f" (예상 수확 {ship['수확예정'].replace('-', '/')})",
+            f"{weather} · {ship.get('기준')}")
+    return pros, cons
+
+
 def _reasons(variety, best):
     """근거 문장. 화면은 첫 문장만 보여주므로 **품종을 구분해 주는 문장을 앞에** 둔다.
 
@@ -709,17 +820,22 @@ def score_cultivars(region_name, crop="감자", experience="beginner", years=sea
         # 화면의 '추천 이유 / 고려할 점'. 지역 근거를 맨 앞에 세운다 - 사용자가 궁금한
         # 것은 "왜 **우리 동네에서** 이 품종인가"이고, 그 답이 이 엔진의 존재 이유다.
         # 점수·breakdown 은 손대지 않는다(키만 추가한다).
-        ffd = climatology["frost"]["frost_free_days"]
-        region_pros = [(
-            f"이 지역에서 {cultivar_reasons.with_particle(best['season'])} "
-            f"{best['plant'].replace('-', '/')} 파종 → "
-            f"{best['harvest'].replace('-', '/')} 수확이 성립해요"
-            f" (무상기간 {ffd}일 / 필요 {best['days']}일)"
-        )]
+        # 화면의 '추천 이유 / 고려할 점'. 맨 앞은 이 작형·파종일이 성립한다는 결론이고,
+        # 그 뒤로 채점 축마다 수치·기준·출처를 한 줄씩 붙인다(_axis_reasons).
+        region_pros = [{
+            "text": (f"이 지역에서 {cultivar_reasons.with_particle(best['season'])} "
+                     f"{best['plant'].replace('-', '/')} 파종 → "
+                     f"{best['harvest'].replace('-', '/')} 수확이 성립해요"),
+            "basis": (f"{region['station_name']} 평년 "
+                      f"{len(climatology.get('years') or [])}년"),
+        }]
+        axis_pros, axis_cons = _axis_reasons(
+            v, best, region.get("station_name"), len(climatology.get("years") or []))
+        region_pros += axis_pros
         blight = blight_data.blight_info(crop, v["name"])
         pros, cons_list = cultivar_reasons.build(
             v, region_pros=region_pros,
-            region_cons=list(best["blockers"]) + list(best["cautions"]),
+            region_cons=list(best["blockers"]) + axis_cons + list(best["cautions"]),
             blight=blight, experience=experience)
 
         ranking.append({

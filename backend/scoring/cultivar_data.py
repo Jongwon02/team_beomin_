@@ -315,14 +315,23 @@ def _late_cool_preferred(variety):
 
 
 def _early_market_preferred(variety):
-    """조기 출하가 목적인 품종인가 (category / 용도 서술로 판정).
+    """조기 출하가 목적인 품종인가 (category / 용도 / 선택조건 서술로 판정).
 
     ⚠️ 용도 키가 작물마다 다르다 - 감자·상추는 primary_use, **사과는 market_use** 다.
        primary_use 만 보다가 쓰가루('여름 조기 출하')가 False 로 잡혔다.
+    ⚠️ 배는 세 품종 모두 category·용도 키가 비어 있고, 조기 출하 성격이 오직
+       selection_conditions 문장에만 적혀 있다(원황 '신고보다 빠른 출하를 원하는 경우',
+       '남부 조기 출하 또는 중부 추석 출하'). 그래서 원황이 False 로 잡혀, 수확기가
+       늦더위에 걸려 점수가 낮게 나온 이유가 화면에 안내되지 않았다.
     """
     haystack = (list(variety.get("category") or [])
                 + list(variety.get("primary_use") or [])
                 + list(variety.get("market_use") or []))
+    for cond in variety.get("selection_conditions") or []:
+        if isinstance(cond, str):
+            haystack.append(cond)
+        elif isinstance(cond, dict):
+            haystack.append(str(cond.get("condition") or cond.get("reason") or ""))
     return any(any(h in text for h in _EARLY_MARKET_HINTS) for text in haystack)
 
 

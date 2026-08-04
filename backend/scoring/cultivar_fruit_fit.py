@@ -34,7 +34,9 @@
 
 import logging
 
+import blight_data
 import cultivar_data
+import cultivar_reasons
 import season_window
 from scoring_engine import _binary_range_score  # noqa: F401  (기존 점수 함수 재사용 규약)
 
@@ -59,6 +61,16 @@ WEIGHTS = {
 # 착색기 = 수확 시작 직전 N일. 원문이 '착색기'를 일수로 주지 않아 관행값을 쓰고,
 # 화면 문구에 '수확 전 30일'임을 그대로 드러낸다(사용자가 근거를 확인할 수 있게).
 COLORING_DAYS = 30
+
+# 수확기가 이보다 짧게 해석되면 '구간'이 아니라 '한 시점'을 준 것으로 본다.
+# 자료가 품종에 따라 범위("9월 하순~10월 상·중순")를 주기도 하고 단일 적숙기 날짜
+# ("9월 1일")를 주기도 하는데, 단일 날짜를 1일 구간으로 그대로 채점하면 가중치 36%가
+# 걸린 수확기 강수가 **그 하루의 평년값**에 좌우된다. 실제로 배 신화·원황이 그렇게
+# 채점돼 "수확기 강수가 평년 5mm로 많아 열과에 주의"라는 문장이 나왔다(총 5mm다).
+MIN_HARVEST_SPAN_DAYS = 7
+# 늘릴 때 쓸 길이는 만들지 않는다 - **같은 자료에서 범위를 준 품종들의 중앙값**을 쓴다.
+# (사과 20·21·20·21일 -> 21일 / 배 30일)
+FALLBACK_HARVEST_SPAN_DAYS = 21
 # 집중강수일 기준은 season_window 와 같은 값을 쓴다(50mm/일).
 HEAVY_RAIN_MM = season_window.HEAVY_RAIN_MM
 
@@ -203,6 +215,146 @@ def score_soil_ph(readings, lo, hi):
 # 종합
 # ═══════════════════════════════════════════════════════════════
 
+def _typical_harvest_span(varieties, harvest_window_of):
+    """이 작물에서 **범위로 적힌** 수확기들의 중앙값(일). 없으면 관행 기본값.
+
+    단일 날짜만 적힌 품종의 수확기 길이를 우리가 만들어 내지 않기 위해, 같은 자료가
+    다른 품종에 적어 둔 길이를 쓴다.
+    """
+    spans = []
+    for v in varieties:
+        w = harvest_window_of(v)
+        if not w:
+            continue
+        n = season_window.mmdd_diff(w[1], w[0]) + 1
+        if n >= MIN_HARVEST_SPAN_DAYS:
+            spans.append(n)
+    if not spans:
+        return FALLBACK_HARVEST_SPAN_DAYS
+    spans.sort()
+    return spans[len(spans) // 2]
+
+
+def _widen_harvest(window, span_days):
+    """단일 날짜(또는 아주 짧은 구간)로 적힌 수확기를 span_days 길이로 넓힌다.
+
+    적숙기 날짜를 중심에 두고 양쪽으로 벌린다 - 그 날짜가 '수확을 시작하는 날'인지
+    '가장 좋은 날'인지 자료가 밝히지 않았으므로 한쪽으로 밀 근거가 없다.
+    반환: (시작, 끝, 넓혔는지)
+    """
+    start, end = window
+    n = season_window.mmdd_diff(end, start) + 1
+    if n >= MIN_HARVEST_SPAN_DAYS:
+        return start, end, False
+    half = span_days // 2
+    return (season_window.mmdd_add(start, -half),
+            season_window.mmdd_add(start, span_days - half - 1), True)
+
+
+def _axis_reasons(variety, breakdown, excluded, station_name, years_used,
+                  harvest_widened=False):
+    """채점 축마다 (수치 · 비교기준 · 출처)를 담은 근거 한 줄씩. -> (pros, cons)
+
+    ⚠️ 이 모델을 처음 넣을 때 근거 문장을 아예 만들지 않았다. 사과·배 카드가 pros 0줄·
+       cons 0줄로 나가서 79.2점이 어디서 나왔는지 화면에 아무 설명이 없었고, 조건 모드에
+       있던 근거 문장이 조용히 사라진 회귀였다(점수와 응답 계약만 검증해 놓쳤다).
+       감자(cultivar_fit._axis_reasons)·작형(cultivar_season_fit._reasons)과 같은 형식으로 맞춘다.
+    """
+    pros, cons = [], []
+    weather = f"{station_name} 평년 {years_used}년" if station_name else "평년 기상"
+
+    def add(bucket, text, basis):
+        if text:
+            bucket.append({"text": text, "basis": basis})
+
+    def axis(name):
+        b = breakdown.get(name) or {}
+        return b.get("점수"), (b.get("근거") or {})
+
+    # ① 착색기 주간 — 가중치가 가장 크다(30)
+    score, d = axis("착색기주간")
+    if score is not None and d.get("착색기평균") is not None:
+        t, rng = d["착색기평균"], d.get("적온")
+        if score >= 85:
+            add(pros, f"착색기(수확 전 {COLORING_DAYS}일) 평균기온이 {t}℃로 착색 적온({rng})에 "
+                      f"가까워요", f"{weather} · 품종자료 coloring_daily_mean_c")
+        else:
+            add(cons, f"착색기(수확 전 {COLORING_DAYS}일) 평균기온이 {t}℃로 착색 적온({rng})보다 "
+                      f"높아 색이 덜 들 수 있어요",
+                f"{weather} · 품종자료 coloring_daily_mean_c")
+
+    # ② 착색기 야간 — 일교차가 착색을 만든다
+    score, d = axis("착색기야간")
+    if score is not None and d.get("착색기야간평균") is not None:
+        t = d["착색기야간평균"]
+        if score >= 85:
+            add(pros, f"착색기 야간 평균기온이 {t}℃로 목표({d.get('적온')})에 가까워 일교차가 "
+                      f"확보돼요", f"{weather} · 품종자료 coloring_night_mean_c")
+        else:
+            add(cons, f"착색기 야간 평균기온이 {t}℃로 목표({d.get('적온')})보다 높아 일교차가 "
+                      f"작아요", f"{weather} · 품종자료 coloring_night_mean_c")
+
+    # ③ 수확기 강수 — 열과·낙과·수확 지연
+    score, d = axis("수확기강수")
+    if score is not None and d.get("수확기강수mm") is not None:
+        mm, per_day = d["수확기강수mm"], d.get("하루평균mm")
+        if score >= 75:
+            add(pros, f"수확기 강수가 평년 {mm:,.0f}mm(하루평균 {per_day}mm)로 무리 없는 "
+                      f"편이에요", weather)
+        else:
+            add(cons, f"수확기 강수가 평년 {mm:,.0f}mm(하루평균 {per_day}mm)로 많아 열과와 "
+                      f"수확 지연에 주의해야 해요", weather)
+
+    # ④ 수확기 고온 — 성숙·착색 지연, 일소
+    score, d = axis("수확기고온")
+    if score is not None:
+        days = d.get("30℃초과일수")
+        if days is not None and days >= 1:
+            add(cons, f"수확기에 최고 30℃를 넘는 날이 평년 {days}일 있어요",
+                f"{weather} · {d.get('기준')}")
+        elif score >= 85:
+            add(pros, "수확기에 최고 30℃를 넘는 날이 거의 없어 성숙이 지연될 걱정이 적어요",
+                f"{weather} · {d.get('기준')}")
+
+    # ⑤ 서리 여유 — 게이트가 아니라 감점(성목은 겨울 추위에 견딘다).
+    # 여유 0일을 '여유가 있다'고 장점에 넣지 않는다 - 감홍(수확종료 10/20 = 첫서리 10/20)이
+    # "첫서리까지 0일 여유가 있어요"로 ✅에 올라왔다.
+    score, d = axis("서리여유")
+    if score is not None and d.get("여유일") is not None:
+        slack = d["여유일"]
+        end = (d.get("수확종료") or "").replace("-", "/")
+        frost = (d.get("첫서리") or "").replace("-", "/")
+        if slack >= 14:
+            add(pros, f"수확이 {end}에 끝나 첫서리({frost})까지 {slack}일 여유가 있어요", weather)
+        elif slack >= 0:
+            add(cons, f"수확 종료({end})와 첫서리({frost}) 사이가 {slack}일뿐이라 늦게 따는 몫은 "
+                      f"서리를 맞을 수 있어요", weather)
+        else:
+            add(cons, f"수확 종료({end})가 첫서리({frost})보다 {abs(slack)}일 늦어요. 성목이 "
+                      f"죽는다는 뜻은 아니지만(첫서리는 일 최저 0℃ 첫날일 뿐이고 성목 내한성은 "
+                      f"훨씬 아래예요), 늦게 따는 몫이 서리·저장성 위험을 안습니다",
+                weather)
+
+    # ⑥ 토양
+    score, d = axis("토양")
+    if score is not None and d.get("pH") is not None:
+        if score >= 85:
+            add(pros, f"토양 pH가 {d['pH']}로 적정({d.get('적정')})에 들어요", "흙토람 토양검정")
+        else:
+            add(cons, f"토양 pH가 {d['pH']}로 적정({d.get('적정')})에서 벗어나요", "흙토람 토양검정")
+
+    # 뺀 항목은 무엇을 못 봤는지 밝힌다(배는 착색 기준값이 자료에 없다).
+    if excluded:
+        add(cons, "자료에 " + "·".join(excluded) + " 기준값이 없어 그 항목은 점수에서 빼고 "
+                  "남은 가중치를 다시 맞췄어요", "가중치 재정규화")
+    # 수확기를 우리가 넓혔으면 밝힌다 - 사용자가 보는 수확기 날짜가 자료 원문과 다르다.
+    if harvest_widened:
+        add(cons, "자료가 이 품종의 수확기를 하루(적숙기)로만 적어 두었어요. 그 하루의 평년값에 "
+                  "점수가 좌우되지 않도록, 같은 자료가 다른 품종에 적어 둔 수확기 길이만큼 "
+                  "앞뒤로 넓혀 기상을 봤습니다", "품종자료 수확기(단일 날짜)")
+    return pros, cons
+
+
 def _grade_of(score):
     """For_Frontend.md §3과 같은 4단계(화면 라벨을 통일하기 위해)."""
     if score is None:
@@ -310,6 +462,9 @@ def score_fruit_cultivars(region_name, crop, experience="beginner",
     col_night_target = common_env.get("coloring_night_mean_c")
     hot_threshold = (std_temp.get("high_temp_risk") or {}).get("threshold") or 30
 
+    # 단일 날짜로 적힌 수확기를 넓힐 때 쓸 길이(같은 자료의 다른 품종에서 가져온다).
+    typical_span = _typical_harvest_span(varieties, harvest_window_of)
+
     ranking, skipped = [], []
     for v in varieties:
         win = harvest_window_of(v)
@@ -317,7 +472,7 @@ def score_fruit_cultivars(region_name, crop, experience="beginner",
             skipped.append({"cultivar": v["name"],
                             "reason": "이 품종의 수확기 자료가 없어 기상으로 판정할 수 없어요"})
             continue
-        h_start, h_end = win
+        h_start, h_end, harvest_widened = _widen_harvest(win, typical_span)
         c_start = season_window.mmdd_add(h_start, -COLORING_DAYS)
         # ⚠️ mmdd_diff(a, b) = a - b. (h_start, h_end) 순으로 주면 음수가 되어 max(1,…)에
         #    걸려 window_days=1 이 되고, 수확기 강수 하루평균이 구간 길이만큼 과대해진다
@@ -339,22 +494,55 @@ def score_fruit_cultivars(region_name, crop, experience="beginner",
         total, breakdown, excluded = _combine(items)
         grade, grade_label = _grade_of(total)
 
-        cautions, badges = [], []
+        # disclosures = 사용자에게 반드시 닿아야 하는 안내. cautions 는 화면 카드가
+        # 렌더하지 않으므로(cons 목록만 보여준다) 아래에서 region_cons 로 함께 넘긴다.
+        # 이걸 빼면 "조기 출하용 품종은 구조적으로 낮게 나온다"는 §22.4의 핵심 안내가
+        # 페이로드에만 남고 화면에는 한 줄도 나가지 않는다.
+        # lead = 점수를 **읽는 방법**을 바꾸는 안내라 맨 앞에 둔다.
+        # tail = 자료 신뢰도 각주라 맨 뒤에 둔다. 챗봇은 고려할점 3줄만 쓰는데, 각주를
+        #        앞에 두면 '착색 불량' 같은 실제 농업 정보가 밀려 나간다(실제로 그랬다).
+        lead_disclosures, tail_disclosures, badges = [], [], []
         # 착색 적온(12~13℃)은 사실상 **만생종 기준**이다. 데이터에 숙기별 착색 기준이
         # 없어서 조생종은 착색기가 7~8월(25℃+)이라 구조적으로 바닥 점수를 받는다.
         # 조기 출하가 목적인 품종을 점수만 보고 배제하지 않도록 그 사실을 밝힌다
         # (없는 숙기별 기준을 만들어 점수를 보정하지는 않는다 - §10 원칙).
         if v.get("early_market_preferred"):
             badges.append("조기 출하용")
-            cautions.append("이 점수는 착색을 크게 보는데, 착색 적온(12~13℃)은 만생종 기준이라 "
-                            "조기 출하용 품종은 낮게 나와요. 이 품종의 목적은 색보다 이른 출하예요")
+            # 문구를 작물에 맞춘다. 배는 착색 두 항목이 자료 부재로 아예 제외되므로
+            # "착색을 크게 보는데"가 사실이 아니다 - 배에서 조생종을 깎는 것은 수확기가
+            # 늦더위·장마 끝에 걸리는 것이다(원황 채점구간 8/17~9/15, 30℃ 초과 14.4일).
+            if "착색기주간" in excluded:
+                lead_disclosures.append(
+                    {"text": "이 점수는 수확기 기상을 크게 보는데, 조기 출하용 품종은 수확기가 "
+                             "늦더위와 장마 끝에 걸려 낮게 나와요. 이 품종의 목적은 이른 출하예요",
+                     "basis": "품종자료 선택조건 · 모델 한계(breed.md §22.4)"})
+            else:
+                lead_disclosures.append(
+                    {"text": "이 점수는 착색을 크게 보는데, 착색 적온(12~13℃)은 만생종 기준이라 "
+                             "조기 출하용 품종은 낮게 나와요. 이 품종의 목적은 색보다 이른 출하예요",
+                     "basis": "품종자료 용도 · 모델 한계(breed.md §22.4)"})
         bloom = v.get("bloom_to_harvest") or {}
         conf = bloom.get("confidence")
         if conf and not str(conf).startswith(("확실", "보통")):
-            cautions.append(f"수확기 추정에 쓰인 만개후일수({bloom.get('min')}~{bloom.get('max')}일)가 "
-                            f"추정치예요({conf})")
+            tail_disclosures.append(
+                {"text": f"수확기를 만개후일수({bloom.get('min')}~{bloom.get('max')}일)로 되짚어 "
+                         f"잡았는데 그 값이 추정치예요 — 수확기 날짜에 오차가 있을 수 있어요",
+                 "basis": f"품종자료 신뢰도 '{conf}'"})
+        # 페이로드 계약용 cautions(문자열 목록)은 그대로 유지한다.
+        cautions = [x["text"] for x in lead_disclosures + tail_disclosures]
         if excluded:
             cautions.append("자료가 없어 " + "·".join(excluded) + " 항목을 빼고 계산했어요")
+
+        # 추천 이유 / 고려할 점 + 역병. 이 모델을 처음 넣을 때 둘 다 빠뜨려서 사과·배
+        # 카드에 근거가 0줄이고 역병 안내도 사라졌다(사과 홍로는 위험도가 조사된 품종이다).
+        axis_pros, axis_cons = _axis_reasons(
+            v, breakdown, excluded, region.get("station_name"),
+            len(climatology.get("years") or []), harvest_widened=harvest_widened)
+        blight = blight_data.blight_info(crop, v["name"])
+        pros, cons_list = cultivar_reasons.build(
+            v, region_pros=axis_pros,
+            region_cons=lead_disclosures + axis_cons + tail_disclosures,
+            blight=blight, experience=experience)
 
         ranking.append({
             "cultivar": v["name"], "aliases": v["aliases"], "maturity": v["maturity"],
@@ -362,7 +550,11 @@ def score_fruit_cultivars(region_name, crop, experience="beginner",
             "score": total, "grade": grade, "grade_label": grade_label,
             "cultivation_type": "",                    # 과수는 작형이 없다
             "planting_window": {},                     # 파종이 없다
-            "harvest_window": {"from": h_start, "to": h_end},
+            # 화면·농업일지에 나가는 수확기는 **자료 원문 그대로**다. 채점용으로 넓힌
+            # 구간을 여기에 넣으면 일지의 수확 단계가 자료에 없는 날짜로 옮겨진다
+            # (원황 '9월 1일' → 08/22~09/11).
+            "harvest_window": {"from": win[0], "to": win[1]},
+            "scored_window": {"from": h_start, "to": h_end, "widened": harvest_widened},
             "coloring_window": {"from": c_start, "to": h_start},
             "breakdown": breakdown,
             "excluded_items": excluded,
@@ -370,6 +562,9 @@ def score_fruit_cultivars(region_name, crop, experience="beginner",
             "cautions": cautions,
             "variety_warnings": (v.get("key_warnings") or [])[:3],
             "badges": badges,
+            "pros": pros,
+            "cons": cons_list,
+            "late_blight": blight,
             "beginner_friendly": v.get("beginner_friendly"),
             "beginner_reason": v.get("beginner_reason"),
             "primary_use": v.get("primary_use"),

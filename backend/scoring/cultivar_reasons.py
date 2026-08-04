@@ -28,8 +28,13 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-MAX_PROS = 4
-MAX_CONS = 4
+# 카드가 접혀 있고(§23.9) 펼쳤을 때만 보이므로 줄 수를 4에서 늘렸다. 4일 때는 엔진이
+# 채점 축마다 만든 지역 근거가 앞자리를 다 먹어 품종 특성 문장(선택조건·초보적합·저장성)이
+# 잘려 나갔다 - "왜 이 점수인가"와 "이 품종은 어떤 품종인가"는 둘 다 필요하다.
+MAX_PROS = 7
+MAX_CONS = 7
+# 지역 근거(채점 축)가 차지할 수 있는 최대 줄. 나머지는 품종 특성에 남겨 둔다.
+MAX_REGION = 5
 
 # 저장성 서술 중 '장점'으로 볼 수 있는 등급
 _GOOD_STORAGE = ("매우 높음", "높음", "강")
@@ -51,6 +56,20 @@ def with_particle(word, has_final="으로", no_final="로"):
     if jong == 0 or jong == 8:              # 받침 없음 또는 'ㄹ'
         return f"{word}{no_final}"
     return f"{word}{has_final}"
+
+
+def with_subject(word):
+    """받침 유무에 맞는 주격 조사(이/가). "유효인산가", "pH이" 같은 오타를 막는다.
+
+    영문·기호로 끝나는 낱말(pH, EC)은 한국어로 읽을 때 받침이 없는 쪽으로 읽히므로
+    '가'를 쓴다 - "pH가 5.8이에요".
+    """
+    if not word:
+        return word
+    last = word[-1]
+    if not ("가" <= last <= "힣"):
+        return f"{word}가"
+    return f"{word}이" if (ord(last) - 0xAC00) % 28 else f"{word}가"
 
 
 def _item(text, basis):
@@ -177,9 +196,11 @@ def build(variety, region_pros=(), region_cons=(), blight=None, experience="begi
     """
     pros, cons = [], []
 
-    for t in region_pros:
+    # 지역 근거는 MAX_REGION까지만. 엔진이 채점 축마다 문장을 만들면(감자 7축·사과 6축)
+    # 여기서 자리를 다 먹어 품종 특성 문장이 한 줄도 못 나간다.
+    for t in list(region_pros)[:MAX_REGION]:
         _add(pros, _item(t, "지역 기상") if isinstance(t, str) else t)
-    for t in region_cons:
+    for t in list(region_cons)[:MAX_REGION]:
         _add(cons, _item(t, "지역 기상") if isinstance(t, str) else t)
 
     beginner_pro, beginner_con = _beginner(variety, experience)
