@@ -16,6 +16,7 @@ from pathlib import Path
 import cultivar_conditions
 import cultivar_data
 import cultivar_fit
+import cultivar_fruit_fit
 
 logger = logging.getLogger(__name__)
 
@@ -83,8 +84,11 @@ def score_payload(crop, region, experience="beginner", crop_score=None):
         #   conditions 사과·배·오이·상추 - 데이터에 적힌 선택조건 기반(cultivar_conditions)
         # 4작물을 기후 채점에 태우면 만개후일수가 생육일수로 읽혀 "재배 불가"가 찍히거나
         # 품종이 전부 동점이 된다. 자세한 근거는 cultivar_conditions 모듈 도크스트링.
-        if cultivar_data.scoring_mode(crop) == cultivar_data.SCORING_CLIMATE:
+        mode = cultivar_data.scoring_mode(crop)
+        if mode == cultivar_data.SCORING_CLIMATE:
             payload = cultivar_fit.score_cultivars(region, crop, experience=experience)
+        elif mode == cultivar_data.SCORING_CLIMATE_FRUIT:
+            payload = cultivar_fruit_fit.score_fruit_cultivars(region, crop, experience=experience)
         else:
             payload = cultivar_conditions.recommend(region, crop, experience=experience)
         if payload.get("status") == "matched":

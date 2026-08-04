@@ -91,15 +91,21 @@ _RISK_LEVEL_NORMALIZE = {
 #   상추     : 품종별 환경값은 있으나 파종~수확 일수가 '보통/불확실' 추정치이고 3품종 중
 #             1개(로메인)는 불확실이다. 근거가 고른 축이 아니라 순위 근거로 쓰지 않는다.
 # 근거 없는 축으로 순위를 만들면 화면에 "1위"가 뜨는데 그 1위에 이유가 없다.
-SCORING_CLIMATE = "climate"
-SCORING_CONDITIONS = "conditions"
+SCORING_CLIMATE = "climate"              # 파종일 스캔 (1년생) - cultivar_fit
+SCORING_CLIMATE_FRUIT = "climate_fruit"  # 수확기 앵커 (다년생 과수) - cultivar_fruit_fit
+SCORING_CONDITIONS = "conditions"        # 조건 매칭 - cultivar_conditions
 
 CROP_SCORING_MODE = {
     "감자": SCORING_CLIMATE,
+    # 사과·배는 파종일이 없어 감자 모델을 못 쓰지만, **품종별 수확기가 실제로 달라서**
+    # 그 구간의 평년 기상으로 점수가 갈린다(청송 착색기 후지 15.4℃ / 홍로 25.1℃).
+    "사과": SCORING_CLIMATE_FRUIT,
+    "배": SCORING_CLIMATE_FRUIT,
+    # 상추·오이는 기후 점수로 순위를 만들 수 없다(실측). 품종별로 다른 기후 수치가
+    # 있어야 순위에 이유가 붙는데, 상추 청치마·적축면은 생육일수(45~65)·적온(15~20)·
+    # 고온플래그가 완전히 같고 오이 3품종군도 전부 같다 - 무엇을 넣어도 동점이다.
     "상추": SCORING_CONDITIONS,
     "오이": SCORING_CONDITIONS,
-    "사과": SCORING_CONDITIONS,
-    "배": SCORING_CONDITIONS,
 }
 
 # ── 데이터 제공자가 붙인 confidence 라벨 ──────────────────────────────────
@@ -306,8 +312,14 @@ def _late_cool_preferred(variety):
 
 
 def _early_market_preferred(variety):
-    """조기 출하가 목적인 품종인가 (category / primary_use 서술로 판정)."""
-    haystack = list(variety.get("category") or []) + list(variety.get("primary_use") or [])
+    """조기 출하가 목적인 품종인가 (category / 용도 서술로 판정).
+
+    ⚠️ 용도 키가 작물마다 다르다 - 감자·상추는 primary_use, **사과는 market_use** 다.
+       primary_use 만 보다가 쓰가루('여름 조기 출하')가 False 로 잡혔다.
+    """
+    haystack = (list(variety.get("category") or [])
+                + list(variety.get("primary_use") or [])
+                + list(variety.get("market_use") or []))
     return any(any(h in text for h in _EARLY_MARKET_HINTS) for text in haystack)
 
 
