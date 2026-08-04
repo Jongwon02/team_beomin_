@@ -26,5 +26,3 @@ data/cache/
 
 # 챗봇 실행 로그(토큰 사용량) - 기기마다 다시 쌓이는 런타임 데이터
 data/chat_usage.jsonl
-.vercel
-.env*
