@@ -3,7 +3,7 @@
   "outputDirectory": "public",
   "functions": {
     "api/*.py": {
-      "maxDuration": 60,
+      "maxDuration": 300,
       "includeFiles": "{backend/**,Beomin_web/news_server.py,data/**}"
     }
   },

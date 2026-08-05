@@ -2,10 +2,12 @@
 """POST /api/chat — 귀농 상담 챗봇 (backend/chat_server.py의 chat_turn 재사용).
 
 로컬 서버(8003)와 다른 점 하나:
-  로컬은 SSE 프레임을 직접 chunked 인코딩해서 토큰이 생기는 대로 흘려보낸다.
-  Vercel 함수 런타임은 전송 인코딩을 자체적으로 처리하므로 여기서 chunk 헤더를
-  붙이면 응답이 깨진다. 따라서 프레임을 모아 한 번에 내려준다 - SSE 형식은
-  같아서 프런트 파서는 그대로 동작하지만, 답변이 '한 번에' 나타난다.
+  로컬은 SSE 프레임을 직접 chunked 인코딩해서 흘려보낸다. Vercel 함수 런타임은 전송
+  인코딩을 자체적으로 처리하므로 여기서 chunk 헤더를 붙이면 응답이 깨진다. 대신
+  Content-Length 를 빼고 프레임마다 flush 해서 **생기는 대로** 내려보낸다.
+
+  ⚠️ 예전에는 프레임을 전부 모아 마지막에 한 번에 보냈다. 답변이 다 만들어질 때까지
+     화면에 아무것도 뜨지 않아서, 사용자에게는 "챗봇이 한참 뒤에야 답한다"로 보였다.
 """
 import json
 import os
@@ -73,25 +75,42 @@ class handler(BaseHTTPRequestHandler):
             return self._json(429, {"error": info, "code": code})
         turn = info
 
-        frames = []
+        # ── 프레임을 만드는 대로 흘려보낸다 ─────────────────────────────────
+        # 예전에는 프레임을 전부 모아 마지막에 한 번에 보냈다. 그래서 답변이 다 만들어질
+        # 때까지 화면에 **아무것도 뜨지 않았다** - 30초짜리 답이면 30초 동안 빈 화면이다.
+        # 로컬(8003)은 첫 토큰이 2~3초에 도착하는데 배포만 그렇지 않았던 이유가 이것이다.
+        #
+        # Content-Length 를 붙이지 않고 쓰는 대로 flush 하면 런타임이 전송 인코딩을
+        # 알아서 처리한다. ⚠️ 직접 chunk 헤더(크기 + CRLF)를 써 넣으면 응답이 깨진다 -
+        # 그건 런타임의 몫이다.
+        started = {"v": False}
+
+        def start_stream():
+            if started["v"]:
+                return
+            started["v"] = True
+            self.send_response(200)
+            self.send_header("Content-Type", "text/event-stream; charset=utf-8")
+            self.send_header("Cache-Control", "no-cache")
+            self.send_header("X-Accel-Buffering", "no")
+            self.end_headers()
 
         def emit(event, data):
-            frames.append(f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n")
+            start_stream()
+            frame = f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+            try:
+                self.wfile.write(frame.encode("utf-8"))
+                self.wfile.flush()
+            except (BrokenPipeError, ConnectionResetError):
+                # 사용자가 창을 닫았다. 남은 프레임은 버리고 조용히 끝낸다.
+                pass
 
         emit("meta", {"model": cs.MODEL, "session_turn": turn})
         try:
             cs.chat_turn(message, req.get("history"), req.get("context"), session, turn, emit)
         except Exception as e:  # noqa: BLE001
             emit("error", {"code": "server", "message": f"서버 오류: {e}"})
-
-        body = "".join(frames).encode("utf-8")
-        self.send_response(200)
-        self.send_header("Content-Type", "text/event-stream; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-cache")
-        self.send_header("X-Accel-Buffering", "no")
-        self.end_headers()
-        self.wfile.write(body)
+        start_stream()   # 프레임이 하나도 없었어도 응답은 열어 준다
 
     def do_OPTIONS(self):
         self.send_response(204)
