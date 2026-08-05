@@ -65,11 +65,16 @@ HISTORY_TURNS = 6            # 최근 6턴(= user/assistant 12개)
 MAX_TOOL_ROUNDS = 4          # 도구 호출 무한루프 방지
 SESSION_TURN_LIMIT = 20
 IP_DAILY_LIMIT = 60
-# 도구 하나에 허용할 벽시계 시간. **바깥 함수 예산(vercel.json maxDuration 60초)보다
+# 도구에 쓸 수 있는 벽시계 시간. **바깥 함수 예산(vercel.json maxDuration 60초)보다
 # 반드시 짧아야 한다.** 예전 SCORE_TIMEOUT은 60초로 예산과 같아서, 타임아웃이 나기 전에
-# 함수가 먼저 죽어 사용자에게는 504만 보였다. 20초면 모델이 '조회 실패'를 받아 사정을
-# 설명할 시간이 남는다.
-TOOL_BUDGET_SEC = 20
+# 함수가 먼저 죽어 사용자에게는 504만 보였다.
+#
+# ⚠️ 상한은 **턴 전체**에도 걸어야 한다. 도구 하나에만 20초를 걸었더니, 조회가 실패하면
+#    모델이 다음 라운드에서 같은 도구를 다시 불러 20초 × 4라운드(MAX_TOOL_ROUNDS) = 80초가
+#    되어 결국 60초를 넘겼다(배포에서 그대로 재현: 예열 상태인데도 60.3초 504).
+#    턴 예산을 다 쓰면 이후 도구는 **기다리지 않고 즉시** 실패로 돌려 모델이 답을 맺게 한다.
+TOOL_BUDGET_SEC = 20         # 도구 하나
+TURN_TOOL_BUDGET_SEC = 30    # 한 턴에서 도구에 쓸 수 있는 총합
 
 CROPS = ("사과", "배", "오이", "감자", "상추")
 PROVINCES = ("경기도", "강원도", "충청북도", "충청남도", "전라북도",
@@ -710,7 +715,7 @@ def tool_set_checklist_status(item_id, status, ctx):
     }
 
 
-def _run_with_budget(fn, *args, **kwargs):
+def _run_with_budget(budget, fn, *args, **kwargs):
     """도구 하나에 벽시계 상한(TOOL_BUDGET_SEC)을 건다.
 
     왜 필요한가
@@ -725,13 +730,18 @@ def _run_with_budget(fn, *args, **kwargs):
     ⚠️ 넘긴 스레드는 죽이지 않고 그대로 둔다. 파이썬은 스레드를 강제 종료할 수 없고,
        계속 돌게 두면 ASOS 캐시가 채워져 **다음 호출이 빨라진다**(버리는 일이 아니다).
     """
+    if budget <= 0:
+        # 이미 턴 예산을 다 썼다. 기다리지 않고 즉시 실패로 돌려준다.
+        raise TimeoutError(
+            "이번 답변에서 자료 조회에 쓸 시간을 다 썼어요. 이 지역 기상자료를 처음 받는 중일 "
+            "수 있어요 - 잠시 뒤 다시 물어보시면 보통 바로 나옵니다.")
     ex = ThreadPoolExecutor(max_workers=1)
     fut = ex.submit(fn, *args, **kwargs)
     try:
-        return fut.result(timeout=TOOL_BUDGET_SEC)
+        return fut.result(timeout=budget)
     except FuturesTimeout:
         raise TimeoutError(
-            f"계산이 {TOOL_BUDGET_SEC}초를 넘겨 멈췄어요. 이 지역 기상자료를 처음 받는 중일 수 "
+            f"계산이 {budget:.0f}초를 넘겨 멈췄어요. 이 지역 기상자료를 처음 받는 중일 수 "
             f"있어요 - 잠시 뒤 다시 물어보시면 보통 바로 나옵니다.")
     finally:
         ex.shutdown(wait=False)
@@ -741,14 +751,17 @@ def _run_with_budget(fn, *args, **kwargs):
 _BUDGETED_TOOLS = ("get_crop_score", "get_weather", "get_cultivar_candidates", "get_cultivar_profile")
 
 
-def _exec_tool_block(block, ctx=None):
+def _exec_tool_block(block, ctx=None, deadline=None):
     """tool_use 블록 하나를 실행해 tool_result 블록으로 만든다(스레드에서 호출됨).
 
     (tool_result, action|None) 튜플을 돌려준다 - action은 브라우저가 적용할 지시.
+
+    deadline - 이 턴에서 도구에 쓸 수 있는 시각(time.time() 기준). None이면 상한 없음.
     """
     try:
         if block.name in _BUDGETED_TOOLS:
-            out = _run_with_budget(run_tool, block.name, dict(block.input), ctx)
+            left = TOOL_BUDGET_SEC if deadline is None else min(TOOL_BUDGET_SEC, deadline - time.time())
+            out = _run_with_budget(left, run_tool, block.name, dict(block.input), ctx)
         else:
             out = run_tool(block.name, dict(block.input), ctx)
         action = out.pop("_action", None) if isinstance(out, dict) else None
@@ -937,6 +950,8 @@ def chat_turn(user_message, history, ctx, session, turn, emit):
     for attempt in range(3):
         messages = _build_messages(hist, user_message, ctx_text)
         tools_used = []
+        # 이 턴에서 도구에 쓸 수 있는 마감 시각. 라운드를 넘어가며 누적 소모된다.
+        tool_deadline = time.time() + TURN_TOOL_BUDGET_SEC
         try:
             for _round in range(MAX_TOOL_ROUNDS):
                 with client.beta.messages.stream(**_stream_kwargs(messages)) as stream:
@@ -972,9 +987,9 @@ def chat_turn(user_message, history, ctx, session, turn, emit):
                 # 전부 네트워크 대기라 스레드로 겹쳐 돌린다(순서는 map이 보존).
                 if len(blocks) > 1:
                     with ThreadPoolExecutor(max_workers=min(5, len(blocks))) as ex:
-                        pairs = list(ex.map(lambda b: _exec_tool_block(b, ctx), blocks))
+                        pairs = list(ex.map(lambda b: _exec_tool_block(b, ctx, tool_deadline), blocks))
                 else:
-                    pairs = [_exec_tool_block(b, ctx) for b in blocks]
+                    pairs = [_exec_tool_block(b, ctx, tool_deadline) for b in blocks]
 
                 results = []
                 for res, action in pairs:
