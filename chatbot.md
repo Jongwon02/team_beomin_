@@ -876,3 +876,81 @@ buildChatContext() {
 | "평창 오이 촉성재배 27점인데 못 키우는 건가요?" | "못 키운다가 아니라 바깥 기상이 적온에서 그만큼 벗어나 난방·보온으로 메워야 한다는 뜻" + 난방도일 1,578℃·일 |
 
 검수 외 품종 이름 유출: 0건.
+
+## 17. 배포 챗봇 504 원인과 수정 (2026-08-05)
+
+배포 챗봇이 504(FUNCTION_INVOCATION_TIMEOUT)를 뱉었다. 원인을 실측으로 갈랐다.
+
+| 상황 | 시간 | 결과 |
+|---|---|---|
+| `GET /api/chat` (모듈 로드 안 함) | 1.0s | 200 |
+| **로컬** 같은 질문 | 5.4s (첫 토큰 2.4s) | 정상 |
+| 배포 · 콜드 · 도구 없음 | 38.3s / 60.3s | 200 / **504** |
+| 배포 · **예열** · 도구 없음 | 5.6~8.1s | 200 |
+| 배포 · 예열 · **도구 호출** | 60.3s | **504** |
+
+### 17.1 원인 두 가지
+
+**① 콜드 스타트 ≈ 33초.** 예열 5.6초 · 콜드 38초의 차이가 함수 부팅 + `chat_server` 임포트다.
+`chat_server`가 품종 시스템 전체를 끌고 들어온다(`cultivar_data` → `data/cultivars/*.json` 5개,
+`crop_knowledge` → `crops_for_llm.json` 212KB, `chat_schedule`, `blight_data`). 로컬 1.9초가
+Vercel 콜드 파일시스템에서 33초가 된다. 모델 호출은 5초뿐이라 예산이 거의 안 남는다.
+
+**② 도구가 함수를 다시 부른다(치명적).** 예열 상태에서도 적합도 질문 하나에 60.3초 504였다.
+
+```
+/api/chat (예산 60초)
+   └─ HTTP → /api/cultivar-score   ← 또 다른 서버리스 함수, 자기 콜드 스타트
+                                      (이 프로젝트에서 25~59.6초 실측)
+```
+
+게다가 `SCORE_TIMEOUT`이 바깥 예산과 **같은 60초**여서, 타임아웃이 나기 전에 함수가 먼저
+죽었다. 사용자에게는 504만 보이고 모델은 사정을 설명할 기회조차 없었다.
+
+### 17.2 수정 ① 도구를 같은 프로세스에서 직접 부른다
+
+`SCORE_API`/`NEWS_API` HTTP 호출을 걷어내고 직접 호출로 바꿨다. 코드는 이미 같은 번들에
+들어 있다(`vercel.json` `includeFiles: backend/**, data/**`).
+
+| 도구 | 이전 | 이후 |
+|---|---|---|
+| `get_crop_score` | `GET {SCORE_API}/api/crop-score-normal/…` | `crop_score_server.build_normal()` |
+| `get_cultivar_candidates` | `GET {SCORE_API}/api/cultivar-score/…` | `cultivar_api.score_payload()` |
+| `get_cultivar_profile` | `GET {SCORE_API}/api/cultivar-profile/…` | `cultivar_api.profile_payload()` |
+| `get_weather` | `GET {NEWS_API}/api/weather/…` | `news_server.fetch_weather()` |
+
+> **덤으로 고쳐진 것**: `/api/cultivar-profile` 은 **Vercel 함수가 아예 없었다**
+> (`api/`에 파일도, `vercel.json` rewrite 도 없다). 배포에서 이 도구는 늘 실패하고 있었다.
+
+임포트는 지연시킨다(`_score_backend`). 점수 도구를 안 쓰는 대화(인사·일정)까지 무거운
+백엔드를 읽으면 콜드 스타트가 그만큼 길어진다. 실측: `import chat_server` 1.5초, 이 시점에
+백엔드는 아직 미로드, 첫 점수 도구 호출 때 비로소 로드.
+
+### 17.3 수정 ② 도구에 벽시계 예산 20초
+
+직접 호출로 **함수 왕복과 두 번째 콜드 스타트**는 없앴지만, 적합도·품종 계산 자체가 ASOS
+일자료 10년을 새로 받아야 할 때가 있다(배포 인스턴스 디스크 캐시는 휘발성 · 25~35초 실측).
+
+`TOOL_BUDGET_SEC = 20`으로 **바깥 예산(60초)보다 짧게** 잡았다. 넘기면 모델이 '조회 실패'를
+받아 사정을 설명하고, 그 사이 캐시가 채워져 다음 질문은 정상 응답한다.
+
+```
+20.0s 만에 반환 · is_error=True
+모델이 받는 내용: 조회 실패: 계산이 20초를 넘겨 멈췄어요. 이 지역 기상자료를
+                  처음 받는 중일 수 있어요 - 잠시 뒤 다시 물어보시면 보통 바로 나옵니다.
+```
+
+> ⚠️ 넘긴 스레드는 죽이지 않는다. 파이썬은 스레드를 강제 종료할 수 없고, 계속 돌게 두면
+> ASOS 캐시가 채워져 **다음 호출이 빨라진다**(버리는 일이 아니다).
+
+### 17.4 검증
+
+| 항목 | 결과 |
+|---|---|
+| `get_crop_score` 감자/천안 | 0.8s · 85.7점 우수 |
+| `get_cultivar_candidates` 상추/천안 | 0.3s · 작형 순위 정상 |
+| `get_cultivar_profile` 감자/추백 | 0.0s · **배포에서 늘 실패하던 도구가 살아남** |
+| `get_weather` 충청남도 | 0.2s · 관측소 천안 14일 통계 |
+| 지연 임포트 | `import chat_server` 1.5s, 백엔드는 첫 점수 도구 때 로드 |
+| 예산 초과 | 20.0s에 `is_error` 반환, 안내 문구 전달 |
+| 8002·8001 의존 | **없어짐** (로컬에서도 챗봇만 띄우면 된다) |

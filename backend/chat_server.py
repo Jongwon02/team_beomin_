@@ -21,6 +21,7 @@ import datetime
 import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import TimeoutError as FuturesTimeout
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # 윈도우 콘솔(cp949)은 '—' 같은 문자를 못 찍고 UnicodeEncodeError로 서버를 죽인다.
@@ -52,10 +53,10 @@ SCHEDULE_CROPS_LABEL = "·".join(CROP_SCHEDULE.keys())
 CULTURE_CROPS_LABEL = "·".join(CROP_CULTURE.keys())
 
 PORT = 8003
-# 배포 환경에서는 같은 도메인의 서버리스 함수를 부르므로 환경변수로 갈아끼운다
-# (예: SCORE_API=https://team-beomin.vercel.app). 로컬은 기존 포트를 그대로 쓴다.
-SCORE_API = os.environ.get("SCORE_API") or "http://localhost:8002"
-NEWS_API = os.environ.get("NEWS_API") or "http://localhost:8001"
+# 적합도·품종·기상 도구는 HTTP가 아니라 **같은 프로세스에서 직접** 부른다(_score_backend).
+# 예전에는 SCORE_API/NEWS_API 환경변수로 8002·8001(배포에서는 서버리스 함수)을 불렀는데,
+# 배포에서 함수가 함수를 부르며 두 번째 콜드 스타트를 60초 예산 안에서 기다리다 504가 났다.
+# 자세한 근거는 _score_backend 주석.
 
 MODEL = "claude-opus-5"
 MAX_TOKENS = 2500            # ⚠️ Opus 5는 thinking이 기본 ON → 사고+답변 합산 상한
@@ -64,8 +65,11 @@ HISTORY_TURNS = 6            # 최근 6턴(= user/assistant 12개)
 MAX_TOOL_ROUNDS = 4          # 도구 호출 무한루프 방지
 SESSION_TURN_LIMIT = 20
 IP_DAILY_LIMIT = 60
-SCORE_TIMEOUT = 60           # 8002는 공공 API 여러 개를 타서 느릴 수 있다
-WEATHER_TIMEOUT = 20
+# 도구 하나에 허용할 벽시계 시간. **바깥 함수 예산(vercel.json maxDuration 60초)보다
+# 반드시 짧아야 한다.** 예전 SCORE_TIMEOUT은 60초로 예산과 같아서, 타임아웃이 나기 전에
+# 함수가 먼저 죽어 사용자에게는 504만 보였다. 20초면 모델이 '조회 실패'를 받아 사정을
+# 설명할 시간이 남는다.
+TOOL_BUDGET_SEC = 20
 
 CROPS = ("사과", "배", "오이", "감자", "상추")
 PROVINCES = ("경기도", "강원도", "충청북도", "충청남도", "전라북도",
@@ -418,10 +422,52 @@ TOOLS = [
 ]
 
 
-def _get_json(url, timeout):
-    req = urllib.request.Request(url, headers={"Accept": "application/json"})
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return json.load(r)
+# ── 도구 백엔드: HTTP 대신 같은 프로세스에서 직접 부른다 ────────────────────
+#
+# 왜 바꿨나 (실측)
+#   배포에서 /api/chat 이 /api/cultivar-score 를 HTTP로 부르면 **서버리스 함수가 다른
+#   서버리스 함수를 부르는 꼴**이 된다. 두 번째 함수는 자기 콜드 스타트(이 프로젝트에서
+#   25~59.6초 실측)를 갖는데, 그걸 바깥 함수의 60초 예산 안에서 기다린다.
+#     · 예열된 챗봇 + 도구 없는 인사      →  5.6초 200
+#     · 예열된 챗봇 + 적합도 질문 1건     → 60.3초 **504**
+#   게다가 SCORE_TIMEOUT 이 바깥 예산과 같은 60초여서, 타임아웃이 나기도 전에 함수가
+#   먼저 죽어 사용자에게는 504만 보였다.
+#
+#   코드는 이미 같은 번들에 들어 있다(vercel.json includeFiles: backend/**, data/**).
+#   직접 부르면 함수 왕복도, 두 번째 콜드 스타트도 사라진다.
+#
+# ⚠️ 임포트는 지연시킨다. 점수 도구를 쓰지 않는 대화(인사·일정 질문)까지 무거운 백엔드를
+#    읽어들이면 콜드 스타트가 그만큼 길어진다 - 콜드 33초의 상당 부분이 이 임포트다.
+#
+# 참고: /api/cultivar-profile 은 애초에 **Vercel 함수가 없었다**(api/ 에 파일도, vercel.json
+#       rewrite 도 없다). 배포에서 이 도구는 늘 실패하고 있었는데 직접 호출로 함께 고쳐진다.
+_BACKEND = {}
+
+
+def _score_backend():
+    """(crop_score_server, cultivar_api) 를 한 번만 임포트해서 돌려준다.
+
+    crop_score_server 를 먼저 임포트해야 한다 - 이 모듈이 backend 하위 폴더(api/scoring/
+    services/utils)를 sys.path 에 등록하고 CWD 를 프로젝트 루트로 맞춘다. 백엔드가
+    bare import(import asos, from region_mapper ...)를 쓰기 때문에 이 준비가 없으면
+    cultivar_api 가 cultivar_data 를 찾지 못한다.
+    """
+    if "score" not in _BACKEND:
+        import crop_score_server as _css                          # noqa: PLC0415
+        import cultivar_api as _cv                                # noqa: PLC0415
+        _BACKEND["score"] = (_css, _cv)
+    return _BACKEND["score"]
+
+
+def _news_backend():
+    """news_server(기상청 ASOS 래퍼). Beomin_web 아래에 있어 경로를 따로 등록한다."""
+    if "news" not in _BACKEND:
+        web_dir = os.path.join(PROJECT_DIR, "Beomin_web")
+        if web_dir not in sys.path:
+            sys.path.insert(0, web_dir)
+        import news_server as _ns                                 # noqa: PLC0415
+        _BACKEND["news"] = _ns
+    return _BACKEND["news"]
 
 
 def tool_get_crop_score(crop, region):
@@ -435,8 +481,8 @@ def tool_get_crop_score(crop, region):
     지금은 /api/crop-score-normal(여러 해 평년 통계)을 쓴다. 접속 시점에 따라 등급이
     바뀌지 않는다. 오늘 날씨가 궁금하면 그건 get_weather가 담당한다.
     """
-    url = f"{SCORE_API}/api/crop-score-normal/{urllib.parse.quote(crop)}?region={urllib.parse.quote(region)}"
-    d = _get_json(url, SCORE_TIMEOUT)
+    css, _ = _score_backend()
+    d = css.build_normal(crop, region)
 
     if d.get("error"):
         return {"조회실패": d["error"]}
@@ -485,9 +531,8 @@ def tool_get_crop_score(crop, region):
 
 
 def tool_get_weather(province):
-    """8001의 14일 원본 배열(약 900토큰)을 통계 7줄(약 80토큰)로 압축."""
-    url = f"{NEWS_API}/api/weather/{urllib.parse.quote(province)}"
-    days = _get_json(url, WEATHER_TIMEOUT)
+    """기상청 14일 원본 배열(약 900토큰)을 통계 7줄(약 80토큰)로 압축."""
+    days = _news_backend().fetch_weather(province)
     if isinstance(days, dict) and days.get("error"):
         return {"조회실패": days["error"]}
     if not days:
@@ -510,16 +555,13 @@ def tool_get_weather(province):
 
 
 def tool_get_cultivar_candidates(crop, region, experience=None):
-    """8002 품종 응답(1,000토큰 이상)을 상위 3품종 × 6줄로 축약한다.
+    """품종·작형 응답(1,000토큰 이상)을 상위 3건 × 6줄로 축약한다.
 
     ⚠️ blockers(재배기간 부족 등 '심으면 실패하는' 사유)는 어떤 경우에도 빼지 않는다 -
        이걸 빠뜨리면 모델이 점수만 보고 "심어도 괜찮다"고 답한다.
     """
-    url = (f"{SCORE_API}/api/cultivar-score/{urllib.parse.quote(crop)}"
-           f"?region={urllib.parse.quote(region)}")
-    if experience:
-        url += f"&experience={urllib.parse.quote(experience)}"
-    d = _get_json(url, SCORE_TIMEOUT)
+    _, cv = _score_backend()
+    d = cv.score_payload(crop, region, experience=experience or "beginner")
 
     if d.get("error"):
         return {"조회실패": d["error"]}
@@ -607,12 +649,14 @@ def tool_get_cultivar_candidates(crop, region, experience=None):
 
 
 def tool_get_cultivar_profile(crop, cultivar, topic=None):
-    """품종 상세를 topic 한 섹션으로 좁혀 돌려준다(리포트 전문은 넣지 않는다)."""
-    url = (f"{SCORE_API}/api/cultivar-profile/{urllib.parse.quote(crop)}"
-           f"/{urllib.parse.quote(cultivar)}")
-    if topic:
-        url += f"?topic={urllib.parse.quote(topic)}"
-    d = _get_json(url, WEATHER_TIMEOUT)
+    """품종 상세를 topic 한 섹션으로 좁혀 돌려준다(리포트 전문은 넣지 않는다).
+
+    ⚠️ 이 도구는 배포에서 **늘 실패하고 있었다**. /api/cultivar-profile 은 로컬 :8002
+       라우트로만 있고 Vercel 함수(api/*.py)도, vercel.json rewrite 도 없었다.
+       직접 호출로 바꾸면서 함께 살아난다.
+    """
+    _, cv = _score_backend()
+    d = cv.profile_payload(crop, cultivar, topic=topic)
 
     if d.get("error"):
         return {"조회실패": d["error"], "있는품종": d.get("available")}
@@ -666,13 +710,47 @@ def tool_set_checklist_status(item_id, status, ctx):
     }
 
 
+def _run_with_budget(fn, *args, **kwargs):
+    """도구 하나에 벽시계 상한(TOOL_BUDGET_SEC)을 건다.
+
+    왜 필요한가
+      도구를 같은 프로세스에서 부르게 바꿔 **함수 왕복과 두 번째 콜드 스타트**는
+      없앴지만, 적합도·품종 계산 자체가 ASOS 일자료 10년을 새로 받아야 할 때가 있다
+      (배포 인스턴스의 디스크 캐시는 휘발성이라 25~35초 실측). 상한이 없으면 그 대기가
+      /api/chat 의 60초를 다 먹고 함수가 통째로 죽어 사용자에게는 504만 보인다.
+
+      상한을 걸면 모델이 '조회 실패'를 받아 "지금은 계산이 오래 걸린다"고 답할 수 있다.
+      시간이 지나 캐시가 채워지면 다음 질문은 정상 응답한다.
+
+    ⚠️ 넘긴 스레드는 죽이지 않고 그대로 둔다. 파이썬은 스레드를 강제 종료할 수 없고,
+       계속 돌게 두면 ASOS 캐시가 채워져 **다음 호출이 빨라진다**(버리는 일이 아니다).
+    """
+    ex = ThreadPoolExecutor(max_workers=1)
+    fut = ex.submit(fn, *args, **kwargs)
+    try:
+        return fut.result(timeout=TOOL_BUDGET_SEC)
+    except FuturesTimeout:
+        raise TimeoutError(
+            f"계산이 {TOOL_BUDGET_SEC}초를 넘겨 멈췄어요. 이 지역 기상자료를 처음 받는 중일 수 "
+            f"있어요 - 잠시 뒤 다시 물어보시면 보통 바로 나옵니다.")
+    finally:
+        ex.shutdown(wait=False)
+
+
+# 벽시계 상한을 걸 도구(바깥 기상·토양 자료를 타는 것들). 나머지는 로컬 JSON 조회라 즉시 끝난다.
+_BUDGETED_TOOLS = ("get_crop_score", "get_weather", "get_cultivar_candidates", "get_cultivar_profile")
+
+
 def _exec_tool_block(block, ctx=None):
     """tool_use 블록 하나를 실행해 tool_result 블록으로 만든다(스레드에서 호출됨).
 
     (tool_result, action|None) 튜플을 돌려준다 - action은 브라우저가 적용할 지시.
     """
     try:
-        out = run_tool(block.name, dict(block.input), ctx)
+        if block.name in _BUDGETED_TOOLS:
+            out = _run_with_budget(run_tool, block.name, dict(block.input), ctx)
+        else:
+            out = run_tool(block.name, dict(block.input), ctx)
         action = out.pop("_action", None) if isinstance(out, dict) else None
         return ({"type": "tool_result", "tool_use_id": block.id,
                  "content": json.dumps(out, ensure_ascii=False)}, action)
@@ -1063,5 +1141,5 @@ if __name__ == "__main__":
     key = os.environ.get("ANTHROPIC_API_KEY")
     print(f"안농 챗봇 서버 실행: http://localhost:{PORT}/api/chat  (모델 {MODEL})")
     print(f"키 로드: ANTHROPIC_API_KEY={'OK' if key else 'MISSING (.env에 추가하세요)'}")
-    print(f"연동 대상: 적합도 {SCORE_API} · 기상 {NEWS_API}")
+    print("적합도·품종·기상 도구는 같은 프로세스에서 직접 계산합니다(8002·8001 불필요).")
     ThreadingHTTPServer(("0.0.0.0", PORT), Handler).serve_forever()
