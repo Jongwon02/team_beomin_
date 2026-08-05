@@ -376,7 +376,7 @@
         <button type="button" style="{{ navStyles.crops }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goCrops }}">작물 정보</button>
         <button type="button" style="{{ navStyles.policy }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goPolicy }}">정책·지원금</button>
         <button type="button" style="{{ navStyles.news }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goNews }}">농업 소식</button>
-        <button type="button" style="{{ navStyles.favorites }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goFavorites }}">프로필<sc-if value="{{ hasMyFarm }}"> · {{ myFarm.cropEmoji }}{{ myFarm.crop }}</sc-if></button>
+        <button type="button" style="{{ navStyles.favorites }}" style-hover="background:#DCEFC0;color:#1F5132;" onClick="{{ goFavorites }}">농업계획<sc-if value="{{ hasMyFarm }}"> : {{ myFarm.cropEmoji }}{{ myFarm.crop }}</sc-if></button>
 
         <!-- 로그인 상태 버튼. 로그인 전에는 '로그인', 후에는 내 아이디를 보여준다.
              회원가입을 강제하지 않는다 - 익명으로도 모든 기능을 쓸 수 있고, 가입하면
