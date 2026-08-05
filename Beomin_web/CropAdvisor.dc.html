@@ -6291,7 +6291,19 @@ class Component extends DCLogic {
       },
       goPickRegion: () => this.setState({ activeTab: 'home', hoverCard: null, heroDismissed: false, homeIdx: 0 }, () => window.scrollTo(0, 0)),
 
-      showFirstVisitHero: !this.state.heroDismissed && (this.state.justSignedUp || !signedIn),
+      // 지역정보(홈)의 첫 화면 소개는 **항상** 보여준다.
+      //
+      // ⚠️ 예전 조건은 `!heroDismissed && (justSignedUp || !signedIn)` 이었는데, 이걸 끄면
+      //    소개 문구·이미지만 사라지고 그것을 담은 `.op-section`(height: 100vh - 105px)은
+      //    그대로 남아 **빈 795px 화면**이 된다. 원페이지 구조상 1번 섹션이 비면 안 된다.
+      //    실제로 그렇게 됐다:
+      //      · 작물 정보/정책·지원금/프로필로 갔다 오면 goCrops 등이 clearJustSignedUp()으로
+      //        heroDismissed 를 켜는데, 헤더의 '지역정보'(goHome)는 그걸 되돌리지 않는다
+      //      · 지도에서 지역을 고를 때도 clearJustSignedUp() 이 불린다
+      //      · 로그인한 사용자는 signedIn 때문에 처음부터 안 보인다
+      //    셋 다 "지역정보에 들어가면 빈 화면"으로 끝난다. 소개를 감추고 싶으면 섹션 자체를
+      //    접고 지도부터 보여줘야 하며, 그건 op-track 의 at-map 이동량까지 함께 고쳐야 한다.
+      showFirstVisitHero: true,
       atMapClass: this.state.homeIdx === 1 ? 'at-map' : '',
       scrollToMap: () => {
         const reveal = () => { this._reachedIdx1At = Date.now(); this.setState({ homeIdx: 1 }, () => setTimeout(() => window.dispatchEvent(new Event('resize')), 100)); };

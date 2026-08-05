@@ -1466,3 +1466,24 @@ main의 heeyeon0804 기록을 §12로 두고 브랜치의 heeyeon2026 기록을 
 | 브라우저 — 품종 선택 후 | 상추(작형) · 감자(품종) · 사과(수확기) 3작물 모두 일지 생성 + Q1/Q2 표시 |
 | 두 보정 합성 | 품종 보정 문구 유지된 채 Q2 변경 시 일정 이동 확인 |
 | JS 오류 | 0건 |
+
+### 15.7 뒤따라 고친 것 — 지역정보 첫 화면이 빈 화면이 되던 문제 (2026-08-05)
+
+`showFirstVisitHero: !heroDismissed && (justSignedUp || !signedIn)` 조건이 꺼지면 소개
+문구·이미지만 사라지고 그것을 담은 `.op-section`(`height: 100vh - 105px`)은 남아 **빈
+795px 화면**이 됐다. 원페이지 구조상 1번 섹션이 비면 안 된다.
+
+세 경로 모두 그렇게 끝났다.
+
+| 경로 | 원인 |
+|---|---|
+| 작물 정보·정책·지원금·프로필에 갔다 복귀 | `goCrops`·`goPolicy`·`goFavorites`가 `clearJustSignedUp()`으로 `heroDismissed`를 켜는데, 헤더의 '지역정보'(`goHome`)는 되돌리지 않는다 |
+| 지도에서 지역 선택 | 선택 처리에서도 `clearJustSignedUp()`이 불린다 |
+| 로그인한 사용자 | `signedIn` 때문에 처음부터 안 보인다 |
+
+`the_final_frontend` 원본과 같은 코드였다(병합으로 생긴 회귀가 아니다). 소개를 항상
+보여주도록 `showFirstVisitHero: true`로 바꿨다. 감추려면 섹션 자체를 접고 지도부터
+보여줘야 하고, 그건 `op-track`의 `at-map` 이동량(`calc(105px - 100vh)`)까지 함께 고쳐야 한다.
+
+검증: 4개 탭 왕복 전부 소개 화면 정상, 지도로 내려가는 원페이지 스크롤 유지(`at-map`),
+JS 오류 0건.
