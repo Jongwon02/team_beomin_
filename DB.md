@@ -1434,11 +1434,15 @@ main의 heeyeon0804 기록을 §12로 두고 브랜치의 heeyeon2026 기록을 
 합치면서 저쪽 코드의 결함 두 개를 고쳤다.
 1. 기준 단계를 `computeSeasonInstance(season, today)`(**보정 전** 일정)에서 찾고 있었다.
    품종 보정을 적용한 뒤 일정에서 찾아야 오프셋이 어긋나지 않는다.
-2. 단계를 `{task, start, end}`로만 다시 만들어 **`note`·`period`가 사라졌다**. 체크리스트가
-   그 값을 쓰므로 `{...s}`로 모든 필드를 살린다.
+2. ~~단계를 `{task, start, end}`로만 다시 만들어 `note`·`period`가 사라졌다~~
+   → **이 서술은 틀렸다(§15.8에서 정정).** `computeSeasonInstance` 계열은 병합 전부터
+   `{task, start, end}`만 만들었고 `events[].note`·`period`는 늘 빈 문자열이었다.
+   체크리스트는 그 값이 아니라 `CROP_SCHEDULE`의 `cultivationGuide`를 `guideLinesFor`로
+   찾아 쓴다. 확인하지 않고 "체크리스트가 그 값을 쓴다"고 단정한 것이 잘못이었다.
 
 저쪽 '지금 상태' 입력(Q1 시작 시점 / Q2 생육 단계)은 `hasFarmPlan` 안, 농업일지 제목 앞에
 두었다. 품종을 골라야 단계 목록이 확정되고 그래야 Q2를 고를 수 있기 때문이다.
+→ **이 입력은 §15.8에서 제거했다.**
 
 ### 15.5 화면에서만 드러난 결함 2건
 
@@ -1487,3 +1491,48 @@ main의 heeyeon0804 기록을 §12로 두고 브랜치의 heeyeon2026 기록을 
 
 검증: 4개 탭 왕복 전부 소개 화면 정상, 지도로 내려가는 원페이지 스크롤 유지(`at-map`),
 JS 오류 0건.
+
+### 15.8 '지금 상태' 입력(Q1/Q2) 제거 (2026-08-05)
+
+사용자 요청으로 프로필의 **"🌱 지금 상태를 알려주시면 그 지점부터 이어지도록 농사 캘린더를
+맞춰드려요"** 카드를 뺐다(농사 시작 날짜를 쓸 일이 없다는 판단).
+
+카드만 지우면 값을 넣을 통로가 없어진 채 로직이 남으므로 `startInfo` 계열을 함께 걷어냈다.
+
+| 지운 것 | 위치 |
+|---|---|
+| Q1/Q2 입력 카드 | `hasFarmPlan` 안 (31줄) |
+| `myFarm` 필드 12개 | `notStarted`·`startYear`·`startMonth`·`yearOptions`·`monthOptions`·`stageTask`·`stageOptions`·`dateFieldsStyle`·`onStartYear`·`onStartMonth`·`onStageTask`·`toggleNotStarted` |
+| 지역 변수 | `mfToday`·`mfSched`·`mfZone`·`mfPicked`·`mfStageOptions`·`mfStart`·`mfNotStarted` |
+| 메서드 | `updateFarmStartInfo` |
+| `buildPlanFor` | 5번째 인자 `startInfo`, stageTask day-shift 블록, 반환 payload의 `startInfo` |
+| `setMyCrop` | 2번째 인자 `startInfo`, `mf.startInfo` |
+
+> ⚠️ `notStarted`라는 이름은 체크리스트 상태 지역변수로도 쓰인다(`status === 'todo'`).
+> 그쪽 7곳은 건드리지 않았다.
+
+`buildPlanFor(cropName, region, cvAdjust, cultivationType)`로 돌아왔고, 일정 보정은 품종
+보정 하나만 남는다.
+
+**§15.4의 서술을 정정한다.** 병합 때 "저쪽 코드가 단계를 다시 만들며 `note`·`period`를
+떨어뜨렸고 체크리스트가 그 값을 쓴다"고 적었는데 **둘 다 사실이 아니었다**.
+
+- `computeSeasonInstance`·`computeSeasonInstancesInRange`는 병합 **전(`morning`)에도**
+  `{task, start, end}`만 만든다. `events[].note`·`period`는 언제나 빈 문자열이었다
+  (실측: 상추 0/15건, 감자 0/18건).
+- 체크리스트는 그 값이 아니라 `CROP_SCHEDULE`의 `cultivationGuide`를 `guideLinesFor`로
+  찾아 쓴다. 제거 후에도 '어떻게 하나요?' → '감자 기준 세부 수치'가 정상 표시된다.
+
+확인하지 않고 단정한 것이 잘못이었다. 코드에는 영향이 없었다(그 블록 자체를 지웠다).
+
+### 15.9 검증
+
+| 항목 | 결과 |
+|---|---|
+| Q1/Q2 카드·select | 화면에서 0개 |
+| 남은 `startInfo` 참조 | 0건 |
+| `sc-if` / `sc-for` 짝 | 126/126 · 37/37 |
+| 프로필 흐름 | 상추(작형)·감자(품종) 모두 품종 선택 → 농업일지 생성 정상 |
+| 품종 보정 문구 | 유지 (상추 "여름재배 기준으로 파종 05/01…", 감자 "추백 기준으로 파종 03/28…") |
+| 체크리스트 | '어떻게 하나요?' 펼침 → 세부 수치 표시 정상 |
+| JS 오류 | 0건 |
